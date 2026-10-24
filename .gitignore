@@ -32,3 +32,6 @@ next-env.d.ts
 
 # Browser verification logs
 /.playwright-mcp/
+
+# Vercel
+.vercel
