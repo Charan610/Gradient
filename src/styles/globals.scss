@@ -1,0 +1,209 @@
+// ==============================================================================
+// FOUNDATION SCSS DESIGN SYSTEM: Globals & CSS Custom Properties
+// ==============================================================================
+@use 'tokens' as *;
+@use 'mixins' as *;
+
+:root,
+[data-theme='light'] {
+  --canvas: #F7F7F3;
+  --surface: #FFFFFF;
+  --surface-soft: #F0F0EC;
+  --surface-hover: #EBEBE6;
+  --ink: #21231F;
+  --ink-secondary: #40443D;
+  --muted: #676B64;
+  --hairline: #E1E3DC;
+  --hairline-subtle: #ECEEE8;
+  --accent: #485B49;
+  --accent-soft: #E8EDE6;
+  --accent-hover: #3D4E3E;
+  --warning: #80674D;
+  --warning-soft: #F5EFE8;
+  --danger: #78352C;
+  --danger-soft: #FCEEEC;
+  --shadow-subtle: 0 1px 3px rgba(20, 25, 20, 0.04), 0 3px 12px rgba(20, 25, 20, 0.03);
+  --shadow-float: 0 8px 24px rgba(20, 25, 20, 0.07);
+}
+
+[data-theme='dark'] {
+  --canvas: #121412;
+  --surface: #1B1E1A;
+  --surface-soft: #252922;
+  --surface-hover: #2D322A;
+  --ink: #ECEEE7;
+  --ink-secondary: #CBD0C5;
+  --muted: #B0B7AB;
+  --hairline: #353B34;
+  --hairline-subtle: #272C25;
+  --accent: #A5B49D;
+  --accent-soft: #1E281D;
+  --accent-hover: #BAC6B3;
+  --warning: #BCA384;
+  --warning-soft: #2E261E;
+  --danger: #D47E72;
+  --danger-soft: #2D1A18;
+  --shadow-subtle: 0 1px 4px rgba(0, 0, 0, 0.25), 0 4px 16px rgba(0, 0, 0, 0.2);
+  --shadow-float: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  scroll-behavior: smooth;
+  color-scheme: light dark;
+}
+
+body {
+  min-height: 100vh;
+  background-color: var(--canvas);
+  color: var(--ink);
+  font-family: $font-sans;
+  line-height: 1.55;
+  letter-spacing: -0.01em;
+  overflow-x: hidden;
+}
+
+// Accessible link styling
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+input,
+textarea,
+select {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+// Signature Buttons
+.buttonPrimary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background-color: var(--ink);
+  color: var(--canvas) !important;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 12px 8px 16px;
+  border-radius: 11px;
+  border: 1px solid transparent;
+  transition: transform $transition-fast, background-color $transition-fast;
+  min-height: 44px;
+  cursor: pointer;
+  white-space: nowrap;
+
+  .iconCapsule {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    background-color: rgba(255, 255, 255, 0.16);
+    color: currentColor;
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    transform: translateY(-1px);
+    background-color: var(--accent);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  @include focus-ring;
+}
+
+.buttonSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: var(--surface);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 11px;
+  border: 1px solid var(--hairline);
+  box-shadow: var(--shadow-subtle);
+  transition: background-color $transition-fast, border-color $transition-fast;
+  min-height: 44px;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover {
+    background-color: var(--surface-hover);
+    border-color: var(--muted);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  @include focus-ring;
+}
+
+.buttonTertiary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 8px;
+  border-radius: 8px;
+  transition: color $transition-fast;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--ink);
+  }
+
+  @include focus-ring;
+}
+
+// Reduced motion support
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

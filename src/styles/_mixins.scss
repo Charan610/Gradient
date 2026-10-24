@@ -1,0 +1,66 @@
+// ==============================================================================
+// FOUNDATION SCSS DESIGN SYSTEM: Responsive & Utility Mixins
+// ==============================================================================
+@use 'tokens' as *;
+
+// Breakpoint mixins
+@mixin up($bp) {
+  @media screen and (min-width: $bp) {
+    @content;
+  }
+}
+
+@mixin down($bp) {
+  @media screen and (max-width: ($bp - 1px)) {
+    @content;
+  }
+}
+
+@mixin tablet {
+  @include up($bp-tablet) {
+    @content;
+  }
+}
+
+@mixin desktop {
+  @include up($bp-desktop) {
+    @content;
+  }
+}
+
+@mixin wide {
+  @include up($bp-wide) {
+    @content;
+  }
+}
+
+// Touch Target Accessible Minimum (44x44px per WCAG 2.2 AA)
+@mixin touch-target {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+// Quiet Card Surface
+@mixin surface-card {
+  background-color: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: $radius-lg;
+  box-shadow: var(--shadow-subtle);
+  transition: border-color $transition-fast, box-shadow $transition-fast;
+}
+
+// Focus Visible Accessible Ring (Sage / Neutral Ink)
+@mixin focus-ring {
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+
+// Monospace Code Label
+@mixin mono-label {
+  font-family: $font-mono;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}

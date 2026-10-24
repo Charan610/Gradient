@@ -1,0 +1,81 @@
+@use '@/styles/tokens' as *;
+@use '@/styles/mixins' as *;
+
+.checklistSection {
+  @include surface-card;
+  padding: 20px;
+  margin-bottom: 24px;
+
+  @include desktop {
+    padding: 28px;
+  }
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.heading {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.progressCounter {
+  font-family: $font-mono;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.groupTitle {
+  font-family: $font-mono;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin: 18px 0 8px;
+}
+
+.footerBar {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--hairline);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  @include tablet {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.validationAlert {
+  padding: 10px 14px;
+  border-radius: 8px;
+  background-color: var(--warning-soft);
+  border: 1px solid var(--warning);
+  color: var(--warning);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.successAlert {
+  padding: 10px 14px;
+  border-radius: 8px;
+  background-color: var(--accent-soft);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

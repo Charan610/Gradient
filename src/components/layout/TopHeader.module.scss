@@ -1,0 +1,89 @@
+@use '@/styles/tokens' as *;
+@use '@/styles/mixins' as *;
+
+.header {
+  height: 58px;
+  background-color: var(--surface);
+  border-bottom: 1px solid var(--hairline);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+
+  @include desktop {
+    height: 64px;
+    padding: 0 24px;
+  }
+}
+
+.leftArea {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.phaseBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background-color: var(--accent-soft);
+  color: var(--accent);
+  font-family: $font-mono;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.mobileBrand {
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+
+  @include desktop {
+    display: none;
+  }
+}
+
+.rightArea {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.searchButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background-color: var(--surface-soft);
+  border: 1px solid var(--hairline);
+  color: var(--muted);
+  font-size: 13px;
+  transition: border-color $transition-fast, color $transition-fast;
+
+  &:hover {
+    color: var(--ink);
+    border-color: var(--muted);
+  }
+
+  .kbdShortcut {
+    display: none;
+
+    @include tablet {
+      display: inline-block;
+      padding: 1px 5px;
+      border-radius: 4px;
+      background-color: var(--surface);
+      border: 1px solid var(--hairline);
+      font-family: $font-mono;
+      font-size: 11px;
+    }
+  }
+}

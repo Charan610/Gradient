@@ -1,0 +1,55 @@
+@use '@/styles/tokens' as *;
+@use '@/styles/mixins' as *;
+
+.headerArea {
+  margin-bottom: 32px;
+}
+
+.title {
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 8px;
+  letter-spacing: -0.02em;
+
+  @include tablet {
+    font-size: 32px;
+  }
+}
+
+.subtitle {
+  font-size: 15px;
+  color: var(--ink-secondary);
+  max-width: 72ch;
+  line-height: 1.55;
+}
+
+.layoutGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+
+  @include desktop {
+    grid-template-columns: 8fr 4fr;
+    align-items: start;
+  }
+}
+
+.sidePanel {
+  @include surface-card;
+  padding: 24px;
+}
+
+.panelTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 12px;
+}
+
+.panelText {
+  font-size: 13.5px;
+  color: var(--ink-secondary);
+  line-height: 1.5;
+  margin-bottom: 16px;
+}

@@ -1,0 +1,48 @@
+@use '@/styles/tokens' as *;
+@use '@/styles/mixins' as *;
+
+.stripGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+
+  @include tablet {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.metricCard {
+  @include surface-card;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-family: $font-mono;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.valueRow {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.numeral {
+  font-family: $font-mono;
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1;
+}
+
+.subText {
+  font-size: 13px;
+  color: var(--muted);
+}

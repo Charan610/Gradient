@@ -1,0 +1,30 @@
+// ==============================================================================
+// FOUNDATION SCSS DESIGN SYSTEM: Design Tokens
+// Editorial Productivity / Quiet Technical Luxury
+// Absolutely zero blue or saturated rainbow hues
+// ==============================================================================
+
+// Static Breakpoints
+$bp-mobile-sm: 320px;
+$bp-mobile: 360px;
+$bp-mobile-lg: 390px;
+$bp-tablet: 768px;
+$bp-desktop: 1024px;
+$bp-wide: 1440px;
+$bp-ultra: 1920px;
+
+// Typography Stacks
+$font-sans: 'Geist Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+$font-mono: 'Geist Mono', 'IBM Plex Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+
+// Radii
+$radius-sm: 6px;
+$radius-md: 10px;
+$radius-lg: 14px;
+$radius-xl: 18px;
+$radius-full: 9999px;
+
+// Transitions & Timing
+$transition-fast: 140ms ease-out;
+$transition-normal: 200ms ease-out;
+$transition-slow: 260ms ease-out;

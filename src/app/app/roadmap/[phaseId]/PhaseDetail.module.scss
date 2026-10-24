@@ -1,0 +1,146 @@
+@use '@/styles/tokens' as *;
+@use '@/styles/mixins' as *;
+
+.header {
+  margin-bottom: 28px;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 12px;
+
+  &:hover {
+    color: var(--ink);
+  }
+}
+
+.title {
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+
+.description {
+  font-size: 15px;
+  color: var(--ink-secondary);
+  line-height: 1.55;
+  max-width: 72ch;
+}
+
+.detailGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 28px;
+
+  @include desktop {
+    grid-template-columns: 7fr 5fr;
+    align-items: start;
+  }
+}
+
+.moduleList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.moduleCard {
+  @include surface-card;
+  padding: 18px 20px;
+}
+
+.moduleHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.moduleCode {
+  font-family: $font-mono;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.moduleTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+
+.outcomeList {
+  list-style: none;
+  font-size: 13px;
+  color: var(--ink-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  li {
+    position: relative;
+    padding-left: 14px;
+
+    &::before {
+      content: '–';
+      position: absolute;
+      left: 0;
+      color: var(--muted);
+    }
+  }
+}
+
+.gatePanel {
+  @include surface-card;
+  padding: 24px;
+}
+
+.gateTitle {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+
+.gateInstructions {
+  font-size: 13.5px;
+  color: var(--ink-secondary);
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+.rubricItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--hairline);
+  font-size: 13px;
+}
+
+.evidenceArea {
+  margin: 16px 0;
+}
+
+.textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--hairline);
+  background-color: var(--canvas);
+  font-size: 13px;
+  color: var(--ink);
+  min-height: 90px;
+  resize: vertical;
+
+  &:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+}

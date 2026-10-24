@@ -1,0 +1,53 @@
+@use '@/styles/tokens' as *;
+@use '@/styles/mixins' as *;
+
+.reviewCard {
+  @include surface-card;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.reviewItem {
+  padding: 12px;
+  border-radius: 8px;
+  background-color: var(--surface-soft);
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.promptText {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.answerBlock {
+  font-size: 13px;
+  color: var(--ink-secondary);
+  line-height: 1.5;
+  padding: 8px;
+  background-color: var(--surface);
+  border-radius: 6px;
+  border-left: 2px solid var(--accent);
+}
+
+.actionButtons {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}

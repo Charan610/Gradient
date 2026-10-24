@@ -1,0 +1,140 @@
+@use '@/styles/tokens' as *;
+@use '@/styles/mixins' as *;
+
+.taskRow {
+  display: flex;
+  flex-direction: column;
+  padding: 14px 16px;
+  background-color: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: $radius-md;
+  margin-bottom: 8px;
+  transition: border-color $transition-fast, background-color $transition-fast;
+
+  &:hover {
+    border-color: var(--muted);
+  }
+
+  &.completed {
+    background-color: var(--surface-soft);
+
+    .taskTitle {
+      text-decoration: line-through;
+      color: var(--muted);
+    }
+  }
+}
+
+.mainContent {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.checkboxContainer {
+  margin-top: 2px;
+}
+
+.checkbox {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  border: 1.5px solid var(--hairline);
+  background-color: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all $transition-fast;
+  color: var(--canvas);
+
+  &:hover {
+    border-color: var(--accent);
+  }
+
+  &.checked {
+    background-color: var(--accent);
+    border-color: var(--accent);
+  }
+}
+
+.textBlock {
+  flex: 1;
+}
+
+.headerRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.kindBadge {
+  font-family: $font-mono;
+  font-size: 11px;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background-color: var(--surface-soft);
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+
+.optionalBadge {
+  font-family: $font-mono;
+  font-size: 11px;
+  color: var(--warning);
+}
+
+.estimate {
+  font-family: $font-mono;
+  font-size: 11px;
+  color: var(--muted);
+  margin-left: auto;
+}
+
+.taskTitle {
+  font-size: 14.5px;
+  font-weight: 550;
+  color: var(--ink);
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+
+.instructions {
+  font-size: 13.5px;
+  color: var(--ink-secondary);
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.evidenceSection {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--hairline);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.evidenceInput {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--hairline);
+  background-color: var(--canvas);
+  font-size: 13px;
+  color: var(--ink);
+
+  &:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+}
+
+.evidenceSaved {
+  font-size: 12px;
+  color: var(--accent);
+  font-family: $font-mono;
+}

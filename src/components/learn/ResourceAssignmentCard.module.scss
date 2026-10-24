@@ -1,0 +1,65 @@
+@use '@/styles/tokens' as *;
+@use '@/styles/mixins' as *;
+
+.card {
+  @include surface-card;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.eyebrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.providerBadge {
+  font-family: $font-mono;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+
+.sectionGuide {
+  font-size: 13.5px;
+  color: var(--ink);
+  padding: 10px 12px;
+  background-color: var(--surface-soft);
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.purpose {
+  font-size: 13px;
+  color: var(--ink-secondary);
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.skipNote {
+  font-size: 12px;
+  color: var(--warning);
+  margin-bottom: 14px;
+}
+
+.openLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--accent);
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

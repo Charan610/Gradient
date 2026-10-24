@@ -1,0 +1,23 @@
+@use '@/styles/tokens' as *;
+@use '@/styles/mixins' as *;
+
+.dashboardGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+
+  @include desktop {
+    grid-template-columns: 7fr 5fr;
+    align-items: start;
+  }
+}
+
+.primaryColumn {
+  display: flex;
+  flex-direction: column;
+}
+
+.supportingColumn {
+  display: flex;
+  flex-direction: column;
+}

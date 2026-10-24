@@ -1,0 +1,21 @@
+# Design References & Interaction Adaptation Matrix
+**Document:** `docs/DESIGN_REFERENCES.md`  
+**System:** FOUNDATION — Day-Based Career Preparation Operating System  
+**Verified On:** October 24, 2026
+
+---
+
+## 1. Reference-to-Component Matrix
+
+| Reference Source | URL | Observed & Verified Interaction Pattern | Proposed FOUNDATION Adaptation | Learning Impact & UX Rationale |
+|---|---|---|---|---|
+| **Linear** | https://linear.app/ | Compact left sidebar (248px), high-density data rows, keyboard navigation shortcuts, status pills with crisp borders, quiet active states. | Adapted for Desktop App Shell, Module lists, and Job Application pipeline table. | Eliminates cluttered visual noise so students can scan modules and tasks quickly without sensory overload. |
+| **Vercel Geist** | https://vercel.com/geist | Disciplined grayscale typography, micro-borders (`1px solid #EAEAEA`), precise typographic tracking, restrained badge geometry. | Adopted for typography scales, surface panel tokens, muted cards, and metadata chips. | Imparts an unmistakable sense of technical authority, quiet focus, and developer craftsmanship. |
+| **Things 3** | https://culturedcode.com/things/ | Serene "Today" focus view, generous vertical breathing space, satisfying checked feedback, grouped task headings (Learn, Practice, Review). | Direct foundation for `/app/today` and `/app/learn/[phaseId]/[dayId]`. Grouped tasks with zero temporal guilt. | Prevents cognitive anxiety; replaces intimidating calendars with an achievable, bite-sized daily cockpit. |
+| **GitHub Projects** | https://docs.github.com/en/issues/planning-and-tracking-with-projects | Filterable status pipelines, multi-field metadata tags, explicit milestone checklists. | Adapted for `/app/career/applications` pipeline and `/app/projects/[projectId]` milestone tracker. | Teaches students real engineering issue/project tracking conventions while keeping job search structured. |
+| **roadmap.sh** | https://roadmap.sh/backend | Ordered topological dependency graphs, prerequisite nodes, curriculum breadcrumbs. | Adapted as an architectural vertical phase rail (`P0` to `P8`) rather than an overwhelming horizontal canvas. | Clarifies why Phase 0 precedes Phase 1 and guarantees that prerequisites are respected before phase unlocking. |
+| **Notion Projects** | https://www.notion.com/help/guides/getting-started-with-projects-and-tasks | Clean document-like note blocks, inline metadata properties, structured callouts. | Adapted for Day Task detail views, Evidence submission fields, and assigned resource callout cards. | Allows structured recording of code insights, reflections, and error logs within the daily workflow. |
+| **Raycast** | https://www.raycast.com/ | Ultra-fast `⌘K` global search palette, command execution, keyboard shortcuts, clean subtext preview. | Global Command Palette accessible via `⌘K` / `Ctrl+K` and mobile search icon for instant navigation. | Enables power learners to jump to any phase, topic, resource, or action in under 2 seconds without mouse clicks. |
+| **Mobbin** | https://mobbin.com/explore/mobile/screens | Native mobile ergonomics: sticky bottom tabs (44px+ height), safe-area padding, bottom sheet dialogs, single-thumb reachability. | Mobile layout design with sticky 5-item bottom bar, fluid single-column hierarchy, and modal sheets. | Ensures students commuting or studying on mobile phones experience a first-class native-feeling application. |
+| **Radix Primitives & shadcn/ui** | https://www.radix-ui.com/primitives | Headless, accessible dialogs, popovers, dropdowns, accessible checkboxes, and focus trap primitives. | Unstyled Radix UI primitives re-styled completely with our custom Sass tokens and `@use` architecture. | 100% WCAG 2.2 AA accessibility, keyboard operability, and screen reader announcements without generic visual templates. |
+| **Vercel Web Interface Guidelines** | https://vercel.com/design/guidelines | Zero layout shifts, visible focus states, optimistic UI feedback, resilient offline states, accessible color contrast. | Complete QA checklist for form mutations, keyboard focus rings, touch targets, and loading skeletons. | Guarantees resilient production-grade engineering where every interaction feels instantaneous and reliable. |
