@@ -35,7 +35,7 @@ export function SidebarNavigation({
   const primaryNav = [
     { label: 'Today', href: '/app/today', icon: Compass },
     { label: 'Roadmap', href: '/app/roadmap', icon: Map },
-    { label: 'Subjects', href: '/app/subjects', icon: BookOpen },
+    { label: 'Courses', href: '/app/subjects', icon: BookOpen },
     { label: 'Resources', href: '/app/resources', icon: Library },
     { label: 'Review Queue', href: '/app/review', icon: RotateCcw }
   ];
@@ -50,15 +50,15 @@ export function SidebarNavigation({
   return (
     <aside className={styles.sidebar} aria-label="Desktop Navigation">
       <Link href="/app/today" className={styles.brand}>
-        <div className={styles.logoGlyph}>FD</div>
+        <div className={styles.logoGlyph}>GR</div>
         <div className={styles.brandInfo}>
-          <span className={styles.brandName}>FOUNDATION</span>
-          <span className={styles.brandSub}>Operating System</span>
+          <span className={styles.brandName}>GRADIENT</span>
+          <span className={styles.brandSub}>Learning workspace</span>
         </div>
       </Link>
 
       <div className={styles.navSection}>
-        <div className={styles.sectionLabel}>Learning Engine</div>
+        <div className={styles.sectionLabel}>Your study space</div>
         <ul className={styles.navList}>
           {primaryNav.map(item => {
             const Icon = item.icon;
@@ -68,6 +68,7 @@ export function SidebarNavigation({
               <li key={item.href}>
                 <Link
                   href={item.href}
+                  aria-current={isActive ? 'page' : undefined}
                   className={clsx(styles.navItem, isActive && styles.active)}
                 >
                   <Icon className={styles.navIcon} strokeWidth={1.7} />
@@ -89,6 +90,7 @@ export function SidebarNavigation({
               <li key={item.href}>
                 <Link
                   href={item.href}
+                  aria-current={isActive ? 'page' : undefined}
                   className={clsx(styles.navItem, isActive && styles.active)}
                 >
                   <Icon className={styles.navIcon} strokeWidth={1.7} />

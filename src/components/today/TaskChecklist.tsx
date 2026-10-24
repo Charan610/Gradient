@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AlertCircle, CheckCircle, ArrowRight } from 'lucide-react';
 import { LearningDay, UserTaskProgress } from '@/lib/db/types';
@@ -26,6 +26,12 @@ export function TaskChecklist({
   const [validationError, setValidationError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    setTaskMap(initialTaskMap);
+    setValidationError(null);
+    setSuccessMessage(null);
+  }, [day.id, initialTaskMap]);
 
   const handleToggle = async (taskId: string, completed: boolean) => {
     const status = completed ? 'completed' : 'not_started';
@@ -56,7 +62,14 @@ export function TaskChecklist({
     setValidationError(null);
     setSuccessMessage(null);
 
-    const result = await ProgressRepository.finishLearningDay('local_user', day.id);
+    let result;
+    try {
+      result = await ProgressRepository.finishLearningDay('local_user', day.id);
+    } catch {
+      setValidationError('Could not save progress. Check browser storage and try again.');
+      setIsSubmitting(false);
+      return;
+    }
     setIsSubmitting(false);
 
     if (!result.success) {
@@ -64,6 +77,10 @@ export function TaskChecklist({
         setValidationError(
           `Cannot finish day: ${result.remaining_count} required task(s) remain incomplete. Complete all mandatory items before advancing.`
         );
+      } else if (result.error === 'out_of_sequence') {
+        setValidationError('This is a preview. Finish your current learning day before advancing this one.');
+      } else if (result.error === 'maintenance_mode') {
+        setValidationError('New lessons are paused in maintenance mode. Resume normal mode in Settings when ready.');
       } else {
         setValidationError('An error occurred while completing the learning day.');
       }
@@ -78,7 +95,7 @@ export function TaskChecklist({
     router.refresh();
   };
 
-  const completedCount = Object.values(taskMap).filter(t => t.status === 'completed').length;
+  const completedCount = day.tasks.filter(t => taskMap[t.id]?.status === 'completed').length;
   const totalCount = day.tasks.length;
 
   const learnTasks = day.tasks.filter(t => t.kind === 'learn');
@@ -173,7 +190,7 @@ export function TaskChecklist({
 
       <div className={styles.footerBar}>
         <span style={{ fontSize: '13px', color: 'var(--muted)' }}>
-          {isDayCompleted ? 'All mandatory items verified.' : 'Required tasks must be checked to finish.'}
+          {isDayCompleted ? 'Required tasks marked complete.' : 'Required tasks must be checked to finish.'}
         </span>
 
         <button
@@ -181,9 +198,9 @@ export function TaskChecklist({
           className="buttonPrimary"
           id="finish-day-button"
           onClick={handleFinishDay}
-          disabled={isSubmitting}
+          disabled={isSubmitting || isDayCompleted}
         >
-          <span>{isDayCompleted ? 'Re-confirm Day Completion' : 'Finish Day & Advance Sequence'}</span>
+          <span>{isDayCompleted ? 'Day Completed' : 'Finish Day & Advance Sequence'}</span>
           <span className="iconCapsule">
             <ArrowRight size={15} />
           </span>

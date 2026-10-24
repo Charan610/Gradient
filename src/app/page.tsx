@@ -34,10 +34,10 @@ export default function HomePage() {
               fontSize: '13px'
             }}
           >
-            FD
+            GR
           </div>
           <span style={{ fontWeight: 600, letterSpacing: '0.04em', fontSize: '15px' }}>
-            FOUNDATION
+            GRADIENT
           </span>
         </Link>
 
@@ -87,7 +87,7 @@ export default function HomePage() {
             marginBottom: '20px'
           }}
         >
-          From Second Year to Top Product-Company Software Engineer.
+          Build the skills. Keep the evidence. Know your next step.
         </h1>
 
         <p
@@ -99,13 +99,12 @@ export default function HomePage() {
             marginBottom: '36px'
           }}
         >
-          A disciplined, sequence-based preparation platform for undergraduate engineers.
-          Ordered daily lessons, concrete problem solving, real database persistence, and zero arbitrary calendar guilt. You advance when your work is proven.
+          Thirty guided C++ foundation lessons, concrete exercises, and spaced recall for your personal study routine. Follow a broader nine-phase career roadmap at your own pace. Your progress stays in this browser.
         </p>
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', marginBottom: '56px' }}>
-          <Link href="/app/today" className="buttonPrimary" style={{ fontSize: '15px', padding: '10px 14px 10px 20px' }}>
-            <span>Start Learning Day 01</span>
+          <Link href="/sign-up" className="buttonPrimary" style={{ fontSize: '15px', padding: '10px 14px 10px 20px' }}>
+            <span>Set up my study plan</span>
             <span className="iconCapsule">
               <ArrowUpRight size={16} />
             </span>
@@ -158,7 +157,7 @@ export default function HomePage() {
               Spaced Repetition Engine
             </h2>
             <p style={{ fontSize: '13.5px', color: 'var(--ink-secondary)', lineHeight: 1.5 }}>
-              Key concepts resurface after +1, +3, +7, +21, +45 completed study days. Recall prompts ensure knowledge is retained permanently.
+              Key concepts resurface after +1, +3, +7, +21, +45 completed study days. Use recall prompts to discover what needs another attempt.
             </p>
           </div>
 
@@ -177,7 +176,7 @@ export default function HomePage() {
               Phase Readiness Gates
             </h2>
             <p style={{ fontSize: '13.5px', color: 'var(--ink-secondary)', lineHeight: 1.5 }}>
-              Phases unlock through proven technical assessments with strict rubrics and evidence submission, not passive page clicks.
+              Use self-assessment rubrics and saved code evidence to decide what needs more practice before moving on.
             </p>
           </div>
         </div>
@@ -199,7 +198,7 @@ export default function HomePage() {
           <Link href="/app/today">Workspace</Link>
           <Link href="/privacy">Privacy Pledge</Link>
         </div>
-        <div>FOUNDATION Career Preparation Operating System · Authoritative Source Verified</div>
+        <div>GRADIENT Career Preparation Operating System · Personal learning workspace</div>
       </footer>
     </div>
   );

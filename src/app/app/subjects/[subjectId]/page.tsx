@@ -1,104 +1,70 @@
 'use client';
-
-import React, { use } from 'react';
+import { use, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, BookOpen, Clock, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ArrowUpRight, Search, Check, Play, BookOpen } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
-import { SUBJECTS, MODULES } from '@/lib/db/curriculum-data';
+import { COURSE_GUIDES } from '@/lib/db/course-guides';
+import { LEARNING_DAYS, SUBJECTS } from '@/lib/db/curriculum-data';
+import { filterLessons, getLessonState, LessonFilter } from '@/lib/db/learning-library';
+import { useStudyLibrary } from '@/components/courses/useStudyLibrary';
+import styles from '@/components/courses/Courses.module.scss';
 
-interface PageProps {
-  params: Promise<{
-    subjectId: string;
-  }>;
-}
-
-export default function SubjectDetailPage({ params }: PageProps) {
-  const resolvedParams = use(params);
-  const subjectId = resolvedParams.subjectId.toUpperCase();
-  const subject =
-    SUBJECTS.find(s => s.id === subjectId || s.slug === resolvedParams.subjectId.toLowerCase()) ||
-    SUBJECTS[0];
-
-  const subjectModules = MODULES.filter(m => m.subject_id === subject.id);
-
-  return (
-    <AppShell>
-      <div style={{ marginBottom: '28px' }}>
-        <Link
-          href="/app/subjects"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            fontSize: '13px',
-            color: 'var(--muted)',
-            marginBottom: '12px'
-          }}
-        >
-          <ArrowLeft size={14} />
-          <span>Back to All Subjects</span>
-        </Link>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-          <span className="phaseBadge">{subject.id}</span>
-          <span style={{ fontSize: '13px', color: 'var(--muted)', fontFamily: 'monospace' }}>
-            {subjectModules.length} Focused Modules
-          </span>
-        </div>
-
-        <h1 style={{ fontSize: '26px', fontWeight: 600, color: 'var(--ink)', marginBottom: '8px' }}>
-          {subject.title}
-        </h1>
-        <p style={{ fontSize: '15px', color: 'var(--ink-secondary)', maxWidth: '72ch', lineHeight: 1.55 }}>
-          {subject.description}
-        </p>
-      </div>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-        {subjectModules.map(mod => (
-          <div
-            key={mod.id}
-            style={{
-              backgroundColor: 'var(--surface)',
-              border: '1px solid var(--hairline)',
-              borderRadius: '12px',
-              padding: '20px 24px'
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginBottom: '8px'
-              }}
-            >
-              <span style={{ fontFamily: 'monospace', fontSize: '12px', fontWeight: 600, color: 'var(--accent)' }}>
-                {mod.stable_code}
-              </span>
-              <span style={{ fontFamily: 'monospace', fontSize: '11px', color: 'var(--muted)' }}>
-                ~{mod.expected_minutes} min study allocation
-              </span>
-            </div>
-
-            <h2 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '8px' }}>
-              {mod.title}
-            </h2>
-
-            <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', marginBottom: '6px', fontFamily: 'monospace' }}>
-              Verified Learning Outcomes
-            </div>
-            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '13.5px', color: 'var(--ink-secondary)' }}>
-              {mod.learning_outcomes.map((outcome, idx) => (
-                <li key={idx} style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                  <span style={{ color: 'var(--accent)', fontWeight: 'bold' }}>✓</span>
-                  <span>{outcome}</span>
-                </li>
-              ))}
-            </ul>
+export default function SubjectDetailPage({ params }: { params: Promise<{ subjectId: string }> }) {
+  const { subjectId } = use(params);
+  const subject = SUBJECTS.find(item => item.id.toLowerCase() === subjectId.toLowerCase() || item.slug === subjectId.toLowerCase());
+  const course = COURSE_GUIDES.find(item => item.id === subject?.id);
+  const { loading, error, completedIds, activeSequence } = useStudyLibrary();
+  const [query, setQuery] = useState('');
+  const [filter, setFilter] = useState<LessonFilter>('all');
+  if (!course) return <AppShell><div className={styles.empty}><h1>Course not found</h1><p>This course is not in your learning library.</p><Link className="buttonSecondary" href="/app/subjects">Browse courses</Link></div></AppShell>;
+  const guided = course.id === 'CPP';
+  const lessons = filterLessons(LEARNING_DAYS, query, filter, activeSequence, completedIds);
+  const active = LEARNING_DAYS.find(day => day.sequence_index === activeSequence);
+  return <AppShell><div className={styles.page}>
+    <Link href="/app/subjects" className={styles.back}><ArrowLeft size={14} aria-hidden="true" />All courses</Link>
+    <header className={styles.heading}>
+      <div><span className={styles.eyebrow}>{course.phase} · {guided?'GUIDED COURSE':'SELF-DIRECTED OUTLINE'}</span><h1>{course.title}</h1><p>{course.description}</p></div>
+      {guided && <Link href={active?`/app/learn/${active.phase_id}/${active.id}`:'/app/roadmap/P0'} className="buttonPrimary">{active?'Continue learning':'Check readiness'} <ArrowRight size={16} aria-hidden="true" /></Link>}
+    </header>
+    <div className={styles.detailLayout}>
+      <section>
+        {guided ? <>
+          <div className={styles.sectionHeading}><h2>Your lesson path</h2><span>{loading?'Loading progress…':error?'Progress unavailable':`${completedIds.length} of 30 complete`}</span></div>
+          <div className={styles.toolbar}>
+            <div className={styles.filters} aria-label="Filter lessons">{(['all','remaining','completed'] as LessonFilter[]).map(value=><button key={value} aria-pressed={filter===value} onClick={()=>setFilter(value)}>{value==='all'?'All lessons':value==='remaining'?'Remaining':'Completed'}</button>)}</div>
+            <label className={styles.search}><Search size={16} aria-hidden="true" /><input aria-label="Search lessons" placeholder="Search a topic or day code…" value={query} onChange={e=>setQuery(e.target.value)} /></label>
           </div>
-        ))}
-      </div>
-    </AppShell>
-  );
+          <p className={styles.note}>Follow the sequence at your own pace. You can preview future lessons; finishing them unlocks only after your current learning day.</p>
+          <div className={styles.lessonList}>{lessons.map(day=>{
+            const state = getLessonState(day,activeSequence,completedIds);
+            return <Link key={day.id} className={styles.lesson} data-state={state} href={`/app/learn/${day.phase_id}/${day.id}`}>
+              <span className={styles.lessonNumber}>{state==='completed'?<Check size={15} aria-hidden="true" />:String(day.sequence_index).padStart(2,'0')}</span>
+              <div><h3>{day.title}</h3><p>{day.estimated_minutes} min estimated · {loading?'Loading status':error?'Status unavailable':state==='current'?'Your current lesson':state==='completed'?'Completed':state==='preview'?'Preview lesson':'Available to revisit'}</p></div>
+              <span className={styles.lessonAction}>{state==='current'?<Play size={15} aria-hidden="true" />:<ArrowUpRight size={16} aria-hidden="true" />}</span>
+            </Link>;
+          })}</div>
+          {lessons.length===0&&<div className={styles.empty}><h2>No lessons in this view</h2><p>Try a different topic or show all lessons.</p><button className="buttonSecondary" onClick={()=>{setQuery('');setFilter('all');}}>Show all lessons</button></div>}
+        </>:<>
+          <div className={styles.sectionHeading}><h2>A practical study sequence</h2><span>{course.topics.length} checkpoints</span></div>
+          <p className={styles.note}>Use this as a self-directed outline, not a daily schedule. These checkpoints are not graded or included in your guided-lesson progress.</p>
+          {course.topics.map((topic,index)=><details key={topic.title} className={styles.topic} open={index===0}>
+            <summary><span>{String(index+1).padStart(2,'0')}</span>{topic.title}</summary>
+            <div className={styles.topicBody}>
+              <div><h3>Understand</h3><p>{topic.learn}</p></div>
+              <div><h3>Build or practice</h3><p>{topic.practice}</p></div>
+              <div><h3>Evidence to check</h3><p>{topic.proof}</p></div>
+            </div>
+          </details>)}
+          <div className={styles.panel}><span className={styles.panelLabel}>BEFORE YOU MOVE ON</span><p>Explain your solution without looking at notes, reproduce the result, and write down one failure you diagnosed. Revisit a checkpoint when you cannot yet do that independently.</p></div>
+        </>}
+      </section>
+      <aside aria-label="Course guidance">
+        <section className={styles.panel}><span className={styles.panelLabel}>THE FINISH LINE</span><h2>What you’ll be able to demonstrate</h2><p>{course.outcome}</p></section>
+        <section className={styles.panel}><span className={styles.panelLabel}>BEFORE YOU START</span><p>{course.prerequisite}</p></section>
+        <section className={styles.panel}><span className={styles.panelLabel}>YOUR REFERENCE SHELF</span><h2>Study less. Practice more.</h2><p>Use a source when you need an explanation, then return to your own implementation.</p>{course.resources.map(resource=><div key={resource.url} className={styles.resource}><a href={resource.url} target="_blank" rel="noopener noreferrer">{resource.title}<ArrowUpRight size={14} aria-hidden="true" /></a><p>{resource.focus}</p></div>)}</section>
+        <section className={styles.panel}><span className={styles.panelLabel}>SAVE FOR LATER</span><p>{course.defer}</p></section>
+        <Link href="/app/roadmap" className="buttonSecondary"><BookOpen size={15} aria-hidden="true" />See where this fits</Link>
+      </aside>
+    </div>
+  </div></AppShell>;
 }

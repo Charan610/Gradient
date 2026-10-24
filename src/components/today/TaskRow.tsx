@@ -24,16 +24,20 @@ export function TaskRow({
   const [evidence, setEvidence] = useState(progress?.evidence_text || '');
   const [isSaving, setIsSaving] = useState(false);
 
+  const [saveError, setSaveError] = useState('');
+
   const handleCheckboxClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    await onToggle(task.id, !isCompleted);
+    try { await onToggle(task.id, !isCompleted); setSaveError(''); }
+    catch { setSaveError('Could not save. Please try again.'); }
   };
 
   const handleEvidenceBlur = async () => {
     if (evidence !== progress?.evidence_text) {
       setIsSaving(true);
-      await onSaveEvidence(task.id, evidence);
-      setIsSaving(false);
+      try { await onSaveEvidence(task.id, evidence); setSaveError(''); }
+      catch { setSaveError('Evidence could not be saved. Keep a copy and retry.'); }
+      finally { setIsSaving(false); }
     }
   };
 
@@ -93,12 +97,14 @@ export function TaskRow({
 
               <input
                 type="text"
+                aria-label={`Evidence for ${task.title}`}
                 placeholder="Paste GitHub commit URL or note your proof of work..."
                 value={evidence}
                 onChange={e => setEvidence(e.target.value)}
                 onBlur={handleEvidenceBlur}
                 className={styles.evidenceInput}
               />
+              {saveError && <span role="alert">{saveError}</span>}
               {isSaving && <span className={styles.evidenceSaved}>Saving evidence...</span>}
             </div>
           )}

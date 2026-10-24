@@ -35,7 +35,7 @@ export default function PrivacyPage() {
         </h1>
 
         <p style={{ fontSize: '16px', color: 'var(--ink-secondary)', lineHeight: 1.6, marginBottom: '32px' }}>
-          FOUNDATION is an intentional study operating system built for technical mastery, not ad-targeting, behavioral tracking, or surveillance capitalism.
+          GRADIENT is an intentional study operating system built for technical mastery, not ad-targeting, behavioral tracking, or surveillance capitalism.
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -50,10 +50,10 @@ export default function PrivacyPage() {
 
           <div style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--hairline)', borderRadius: '14px', padding: '24px' }}>
             <h2 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '8px' }}>
-              2. Strict Multi-Tenant Row Level Security (RLS)
+              2. Stored in Your Browser
             </h2>
             <p style={{ fontSize: '14px', color: 'var(--ink-secondary)', lineHeight: 1.55 }}>
-              All private data—including task progress, study logs, private notes, and job application tracking—is protected by PostgreSQL Row Level Security. No other student or unauthorized client can ever read or modify your records.
+              This personal workspace stores progress, evidence, reviews, and application records in this browser. It does not provide cloud sync or password protection. Anyone with access to this browser profile may access these records.
             </p>
           </div>
 
@@ -62,7 +62,7 @@ export default function PrivacyPage() {
               3. Unconditional Data Export & Deletion
             </h2>
             <p style={{ fontSize: '14px', color: 'var(--ink-secondary)', lineHeight: 1.55 }}>
-              You can export your complete study telemetry at any moment in open JSON format via Settings. You can also permanently purge your account and records with a single click.
+              Settings lets you export your local study records, including project notes, as JSON and reset the workspace on this browser. Export before clearing browser data. Resetting this workspace does not delete records from any separately configured cloud service.
             </p>
           </div>
         </div>

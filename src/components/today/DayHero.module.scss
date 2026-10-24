@@ -3,6 +3,9 @@
 
 .heroCard {
   @include surface-card;
+  background-color: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 22%, var(--hairline));
+  box-shadow: none;
   padding: 24px;
   margin-bottom: 24px;
   position: relative;
@@ -14,6 +17,8 @@
 }
 
 .eyebrowRow {
+  flex-wrap: wrap;
+  gap: 10px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -51,7 +56,7 @@
   letter-spacing: -0.02em;
 
   @include tablet {
-    font-size: 26px;
+    font-size: clamp(24px, 2.1vw, 30px);
   }
 }
 

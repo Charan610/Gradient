@@ -26,11 +26,11 @@
 
 .layoutGrid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 32px;
 
-  @include desktop {
-    grid-template-columns: 8fr 4fr;
+  @media (min-width: 1280px) {
+    grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
     align-items: start;
   }
 }

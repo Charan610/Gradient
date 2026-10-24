@@ -3,7 +3,7 @@ import { ThemeProvider } from '@/components/context/ThemeContext';
 import '@/styles/globals.scss';
 
 export const metadata: Metadata = {
-  title: 'FOUNDATION — Day-Based Career Preparation Operating System',
+  title: 'GRADIENT — Day-Based Career Preparation Operating System',
   description:
     'A personal study operating system for ambitious undergraduate software engineers. Ordered learning days, concrete practice, real database persistence, spaced repetition, and placement tracking without arbitrary calendar anxiety.',
   keywords: [

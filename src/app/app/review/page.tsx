@@ -29,8 +29,8 @@ export default function ReviewPage() {
 
   const currentSeq = profile?.active_day_index ?? 1;
 
-  const readyReviews = reviews.filter(r => r.next_due_day_index <= currentSeq && r.latest_confidence !== 'stable');
-  const laterReviews = reviews.filter(r => r.next_due_day_index > currentSeq && r.latest_confidence !== 'stable');
+  const readyReviews = reviews.filter(r => r.next_due_day_index <= currentSeq);
+  const laterReviews = reviews.filter(r => r.next_due_day_index > currentSeq);
   const stableReviews = reviews.filter(r => r.latest_confidence === 'stable');
 
   const toggleReveal = (id: string) => {
@@ -39,6 +39,7 @@ export default function ReviewPage() {
 
   const handleRate = async (id: string, rating: 'needs_work' | 'stable') => {
     await ProgressRepository.recordReviewAttempt('local_user', id, rating);
+    setRevealedMap({});
     await loadReviews();
   };
 
@@ -54,7 +55,7 @@ export default function ReviewPage() {
       <div className={styles.headerArea}>
         <h1 className={styles.title}>Spaced Repetition Review Queue</h1>
         <p className={styles.subtitle}>
-          Memory intervals keyed to completed learning-day sequences (+1, +3, +7, +21, +45), never calendar dates. Reinforce mental models with active recall before starting new material.
+          Review gaps of 1, 3, 7, 21, and 45 learning days, measured from your latest attempt, never calendar dates. Reinforce mental models with active recall before starting new material.
         </p>
       </div>
 
@@ -111,7 +112,7 @@ export default function ReviewPage() {
                     style={{ alignSelf: 'flex-start', padding: '6px 0', marginBottom: '16px' }}
                   >
                     <HelpCircle size={14} />
-                    <span>Reveal canonical answer</span>
+                    <span>Reveal explanation</span>
                   </button>
                 )}
 

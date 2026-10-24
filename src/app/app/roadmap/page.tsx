@@ -20,7 +20,7 @@ export default function RoadmapPage() {
       <div className={styles.headerArea}>
         <h1 className={styles.title}>Engineering Curriculum Roadmap</h1>
         <p className={styles.subtitle}>
-          The authoritative 9-phase sequence from first principles to top-tier product company software engineering. Advance strictly when readiness gates are proven, not when arbitrary calendar time elapses.
+          A nine-phase study outline from programming foundations to interview preparation. Phase 0 has 30 guided daily lessons; Phases 1–8 currently provide outlines and self-assessment rubrics, not daily lesson plans.
         </p>
       </div>
 
@@ -42,7 +42,7 @@ export default function RoadmapPage() {
             <strong>Zero Calendar Guilt:</strong> Breaks, college internal exams, and illness do not create &quot;overdue&quot; debt. You resume at the exact learning day sequence you left.
           </p>
           <p className={styles.panelText}>
-            <strong>Prerequisite Protection:</strong> Advanced topics (such as Graphs and Dynamic Programming) unlock only after Tree and Recursion fundamentals are solidly proven.
+            <strong>Prerequisite Protection:</strong> Follow prerequisites before starting advanced topics. The outlines are available to browse; their readiness rubrics are self-assessments, not automated skill verification.
           </p>
         </aside>
       </div>

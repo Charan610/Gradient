@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+import libraryStyles from '@/components/courses/Courses.module.scss';
 import React, { useState } from 'react';
 import { AppShell } from '@/components/layout/AppShell';
 import { Search, ExternalLink, AlertTriangle, ShieldCheck, Flag } from 'lucide-react';
@@ -24,17 +26,18 @@ export default function ResourcesPage() {
 
   return (
     <AppShell>
-      <div className={styles.headerArea}>
-        <h1 className={styles.title}>Annotated Resource Catalog (R01–R41)</h1>
+      <header className={libraryStyles.heading}>
+        <div><span className={libraryStyles.eyebrow}>YOUR REFERENCE SHELF</span><h1>Good sources. Less searching.</h1>
         <p className={styles.subtitle}>
-          All 41 verified learning resources from the master source document. Direct canonical URLs, exact assigned sections, and explicit guidance on what to skip.
-        </p>
-      </div>
+          41 learning resources collected in the study roadmap. Start with your lesson’s assigned source; you do not need to complete every course. Availability and chapter numbering can change.
+        </p></div><Link href="/app/subjects" className="buttonSecondary">Find your course</Link>
+      </header>
 
       <div className={styles.searchBar}>
         <Search size={16} color="var(--muted)" />
         <input
           type="text"
+          aria-label="Search learning resources"
           placeholder="Filter resources by title, provider, code, or topic..."
           value={query}
           onChange={e => setQuery(e.target.value)}
@@ -45,6 +48,7 @@ export default function ResourcesPage() {
         </span>
       </div>
 
+      {filtered.length === 0 && <div className={libraryStyles.empty}><h2>No matching resources</h2><p>Try a topic, provider, or resource code.</p><button className="buttonSecondary" onClick={() => setQuery('')}>Clear search</button></div>}
       <div className={styles.resourceGrid}>
         {filtered.map(r => (
           <article key={r.id} className={styles.card} aria-labelledby={`res-title-${r.id}`}>
@@ -82,10 +86,10 @@ export default function ResourcesPage() {
                 className="buttonTertiary"
                 onClick={() => handleReportBroken(r.id)}
                 style={{ fontSize: '11px', padding: '2px 6px' }}
-                title="Submit a broken link review request"
+                title="Flag this resource for this visit; no report is sent"
               >
                 <Flag size={11} />
-                <span>{reportedIds[r.id] ? 'Reported' : 'Report'}</span>
+                <span>{reportedIds[r.id] ? 'Flagged for this visit' : 'Flag for review'}</span>
               </button>
             </div>
           </article>

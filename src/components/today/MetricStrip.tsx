@@ -27,12 +27,12 @@ export function MetricStrip({
       </div>
 
       <div className={styles.metricCard}>
-        <span className={styles.label}>Phase 0 Modules Verified</span>
+        <span className={styles.label}>Foundation Modules Practiced</span>
         <div className={styles.valueRow}>
           <span className={styles.numeral}>
             {phaseModulesCount} / {totalPhaseModules}
           </span>
-          <span className={styles.subText}>fundamental units</span>
+          <span className={styles.subText}>all assigned days completed</span>
         </div>
       </div>
 

@@ -12,6 +12,7 @@ import {
   GateAttempt,
   TaskProgressStatus
 } from './types';
+import { STUDY_GUIDANCE } from './study-guidance';
 import { LEARNING_DAYS } from './curriculum-data';
 import { createClient } from '../supabase/client';
 
@@ -22,11 +23,20 @@ export class ProgressRepository {
     return `${LOCAL_STORAGE_KEY_PREFIX}${userId}_${suffix}`;
   }
 
+  private static ownsLocalKey(userId: string, key: string): boolean {
+    if (userId === 'local_user' && key.startsWith('foundation_proj_')) return true;
+    const prefix = this.getStorageKey(userId, '');
+    if (!key.startsWith(prefix)) return false;
+    const suffix = key.slice(prefix.length);
+    return ['profile', 'reviews', 'applications'].includes(suffix) ||
+      /^(tasks|day)_P\d+-D\d+$/.test(suffix) || /^gate_P\d+$/.test(suffix);
+  }
+
   // ----------------------------------------------------------------------------
   // 1. Profile Management
   // ----------------------------------------------------------------------------
   static async getProfile(userId: string = 'local_user'): Promise<UserProfile> {
-    const supabase = createClient();
+    const supabase = userId === 'local_user' ? null : createClient();
     if (supabase) {
       const { data, error } = await supabase
         .from('profiles')
@@ -70,7 +80,7 @@ export class ProgressRepository {
   }
 
   static async updateProfile(userId: string = 'local_user', updates: Partial<UserProfile>): Promise<UserProfile> {
-    const supabase = createClient();
+    const supabase = userId === 'local_user' ? null : createClient();
     if (supabase) {
       const { data, error } = await supabase
         .from('profiles')
@@ -86,6 +96,7 @@ export class ProgressRepository {
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem(this.getStorageKey(userId, 'profile'), JSON.stringify(updated));
     }
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('foundation-progress'));
     return updated;
   }
 
@@ -93,7 +104,7 @@ export class ProgressRepository {
   // 2. Task & Day Progress
   // ----------------------------------------------------------------------------
   static async getDayTaskProgresses(userId: string = 'local_user', dayId: string): Promise<Record<string, UserTaskProgress>> {
-    const supabase = createClient();
+    const supabase = userId === 'local_user' ? null : createClient();
     if (supabase) {
       const day = LEARNING_DAYS.find(d => d.id === dayId);
       if (day) {
@@ -134,22 +145,28 @@ export class ProgressRepository {
     evidenceText?: string,
     evidenceUrl?: string
   ): Promise<UserTaskProgress> {
+    const existing = (await this.getDayTaskProgresses(userId, dayId))[taskId];
     const progress: UserTaskProgress = {
       user_id: userId,
       day_task_id: taskId,
       status,
-      evidence_text: evidenceText,
-      evidence_url: evidenceUrl,
+      evidence_text: evidenceText ?? existing?.evidence_text,
+      evidence_url: evidenceUrl ?? existing?.evidence_url,
       completed_at: status === 'completed' ? new Date().toISOString() : undefined
     };
 
-    const supabase = createClient();
+    const supabase = userId === 'local_user' ? null : createClient();
     if (supabase) {
       await supabase.from('user_task_progress').upsert(progress);
     }
 
     if (typeof localStorage !== 'undefined') {
-      const tasksMap = await this.getDayTaskProgresses(userId, dayId);
+      // Keep the local read/merge/write synchronous so overlapping saves cannot
+      // replace a sibling task with an older snapshot.
+      const stored = localStorage.getItem(this.getStorageKey(userId, `tasks_${dayId}`));
+      const tasksMap: Record<string, UserTaskProgress> = stored ? JSON.parse(stored) : {};
+      progress.evidence_text = evidenceText ?? tasksMap[taskId]?.evidence_text ?? progress.evidence_text;
+      progress.evidence_url = evidenceUrl ?? tasksMap[taskId]?.evidence_url ?? progress.evidence_url;
       tasksMap[taskId] = progress;
       localStorage.setItem(this.getStorageKey(userId, `tasks_${dayId}`), JSON.stringify(tasksMap));
     }
@@ -158,7 +175,7 @@ export class ProgressRepository {
   }
 
   static async getDayProgress(userId: string = 'local_user', dayId: string): Promise<UserDayProgress | null> {
-    const supabase = createClient();
+    const supabase = userId === 'local_user' ? null : createClient();
     if (supabase) {
       const { data, error } = await supabase
         .from('user_day_progress')
@@ -196,6 +213,17 @@ export class ProgressRepository {
       return { success: false, error: 'invalid_day' };
     }
 
+    const profile = await this.getProfile(userId);
+    const previous = await this.getDayProgress(userId, dayId);
+    if (previous?.state === 'completed') {
+      return { success: true, next_day_sequence: profile.active_day_index };
+    }
+    if (day.sequence_index !== profile.active_day_index) {
+      return { success: false, error: 'out_of_sequence' };
+    }
+    if (profile.preferred_mode === 'maintenance') {
+      return { success: false, error: 'maintenance_mode' };
+    }
     const taskMap = await this.getDayTaskProgresses(userId, dayId);
     const requiredTasks = day.tasks.filter(t => t.required);
     const incompleteTasks = requiredTasks.filter(t => taskMap[t.id]?.status !== 'completed');
@@ -209,7 +237,7 @@ export class ProgressRepository {
       };
     }
 
-    const supabase = createClient();
+    const supabase = userId === 'local_user' ? null : createClient();
     if (supabase) {
       const { data, error } = await supabase.rpc('finish_learning_day', { p_day_id: dayId });
       if (data && !error) {
@@ -234,11 +262,10 @@ export class ProgressRepository {
     const nextSeq = Math.max(currentProfile.active_day_index, day.sequence_index + 1);
     await this.updateProfile(userId, { active_day_index: nextSeq });
 
-    // Schedule spaced review for the day's modules (+1 day sequence offset)
-    for (const task of day.tasks) {
-      if (task.module_id) {
-        await this.scheduleReview(userId, task.module_id, task.title, task.validation_criteria, day.sequence_index);
-      }
+    const guidance = STUDY_GUIDANCE[day.sequence_index];
+    const moduleId = day.tasks.find(t => t.module_id)?.module_id;
+    if (guidance && moduleId) {
+      await this.scheduleReview(userId, moduleId, guidance.prompt, guidance.answer, day.sequence_index);
     }
 
     return {
@@ -258,7 +285,7 @@ export class ProgressRepository {
     currentSeq: number
   ): Promise<void> {
     const review: ConceptReview = {
-      id: `rev_${moduleId}_${Date.now()}`,
+      id: `rev_${moduleId}_${encodeURIComponent(prompt)}`,
       user_id: userId,
       module_id: moduleId,
       concept_prompt: prompt,
@@ -269,7 +296,7 @@ export class ProgressRepository {
       latest_confidence: 'needs_work'
     };
 
-    const supabase = createClient();
+    const supabase = userId === 'local_user' ? null : createClient();
     if (supabase) {
       await supabase.from('concept_reviews').upsert(review);
     }
@@ -278,14 +305,15 @@ export class ProgressRepository {
       const key = this.getStorageKey(userId, 'reviews');
       const stored = localStorage.getItem(key);
       const list: ConceptReview[] = stored ? JSON.parse(stored) : [];
-      const filtered = list.filter(r => r.module_id !== moduleId);
+      if (list.some(r => r.id === review.id)) return;
+      const filtered = list;
       filtered.push(review);
       localStorage.setItem(key, JSON.stringify(filtered));
     }
   }
 
   static async getDueReviews(userId: string = 'local_user', activeDayIndex: number): Promise<ConceptReview[]> {
-    const supabase = createClient();
+    const supabase = userId === 'local_user' ? null : createClient();
     if (supabase) {
       const { data, error } = await supabase
         .from('concept_reviews')
@@ -307,20 +335,7 @@ export class ProgressRepository {
       }
     }
 
-    // Default seed review for first day
-    return [
-      {
-        id: 'rev_default_1',
-        user_id: userId,
-        module_id: 'P0.01',
-        concept_prompt: 'Explain what happens between pressing compile and the OS launching your program.',
-        concept_answer: 'Source code is parsed by compiler into machine object code, linker resolves standard library symbols, producing an executable loaded into RAM by OS.',
-        last_day_index: 1,
-        next_due_day_index: 1,
-        interval_step: 1,
-        latest_confidence: 'needs_work'
-      }
-    ];
+    return [];
   }
 
   static async recordReviewAttempt(
@@ -329,6 +344,7 @@ export class ProgressRepository {
     rating: 'needs_work' | 'stable'
   ): Promise<void> {
     const INTERVAL_STEPS = [1, 3, 7, 21, 45];
+    const profile = await this.getProfile(userId);
 
     if (typeof localStorage !== 'undefined') {
       const key = this.getStorageKey(userId, 'reviews');
@@ -338,11 +354,12 @@ export class ProgressRepository {
         const item = list.find(r => r.id === reviewId);
         if (item) {
           item.latest_confidence = rating;
+          item.last_day_index = profile.active_day_index;
           if (rating === 'stable') {
             const nextStepIndex = Math.min(item.interval_step, INTERVAL_STEPS.length - 1);
             const offset = INTERVAL_STEPS[nextStepIndex];
             item.next_due_day_index = item.last_day_index + offset;
-            item.interval_step += 1;
+            item.interval_step = Math.min(item.interval_step + 1, INTERVAL_STEPS.length);
           } else {
             // Repeat on next active day
             item.next_due_day_index = item.last_day_index + 1;
@@ -358,7 +375,7 @@ export class ProgressRepository {
   // 5. Job Application CRM Pipeline
   // ----------------------------------------------------------------------------
   static async getApplications(userId: string = 'local_user'): Promise<JobApplication[]> {
-    const supabase = createClient();
+    const supabase = userId === 'local_user' ? null : createClient();
     if (supabase) {
       const { data, error } = await supabase
         .from('applications')
@@ -379,28 +396,7 @@ export class ProgressRepository {
       }
     }
 
-    // Default sample starter application for learner tracking
-    const initialApps: JobApplication[] = [
-      {
-        id: 'app_seed_1',
-        user_id: userId,
-        company: 'Atlassian',
-        role: 'Software Engineer Intern (India)',
-        location: 'Bengaluru / Remote',
-        url: 'https://www.atlassian.com/company/careers/earlycareers',
-        kind: 'internship',
-        status: 'saved',
-        eligibility_note: 'Recruiting window begins in July for 3-1 students.',
-        notes: 'Target project: Task API with pytest coverage.',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
-    ];
-
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(this.getStorageKey(userId, 'applications'), JSON.stringify(initialApps));
-    }
-    return initialApps;
+    return [];
   }
 
   static async saveApplication(
@@ -415,11 +411,11 @@ export class ProgressRepository {
       ...app,
       id,
       user_id: userId,
-      created_at: now,
+      created_at: existingList.find(a => a.id === id)?.created_at ?? now,
       updated_at: now
     };
 
-    const supabase = createClient();
+    const supabase = userId === 'local_user' ? null : createClient();
     if (supabase) {
       await supabase.from('applications').upsert(fullApp);
     }
@@ -434,7 +430,7 @@ export class ProgressRepository {
   }
 
   static async deleteApplication(userId: string = 'local_user', appId: string): Promise<void> {
-    const supabase = createClient();
+    const supabase = userId === 'local_user' ? null : createClient();
     if (supabase) {
       await supabase.from('applications').delete().eq('id', appId).eq('user_id', userId);
     }
@@ -480,7 +476,7 @@ export class ProgressRepository {
       created_at: new Date().toISOString()
     };
 
-    const supabase = createClient();
+    const supabase = userId === 'local_user' ? null : createClient();
     if (supabase) {
       await supabase.from('gate_attempts').insert(attempt);
     }
@@ -499,7 +495,19 @@ export class ProgressRepository {
     const profile = await this.getProfile(userId);
     const applications = await this.getApplications(userId);
 
+    const local_records: Record<string, string> = {};
+    if (typeof localStorage !== 'undefined') {
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && this.ownsLocalKey(userId, key)) {
+          local_records[key] = localStorage.getItem(key)!;
+        }
+      }
+    }
     const exportBundle = {
+      format_version: 1,
+      storage_mode: 'local',
+      local_records,
       exported_at: new Date().toISOString(),
       profile,
       applications
@@ -513,7 +521,7 @@ export class ProgressRepository {
       const keysToRemove: string[] = [];
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && key.startsWith(`${LOCAL_STORAGE_KEY_PREFIX}${userId}`)) {
+        if (key && this.ownsLocalKey(userId, key)) {
           keysToRemove.push(key);
         }
       }

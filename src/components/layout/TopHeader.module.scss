@@ -87,3 +87,11 @@
     }
   }
 }
+
+@media (max-width: 600px) {
+  .header { flex-shrink: 0; }
+  .phaseBadge { white-space: nowrap; font-size: 10px; }
+  .mobileBrand { font-size: 12px; }
+  .leftArea { gap: 8px; }
+  .searchButton { min-width: 36px; min-height: 36px; padding: 8px; span, kbd { display: none; } }
+}

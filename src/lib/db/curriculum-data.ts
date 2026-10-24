@@ -1,3 +1,4 @@
+import { STUDY_GUIDANCE } from './study-guidance';
 // ==============================================================================
 // CANONICAL CURRICULUM DATA OF RECORD
 // Source: content/source/Product_Company_Career_Roadmap_2026-2029_SOURCE.md
@@ -12,7 +13,7 @@ import {
   ProjectTemplate
 } from './types';
 
-export const APP_NAME = 'FOUNDATION';
+export const APP_NAME = 'GRADIENT';
 
 // ------------------------------------------------------------------------------
 // 1. ANNOTATED RESOURCE DIRECTORY (R01 - R41)
@@ -1184,7 +1185,7 @@ export const LEARNING_DAYS: LearningDay[] = [
         kind: 'apply',
         required: true,
         title: 'Experiment with Invalid Input',
-        instructions: 'Run user_profile.cpp and type a letter (e.g. "abc") when asked for the year. Observe std::cin enter a fail state. Write 2 sentences on what occurred.',
+        instructions: 'Run your two-integer sum program and type a letter (e.g. "abc") when asked for a number. Observe std::cin enter a fail state. Write 2 sentences on what occurred.',
         estimate_minutes: 15,
         validation_criteria: 'Records observation of stream fail state when type mismatch occurs.',
         assigned_resources: []
@@ -1326,7 +1327,7 @@ export const LEARNING_DAYS: LearningDay[] = [
         kind: 'apply',
         required: true,
         title: 'Boundary Value Testing',
-        instructions: 'Test classifier.cpp with edge values: -1, 0, 49, 50, 89, 90, 100, 101. Verify that boundary logic handles off-by-one errors properly.',
+        instructions: 'Test your sign-and-parity classifier with -2, -1, 0, 1, and 2. Verify that boundary logic handles off-by-one errors properly.',
         estimate_minutes: 15,
         validation_criteria: 'All boundary conditions documented in test comment.',
         assigned_resources: []
@@ -1419,7 +1420,7 @@ export const LEARNING_DAYS: LearningDay[] = [
   }
 ];
 
-// Generate deterministic learning days for Days 06 to 30 to complete the hand-authored P0 sequence
+// Shared task layout with specific exercises and checks for each learning day.
 const TOPICS_D06_TO_D30 = [
   { day: 6, title: 'While Loops & Input Validation', goal: 'Construct while loops with robust sentinel termination.', mod: 'P0.03', res: 'R03', sec: '8.7 - 8.8 While loops' },
   { day: 7, title: 'For Loops & Accumulator Patterns', goal: 'Write standard counting and accumulator for loops for summations.', mod: 'P0.03', res: 'R03', sec: '8.10 For loop mechanics' },
@@ -1443,9 +1444,9 @@ const TOPICS_D06_TO_D30 = [
   { day: 25, title: 'Modular Function Architecture & Header Guards', goal: 'Structure C++ project into utils.h, utils.cpp, and main.cpp.', mod: 'P0.04', res: 'R03', sec: '2.11 - 2.12 Header files and guards' },
   { day: 26, title: 'Terminal Debugging with GDB / LLDB & Sanitizers', goal: 'Compile with -fsanitize=address,undefined and inspect call stack.', mod: 'P0.02', res: 'R11', sec: 'Debugging and profiling lectures' },
   { day: 27, title: 'Timed Problem Drill: 5 Beginner Logic Problems', goal: 'Solve 5 logic problems in 60 minutes without AI help.', mod: 'P0.05', res: 'R08', sec: 'CSES Introductory Problems set' },
-  { day: 28, title: 'Dry-Running Programs on Paper with Memory Tables', goal: 'Trace pointer and loop states manually with zero compiler aid.', mod: 'P0.05', res: 'R01', sec: 'Algorithmic dry-run and trace tables' },
+  { day: 28, title: 'Dry-Running Programs on Paper with Memory Tables', goal: 'Trace array indices and loop states manually before checking with the compiler.', mod: 'P0.05', res: 'R01', sec: 'Algorithmic dry-run and trace tables' },
   { day: 29, title: 'Phase 0 Mock Gate Rehearsal (35 Minutes)', goal: 'Build the full array stats tool under strict 35-minute timer.', mod: 'P0.05', res: 'R03', sec: 'End of Phase comprehensive assessment' },
-  { day: 30, title: 'Phase 0 Exit Gate Verification & Portfolio Repo', goal: 'Official verification of Phase 0 readiness gate and GitHub repo setup.', mod: 'P0.05', res: 'R12', sec: 'cpp-foundations repository packaging' }
+  { day: 30, title: 'Phase 0 Exit Gate Verification & Portfolio Repo', goal: 'Self-assess Phase 0 readiness and document a reproducible practice repository.', mod: 'P0.05', res: 'R12', sec: 'cpp-foundations repository packaging' }
 ];
 
 for (const t of TOPICS_D06_TO_D30) {
@@ -1467,13 +1468,13 @@ for (const t of TOPICS_D06_TO_D30) {
         kind: 'learn',
         required: true,
         title: `Learn: ${t.title}`,
-        instructions: `Study the assigned section from verified resource: ${t.sec}. Focus on mental model and memory invariants.`,
+        instructions: `Read about ${t.title} in the assigned source. Close it and answer: ${STUDY_GUIDANCE[t.day].prompt}`,
         estimate_minutes: 25,
-        validation_criteria: `Can clearly explain the fundamental concept and avoid common pitfalls.`,
+        validation_criteria: STUDY_GUIDANCE[t.day].answer,
         assigned_resources: [
           {
-            resource_id: t.res,
-            exact_assigned_sections: t.sec,
+            resource_id: t.day <= 25 ? 'R03' : t.res,
+            exact_assigned_sections: `Search the source for: ${t.title}. Topic guide; chapter numbering may change.`,
             purpose: `Authoritative conceptual foundation for ${t.title}.`
           }
         ]
@@ -1486,9 +1487,9 @@ for (const t of TOPICS_D06_TO_D30) {
         kind: 'practice',
         required: true,
         title: `Practice: Implement ${t.title}`,
-        instructions: `Write independent working C++ code implementing ${t.goal}. Compile with -Wall -Wextra and verify output.`,
+        instructions: STUDY_GUIDANCE[t.day].exercise,
         estimate_minutes: 40,
-        validation_criteria: `Code passes all manual test cases without compiler warnings.`,
+        validation_criteria: STUDY_GUIDANCE[t.day].checks,
         assigned_resources: []
       },
       {
@@ -1519,6 +1520,16 @@ for (const t of TOPICS_D06_TO_D30) {
       }
     ]
   });
+}
+
+// Keep the detailed early lesson checklists aligned with the daily guide.
+for (const day of LEARNING_DAYS.slice(0, 5)) {
+  const practice = day.tasks.find(task => task.kind === 'practice');
+  if (practice) {
+    practice.title = 'Build and test today’s exercise';
+    practice.instructions = STUDY_GUIDANCE[day.sequence_index].exercise;
+    practice.validation_criteria = STUDY_GUIDANCE[day.sequence_index].checks;
+  }
 }
 
 // ------------------------------------------------------------------------------

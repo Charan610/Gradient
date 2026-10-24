@@ -1,0 +1,19 @@
+.card {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 16px;
+  padding: clamp(20px, 3vw, 28px);
+  margin-bottom: 24px;
+  h2 { font-size: clamp(19px, 2vw, 23px); font-weight: 600; line-height: 1.3; margin: 8px 0 12px; }
+}
+.eyebrow { font-size: 10px; font-weight: 650; letter-spacing: .12em; color: var(--accent); }
+.pacing { color: var(--muted); font-size: 13px; line-height: 1.7; }
+.steps {
+  list-style: none; counter-reset: step; margin: 22px 0;
+  li { counter-increment: step; position: relative; padding-left: 40px; margin: 20px 0; }
+  li::before { content: counter(step, decimal-leading-zero); position: absolute; left: 0; top: 0; color: var(--accent); font: 12px/24px monospace; }
+  strong { font-size: 14px; font-weight: 600; }
+  p { margin-top: 5px; font-size: 13.5px; color: var(--ink-secondary); line-height: 1.7; }
+}
+.help { border-top: 1px solid var(--hairline); padding-top: 16px; font-size: 13px; summary { cursor: pointer; font-weight: 600; } p { margin-top: 12px; color: var(--ink-secondary); line-height: 1.7; } }
+.note { margin-top: 16px; font-size: 11.5px; color: var(--muted); }

@@ -64,11 +64,11 @@ export default function SettingsPage() {
           Preferences & Data Governance
         </h1>
         <p style={{ fontSize: '15px', color: 'var(--ink-secondary)', maxWidth: '72ch', lineHeight: 1.55 }}>
-          Adjust your daily learning allocation, toggle exam maintenance mode, or export your private study telemetry.
+          Adjust your daily learning allocation, toggle exam maintenance mode, or export your saved study records.
         </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '24px', alignItems: 'start' }}>
         <form
           onSubmit={handleSavePreferences}
           style={{
@@ -200,7 +200,7 @@ export default function SettingsPage() {
               Data Export & Ownership
             </h3>
             <p style={{ fontSize: '13px', color: 'var(--ink-secondary)', lineHeight: 1.5, marginBottom: '16px' }}>
-              You own 100% of your progress history, notes, and application records. Download your complete study telemetry in JSON format.
+              You own 100% of your progress history, notes, and application records. Download your local study records, including task evidence, reviews, and project notes in JSON format.
             </p>
             <button
               type="button"

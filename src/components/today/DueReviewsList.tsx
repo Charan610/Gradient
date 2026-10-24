@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { RotateCcw, Check, HelpCircle } from 'lucide-react';
 import { ConceptReview } from '@/lib/db/types';
@@ -15,6 +15,8 @@ interface DueReviewsListProps {
 export function DueReviewsList({ reviews, onReviewCompleted }: DueReviewsListProps) {
   const [revealedIds, setRevealedIds] = useState<Record<string, boolean>>({});
   const [items, setItems] = useState<ConceptReview[]>(reviews);
+
+  useEffect(() => { setItems(reviews); setRevealedIds({}); }, [reviews]);
 
   const toggleReveal = (id: string) => {
     setRevealedIds(prev => ({ ...prev, [id]: !prev[id] }));

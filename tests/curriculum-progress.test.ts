@@ -35,7 +35,7 @@ describe('FOUNDATION Curriculum & Progress Engine', () => {
     localStorage.clear();
   });
 
-  it('verifies all 41 resources (R01-R41) are present with checked verification', () => {
+  it('checks catalog identifiers and stored metadata (not live URLs)', () => {
     expect(RESOURCES.length).toBe(41);
     for (const r of RESOURCES) {
       expect(r.id).toMatch(/^R\d{2}$/);
@@ -44,7 +44,7 @@ describe('FOUNDATION Curriculum & Progress Engine', () => {
     }
   });
 
-  it('verifies 30 consecutive hand-authored learning days for Phase 0', () => {
+  it('contains 30 foundation lessons with learn, practice, and apply tasks', () => {
     expect(LEARNING_DAYS.length).toBeGreaterThanOrEqual(30);
     const day01 = LEARNING_DAYS[0];
     expect(day01.id).toBe('P0-D01');
@@ -225,5 +225,90 @@ describe('FOUNDATION Curriculum & Progress Engine', () => {
     const retrieved = await ProgressRepository.getGateAttempt(testUserId, 'P0');
     expect(retrieved?.passed).toBe(true);
     expect(retrieved?.evidence).toContain('cpp-foundations');
+  });
+});
+
+describe('Personal study reliability', () => {
+  beforeEach(() => localStorage.clear());
+  const user = 'local_user';
+  async function completeTasks(day = LEARNING_DAYS[0]) {
+    for (const task of day.tasks.filter(t => t.required)) {
+      await ProgressRepository.updateTaskProgress(user, day.id, task.id, 'completed');
+    }
+  }
+
+  it('starts without invented reviews or applications', async () => {
+    expect(await ProgressRepository.getDueReviews(user, 1)).toEqual([]);
+    expect(await ProgressRepository.getApplications(user)).toEqual([]);
+  });
+
+  it('preserves written evidence when checking a task', async () => {
+    const task = LEARNING_DAYS[0].tasks[0];
+    await ProgressRepository.updateTaskProgress(user, task.learning_day_id, task.id, 'in_progress', 'Compiler output and explanation');
+    await ProgressRepository.updateTaskProgress(user, task.learning_day_id, task.id, 'completed');
+    const tasks = await ProgressRepository.getDayTaskProgresses(user, task.learning_day_id);
+    expect(tasks[task.id].evidence_text).toBe('Compiler output and explanation');
+  });
+
+  it('rejects completing a future lesson even if its tasks are checked', async () => {
+    await completeTasks(LEARNING_DAYS[2]);
+    expect(await ProgressRepository.finishLearningDay(user, LEARNING_DAYS[2].id)).toMatchObject({ success: false, error: 'out_of_sequence' });
+    expect((await ProgressRepository.getProfile(user)).active_day_index).toBe(1);
+  });
+
+  it('does not reset review ratings when a completed lesson is submitted again', async () => {
+    await completeTasks();
+    await ProgressRepository.finishLearningDay(user, LEARNING_DAYS[0].id);
+    const reviews = await ProgressRepository.getDueReviews(user, 2);
+    await ProgressRepository.recordReviewAttempt(user, reviews[0].id, 'stable');
+    const before = localStorage.getItem('foundation_career_os_local_user_reviews');
+    await ProgressRepository.finishLearningDay(user, LEARNING_DAYS[0].id);
+    expect(localStorage.getItem('foundation_career_os_local_user_reviews')).toBe(before);
+  });
+
+  it('retains different concepts from the same module', async () => {
+    await ProgressRepository.scheduleReview(user, 'P0.01', 'Compile?', 'Translation.', 1);
+    await ProgressRepository.scheduleReview(user, 'P0.01', 'Link?', 'Resolve symbols.', 1);
+    expect(await ProgressRepository.getDueReviews(user, 2)).toHaveLength(2);
+  });
+
+  it('reschedules a late failed recall after the current learning day', async () => {
+    await ProgressRepository.scheduleReview(user, 'P0.01', 'Compile?', 'Translation.', 1);
+    await ProgressRepository.updateProfile(user, { active_day_index: 10 });
+    const [review] = await ProgressRepository.getDueReviews(user, 10);
+    await ProgressRepository.recordReviewAttempt(user, review.id, 'needs_work');
+    expect(await ProgressRepository.getDueReviews(user, 10)).toEqual([]);
+    expect(await ProgressRepository.getDueReviews(user, 11)).toHaveLength(1);
+  });
+
+  it('exports task evidence and project notes and resets only the selected workspace', async () => {
+    await completeTasks();
+    localStorage.setItem('foundation_proj_PROJ-A', JSON.stringify({ notes: 'My API design' }));
+    localStorage.setItem('foundation_career_os_local_user_other_profile', 'keep');
+    const bundle = JSON.parse(await ProgressRepository.exportUserData(user));
+    expect(bundle.local_records['foundation_career_os_local_user_tasks_P0-D01']).toBeTruthy();
+    expect(bundle.local_records['foundation_proj_PROJ-A']).toContain('My API design');
+    await ProgressRepository.clearAllUserData(user);
+    expect(localStorage.getItem('foundation_proj_PROJ-A')).toBeNull();
+    expect(localStorage.getItem('foundation_career_os_local_user_other_profile')).toBe('keep');
+    expect(await ProgressRepository.getDayTaskProgresses(user, 'P0-D01')).toEqual({});
+  });
+});
+
+describe('Session boundaries', () => {
+  beforeEach(() => localStorage.clear());
+  it('preserves both tasks when saves overlap', async () => {
+    await Promise.all(LEARNING_DAYS[0].tasks.slice(0, 2).map(t =>
+      ProgressRepository.updateTaskProgress('local_user', 'P0-D01', t.id, 'completed')
+    ));
+    expect(Object.keys(await ProgressRepository.getDayTaskProgresses('local_user', 'P0-D01'))).toHaveLength(2);
+  });
+  it('pauses advancement in maintenance mode', async () => {
+    await ProgressRepository.updateProfile('local_user', { preferred_mode: 'maintenance' });
+    for (const task of LEARNING_DAYS[0].tasks.filter(t => t.required)) {
+      await ProgressRepository.updateTaskProgress('local_user', 'P0-D01', task.id, 'completed');
+    }
+    expect(await ProgressRepository.finishLearningDay('local_user', 'P0-D01')).toMatchObject({ success: false, error: 'maintenance_mode' });
+    expect((await ProgressRepository.getProfile()).active_day_index).toBe(1);
   });
 });

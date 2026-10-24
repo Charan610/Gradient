@@ -1,5 +1,6 @@
 'use client';
 
+import { StudyGuide } from '@/components/learn/StudyGuide';
 import React, { use, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -27,10 +28,13 @@ export default function LearnDayPage({ params }: PageProps) {
   const [day, setDay] = useState<LearningDay | null>(null);
   const [taskMap, setTaskMap] = useState<Record<string, UserTaskProgress>>({});
   const [isDayCompleted, setIsDayCompleted] = useState(false);
+  const [minutes, setMinutes] = useState(90);
   const [loading, setLoading] = useState(true);
 
   const loadDayData = async () => {
-    const foundDay = LEARNING_DAYS.find(d => d.id === dayId) || LEARNING_DAYS[0];
+    const foundDay = LEARNING_DAYS.find(d => d.id === dayId && d.phase_id === phaseId);
+    if (!foundDay) { setDay(null); setLoading(false); return; }
+    setMinutes((await ProgressRepository.getProfile()).preferred_daily_minutes);
     setDay(foundDay);
 
     const tasks = await ProgressRepository.getDayTaskProgresses('local_user', foundDay.id);
@@ -45,6 +49,8 @@ export default function LearnDayPage({ params }: PageProps) {
   useEffect(() => {
     loadDayData();
   }, [dayId]);
+
+  if (!loading && !day) return <AppShell><h1>Lesson unavailable</h1><Link href="/app/today">Return to your active lesson</Link></AppShell>;
 
   if (loading || !day) {
     return (
@@ -91,6 +97,8 @@ export default function LearnDayPage({ params }: PageProps) {
             <p className={styles.goalText}>{day.goal}</p>
           </div>
 
+          <StudyGuide day={day} minutes={minutes} />
+
           {allAssignments.length > 0 && (
             <div>
               <div className={styles.sectionHeading}>
@@ -108,6 +116,7 @@ export default function LearnDayPage({ params }: PageProps) {
 
           <div style={{ marginTop: '24px' }}>
             <TaskChecklist
+              key={day.id}
               day={day}
               initialTaskMap={taskMap}
               isDayCompleted={isDayCompleted}
@@ -140,6 +149,7 @@ export default function LearnDayPage({ params }: PageProps) {
 
           <div className={styles.sideCard}>
             <div className={styles.sideHeading}>Sequence Navigation</div>
+            <Link href="/app/subjects/cpp" className="buttonTertiary" style={{ marginBottom: 16 }}>Browse all 30 lessons ↗</Link>
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px' }}>
               {prevDay ? (
                 <Link

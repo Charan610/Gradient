@@ -7,8 +7,11 @@
   @include desktop {
     display: flex;
     flex-direction: column;
-    width: 256px;
-    height: 100vh;
+    width: clamp(216px, 17vw, 256px);
+    height: 100dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    > * { flex-shrink: 0; }
     position: sticky;
     top: 0;
     left: 0;

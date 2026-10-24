@@ -34,33 +34,35 @@
   flex: 1;
   border: none;
   background: transparent;
-  outline: none;
+  min-width: 0;
   font-size: 14px;
   color: var(--ink);
 }
 
 .resourceGrid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr));
   gap: 16px;
 
   @include tablet {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr));
   }
 
   @include desktop {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr));
   }
 }
 
 .card {
   @include surface-card;
-  padding: 20px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
 }
 
 .cardHeader {
+  flex-wrap: wrap;
+  gap: 8px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -108,6 +110,8 @@
 }
 
 .cardFooter {
+  flex-wrap: wrap;
+  gap: 8px;
   margin-top: auto;
   padding-top: 12px;
   border-top: 1px solid var(--hairline);

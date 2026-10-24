@@ -18,17 +18,17 @@ export function DayHero({ day, isCompleted = false }: DayHeroProps) {
     <section className={styles.heroCard} aria-labelledby="today-hero-heading">
       <div className={styles.eyebrowRow}>
         <span className={styles.eyebrow}>
-          Your Active Workspace · Phase {day.phase_id.replace('P', '')}
+          C++ FOUNDATIONS · YOUR CURRENT LESSON
         </span>
         <span className={styles.modeBadge}>
           <Clock size={12} />
-          <span>{day.estimated_minutes} Min Allocation</span>
+          <span>{day.estimated_minutes} min estimated</span>
         </span>
       </div>
 
-      <h1 id="today-hero-heading" className={styles.title}>
+      <h2 id="today-hero-heading" className={styles.title}>
         Day {dayStr}: {day.title}
-      </h1>
+      </h2>
 
       <p className={styles.goal}>
         <strong>Objective:</strong> {day.goal}
@@ -40,7 +40,7 @@ export function DayHero({ day, isCompleted = false }: DayHeroProps) {
           className="buttonPrimary"
           id="continue-learning-action"
         >
-          <span>{isCompleted ? `Review Day ${dayStr}` : `Continue Day ${dayStr}`}</span>
+          <span>{isCompleted ? `Review Day ${dayStr}` : `Open Day ${dayStr}`}</span>
           <span className="iconCapsule">
             <ArrowUpRight size={15} />
           </span>

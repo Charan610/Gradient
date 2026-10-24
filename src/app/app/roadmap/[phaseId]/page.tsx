@@ -55,7 +55,7 @@ export default function PhaseDetailPage({ params }: PageProps) {
 
     if (!allChecked) {
       setFeedback(
-        `Gate check incomplete. You must verify and confirm all ${rubricItems.length} rubric criteria before phase advancement can be granted.`
+        `Gate check incomplete. You must verify and confirm all ${rubricItems.length} rubric criteria before recording a successful self-assessment.`
       );
       setIsSubmitting(false);
       return;
@@ -70,7 +70,7 @@ export default function PhaseDetailPage({ params }: PageProps) {
     );
 
     setGateAttempt(attempt);
-    setFeedback('Congratulations! Phase readiness gate verified and recorded.');
+    setFeedback('Congratulations! Self-assessment saved. Revisit any criterion you cannot demonstrate independently.');
     setIsSubmitting(false);
   };
 
@@ -89,6 +89,9 @@ export default function PhaseDetailPage({ params }: PageProps) {
           </span>
         </div>
 
+        <Link href={phase.id === 'P0' ? '/app/subjects/cpp' : '/app/subjects'} className="buttonSecondary" style={{ margin: '12px 0 20px' }}>
+          {phase.id === 'P0' ? 'Browse all 30 foundation lessons' : 'Explore related courses'}
+        </Link>
         <h1 className={styles.title}>{phase.title}</h1>
         <p className={styles.description}>{phase.description}</p>
       </div>

@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Compass, Map, RotateCcw, Briefcase, User } from 'lucide-react';
+import { Compass, BookOpen, RotateCcw, Briefcase, User } from 'lucide-react';
 import styles from './MobileTabBar.module.scss';
 import clsx from 'clsx';
 
@@ -12,7 +12,7 @@ export function MobileTabBar() {
 
   const tabs = [
     { label: 'Today', href: '/app/today', icon: Compass },
-    { label: 'Roadmap', href: '/app/roadmap', icon: Map },
+    { label: 'Courses', href: '/app/subjects', icon: BookOpen },
     { label: 'Review', href: '/app/review', icon: RotateCcw },
     { label: 'Career', href: '/app/career/applications', icon: Briefcase },
     { label: 'You', href: '/app/settings', icon: User }
@@ -29,6 +29,7 @@ export function MobileTabBar() {
           <Link
             key={tab.href}
             href={tab.href}
+            aria-current={isActive ? 'page' : undefined}
             className={clsx(styles.tabItem, isActive && styles.active)}
           >
             <Icon className={styles.tabIcon} strokeWidth={1.7} />

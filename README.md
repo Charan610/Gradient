@@ -1,111 +1,47 @@
-# FOUNDATION — Day-Based Career Preparation Operating System
+# GRADIENT — Personal Study Workspace
 
-> **A personal study operating system for ambitious undergraduate software engineers.**  
-> Target: Top product companies (Google, Microsoft, Amazon, Meta, Atlassian, Uber, etc.).  
-> Core Philosophy: **Zero arbitrary calendar deadlines. Zero guilt from college exam breaks.** Progress is governed by `Phase → Learning Day 01, 02... → Concrete Tasks → Spaced Review → Readiness Gate`.
+A browser-local learning companion for undergraduate programming preparation. Keep the existing learning-day sequence: a lesson advances when its required tasks are marked complete, not when a calendar day passes.
 
----
+## What works today
 
-## 1. Key Architectural Decisions
+- 30 Phase 0 foundation lessons with specific C++ exercises, example checks, recall explanations, and a recovery plan when stuck.
+- Session-budget guidance: a learning day can span multiple shorter sessions.
+- Sequential completion, saved task evidence, maintenance mode, and an explicit end-of-lessons screen.
+- Review gaps of 1, 3, 7, 21, and 45 learning days measured from the latest attempt. Stable cards return when due.
+- Local application tracking, project notes, self-assessed phase rubrics, and metrics derived from saved lesson records.
+- JSON export of local workspace records, including tasks, reviews, gates, and project notes; local reset.
 
-1. **Sequential vs Temporal Progression:**
-   - The learner sequence `learning_day_index` is a pure integer counter. It advances **only** when mandatory daily tasks are marked completed and verified.
-   - Taking a break for college exams or illness creates zero overdue notifications or task debt.
-2. **Minimalist Editorial Productivity Design:**
-   - Absolutely **no blue or saturated rainbow hues**. Designed with quiet luxury tones: Warm stone canvas (`#F7F7F3`), crisp surface white (`#FFFFFF`), charcoal reading ink (`#21231F`), and deep muted sage green (`#485B49`).
-   - Clean custom SCSS modules (`styles/_tokens.scss`, `_mixins.scss`, `globals.scss`) utilizing Sass `@use` architecture.
-   - Signature button language with an unusual inset trailing icon capsule (`Continue learning ↗`).
-3. **Dual Persistence Architecture:**
-   - **Local Storage Provider:** Out of the box, all progress, task completions, spaced reviews, and job applications save instantly to browser storage. Works without external database friction.
-   - **Supabase PostgreSQL + RLS:** When `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are provided in `.env.local`, the platform automatically syncs with Supabase Auth, PostgreSQL tables, Row Level Security policies, and atomic RPC functions (`finish_learning_day`).
+## Limits
 
----
+Phases 1–8 are study outlines, not implemented daily lessons. Tasks and rubrics are self-assessed: this app does not execute code, verify repository evidence, or certify interview readiness. Resource links and chapter labels can change; the unit tests do not verify live URLs.
 
-## 2. Complete Application Routes
+The active UI uses `local_user` and browser storage, even if Supabase environment variables exist. Setup does not require credentials and preserves existing progress. Supabase repository branches and SQL files remain as unfinished integration scaffolding; cloud authentication, sync, cloud export, and cloud deletion are not exposed as working features. Browser data can be cleared by the user or browser, so export regularly. There is no backup-import interface yet.
 
-| Route | Purpose & Responsibilities |
-|---|---|
-| `/` | Public product introduction, value proposition, zero-guilt philosophy. |
-| `/explore` | Public, read-only 9-phase roadmap and 41-resource curriculum index. |
-| `/privacy` | Privacy pledge: Zero ad tracking, multi-tenant RLS isolation, data export/delete. |
-| `/sign-in` | Supabase Auth sign-in with local storage fallback option. |
-| `/sign-up` | Onboarding setup: semester, daily budget (45–150m), starting level. |
-| `/app/today` | **Daily Cockpit:** Active learning day, focus tasks checklist, blocking finish validation, due spaced reviews, milestone glance. |
-| `/app/learn/[phaseId]/[dayId]` | **Study Session Workspace:** Assigned resource cards with exact sections and what to skip, concrete coding drills, proof criteria, task completion. |
-| `/app/roadmap` | **Sequence Roadmap:** Vertical architectural rail of all 9 phases (`P0` to `P8`), dependencies, hours, study days. |
-| `/app/roadmap/[phaseId]` | **Phase Detail & Readiness Gate:** All phase modules, learning outcomes, exit gate rubric, and defense submission interface. |
-| `/app/subjects` | **Core CS Syllabi:** C++, DSA, DBMS, CS Fundamentals, Backend, Applied AI. |
-| `/app/subjects/[subjectId]` | **Subject Deep Dive:** Individual module outcomes, what to study, what to defer. |
-| `/app/resources` | **Annotated Resource Catalog:** Complete 41 verified resources (`R01` to `R41`) with direct URLs, section assignments, and broken link reporter. |
-| `/app/review` | **Spaced Repetition Queue:** Concept flashcards scheduled on `+1, +3, +7, +21, +45` completed learning-day sequence offsets. |
-| `/app/projects` | **Project Portfolio Studio:** Three canonical builds (Task API, CourseCairn Backend, AI Codebase Search). |
-| `/app/projects/[projectId]` | **Project Workspace:** Architecture questions, milestone checklists (A0-A4), deliverables, interview defense questions. |
-| `/app/career/internships` | **Internship Preparation:** Readiness checklist, Sunday sweep playbook, 12 official company portals. |
-| `/app/career/placements` | **Placement Sprint:** 45-minute coding mock playbook, OA algorithm, 6 STAR behavioral stories. |
-| `/app/career/applications` | **Personal CRM Pipeline:** Manage applications (`Saved → Applied → OA → Interview → Offer`), notes, and eligibility. |
-| `/app/insights` | **Honest Analytics:** State-derived progress metrics, phase distribution, review mastery, zero fake streaks. |
-| `/app/settings` | **Preferences & Governance:** Daily time budget (45/60/90/120/150m), exam maintenance mode, theme toggle, JSON data export, account reset. |
+## Run
 
----
-
-## 3. Local Development Setup
-
-### Prerequisites
-- Node.js 18+ (tested on Node v26)
-- npm 9+
-
-### Installation & Execution
 ```bash
-# 1. Install dependencies
 npm install
-
-# 2. Run automated test suite (Vitest)
-npm test
-
-# 3. Build for production (Next.js 15)
-npm run build
-
-# 4. Start local development server
 npm run dev
 ```
 
-Visit [http://localhost:3000](http://localhost:3000) in your browser.
+Open http://localhost:3000. For a separate test workspace use `npm run dev -- --port 3100`; browser storage is origin-specific.
 
----
+```bash
+npm test
+npx tsc --noEmit
+npm run build
+```
 
-## 4. Supabase Database Configuration & Migrations
+The regression suite covers sequence validation, evidence preservation, concurrent task saves, repeat completion, review retention/rescheduling, local export/reset, and maintenance mode. Browser verification is documented in `docs/PRODUCT_REVIEW.md`.
 
-To connect your own cloud Supabase instance:
+## Content
 
-1. Create a project at [supabase.com](https://supabase.com).
-2. Copy `.env.example` to `.env.local`:
-   ```bash
-   cp .env.example .env.local
-   ```
-3. Fill in your project credentials:
-   ```env
-   NEXT_PUBLIC_SUPABASE_URL="https://your-project.supabase.co"
-   NEXT_PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
-   SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
-   ```
-4. Run the SQL migration scripts in order in the Supabase SQL Editor:
-   - `supabase/migrations/20261024000000_init_schema.sql` (Creates all shared curriculum tables, private user progress tables, RLS policies, and the atomic `finish_learning_day` stored procedure).
-   - `supabase/migrations/20261024000001_seed_curriculum.sql` (Optional bulk seed if migrating shared curriculum to cloud).
+`src/lib/db/study-guidance.ts` contains the original exercises and recall explanations. `src/lib/db/curriculum-data.ts` supplies the roadmap, modules, and resource catalog. Start with the assigned resource rather than accumulating courses.
 
----
+Learning references consulted during the improvement pass: [LearnCpp loop explanation](https://www.learncpp.com/cpp-tutorial/introduction-to-loops-and-while-statements/) and [Harvard CS50 debugging practice](https://cs50.harvard.edu/x/2025/practice/debug/). Exercises in this project are original self-check prompts, not copied course assignments.
 
-## 5. Testing & Verification Status
+## Course library and navigation
 
-- **Unit Tests:** `npm test` runs 10 exhaustive unit tests covering:
-  - 41 resources checked and verified
-  - 30 consecutive hand-authored learning days for Phase 0
-  - Zero calendar dates constraint in curriculum
-  - Blocking validation when attempting to finish a day with incomplete required tasks
-  - Atomic advancement upon completing mandatory tasks
-  - Optional tasks non-blocking verification
-  - Transactional idempotency (multiple clicks do not advance sequence multiple times)
-  - Spaced review scheduling on integer learning-day sequence offsets (+1, +3, +7, +21, +45)
-  - Review confidence intervals (needs work vs stable)
-  - Phase gate attempt and rubric verification
-- **Production Compilation:** `npm run build` compiled 100% cleanly across all 20 static and dynamic routes.
-- **Route Health Check:** Verified 20/20 HTTP 200 OK responses on the active development server.
+Open `/app/subjects` for six course tracks. C++ has the 30 guided lessons; DSA, SQL, CS core, backend, and AI have self-directed practice outlines and resource shelves. Search or filter lessons, revisit completed work, and preview future lessons. Press Ctrl+K (Windows/Linux) or Command+K (macOS) to search lessons, courses, phases, projects, and resources. Use arrow keys and Enter or normal Tab navigation.
+
+The responsive UI is checked from 390px to 2560px, with scrolling sidebar navigation on short desktop windows. The full test suite has 25 tests. Course guidance lives in `src/lib/db/course-guides.ts`; library filtering and workspace search have dedicated regression tests.

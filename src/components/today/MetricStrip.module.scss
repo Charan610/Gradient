@@ -4,16 +4,19 @@
 .stripGrid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 16px;
+  gap: 0;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 16px;
+  overflow: hidden;
   margin-bottom: 24px;
 
-  @include tablet {
-    grid-template-columns: repeat(3, 1fr);
-  }
+
 }
 
 .metricCard {
-  @include surface-card;
+  border-bottom: 1px solid var(--hairline);
+  &:last-child { border-bottom: 0; }
   padding: 18px 20px;
   display: flex;
   flex-direction: column;
@@ -30,11 +33,14 @@
 
 .valueRow {
   display: flex;
+  flex-direction: row;
   align-items: baseline;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
 .numeral {
+  white-space: nowrap;
   font-family: $font-mono;
   font-size: 26px;
   font-weight: 600;

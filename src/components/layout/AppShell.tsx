@@ -12,7 +12,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
 
   useEffect(() => {
-    ProgressRepository.getProfile().then(p => setProfile(p));
+    const refresh = () => { ProgressRepository.getProfile().then(p => setProfile(p)); };
+    refresh();
+    window.addEventListener('foundation-progress', refresh);
+    return () => window.removeEventListener('foundation-progress', refresh);
   }, []);
 
   return (
@@ -26,7 +29,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           currentPhaseCode="P0"
           currentDaySeq={profile?.active_day_index ?? 1}
         />
-        <main className={styles.contentContainer}>{children}</main>
+        <main className={styles.contentContainer}><p style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 18 }}>LOCAL WORKSPACE · Progress saved on this device · <a href="/app/settings" style={{ textDecoration: 'underline' }}>Back up your progress</a></p>{children}</main>
       </div>
       <MobileTabBar />
     </div>

@@ -10,22 +10,25 @@ import { PHASES, LEARNING_DAYS, SUBJECTS } from '@/lib/db/curriculum-data';
 export default function InsightsPage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [apps, setApps] = useState<JobApplication[]>([]);
+  const [completedIds, setCompletedIds] = useState<string[]>([]);
   const [reviews, setReviews] = useState<ConceptReview[]>([]);
 
   useEffect(() => {
     Promise.all([
       ProgressRepository.getProfile(),
       ProgressRepository.getApplications(),
-      ProgressRepository.getDueReviews('local_user', 9999)
-    ]).then(([p, a, r]) => {
+      ProgressRepository.getDueReviews('local_user', 9999),
+      Promise.all(LEARNING_DAYS.map(d => ProgressRepository.getDayProgress('local_user', d.id)))
+    ]).then(([p, a, r, days]) => {
       setProfile(p);
       setApps(a);
       setReviews(r);
+      setCompletedIds(days.filter(d => d?.state === 'completed').map(d => d!.learning_day_id));
     });
   }, []);
 
   const activeDay = profile?.active_day_index ?? 1;
-  const completedDays = Math.max(0, activeDay - 1);
+  const completedDays = completedIds.length;
   const totalMinutesEstimated = completedDays * 90;
 
   const stableReviewsCount = reviews.filter(r => r.latest_confidence === 'stable').length;
@@ -34,10 +37,10 @@ export default function InsightsPage() {
     <AppShell>
       <div style={{ marginBottom: '28px' }}>
         <h1 style={{ fontSize: '26px', fontWeight: 600, color: 'var(--ink)', marginBottom: '8px' }}>
-          Truthful Study Insights
+          Your Study Progress
         </h1>
         <p style={{ fontSize: '15px', color: 'var(--ink-secondary)', maxWidth: '72ch', lineHeight: 1.55 }}>
-          Real state-derived progress metrics without artificial streak guilt. Progress is measured by independent capability and completed learning day sequences.
+          Completed lessons and self-rated recall from your saved records. These show practice activity, not a guarantee of interview readiness.
         </p>
       </div>
 
@@ -98,20 +101,21 @@ export default function InsightsPage() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '24px' }}>
         <div style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--hairline)', borderRadius: '14px', padding: '24px' }}>
           <h2 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '16px' }}>
             Curriculum Phase Sequence Progress
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {PHASES.slice(0, 4).map(p => {
+            {PHASES.map(p => {
               const isCurrent = p.id === 'P0';
-              const percent = p.id === 'P0' ? Math.min(100, Math.round((completedDays / 30) * 100)) : 0;
+              const days = LEARNING_DAYS.filter(d => d.phase_id === p.id);
+              const percent = days.length ? Math.round(days.filter(d => completedIds.includes(d.id)).length / days.length * 100) : 0;
               return (
                 <div key={p.id}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '4px' }}>
                     <span style={{ fontWeight: 550, color: 'var(--ink)' }}>{p.phase_code}: {p.title}</span>
-                    <span style={{ fontFamily: 'monospace', color: 'var(--muted)' }}>{percent}%</span>
+                    <span style={{ fontFamily: 'monospace', color: 'var(--muted)' }}>{days.length ? `${percent}%` : 'Outline only'}</span>
                   </div>
                   <div style={{ width: '100%', height: '6px', borderRadius: '3px', backgroundColor: 'var(--surface-soft)', overflow: 'hidden' }}>
                     <div style={{ width: `${percent}%`, height: '100%', backgroundColor: 'var(--accent)', transition: 'width 200ms ease' }} />
@@ -134,12 +138,12 @@ export default function InsightsPage() {
 
             <div style={{ padding: '10px 12px', borderRadius: '8px', backgroundColor: 'var(--surface-soft)' }}>
               <div style={{ fontWeight: 600, color: 'var(--ink)', marginBottom: '2px' }}>Gate-Verified Proof:</div>
-              <div>Phase readiness gates validated with rubric criteria and written defense.</div>
+              <div>Self-assessed rubric criteria and written evidence. No automated assessment is performed.</div>
             </div>
 
             <div style={{ padding: '10px 12px', borderRadius: '8px', backgroundColor: 'var(--surface-soft)' }}>
               <div style={{ fontWeight: 600, color: 'var(--ink)', marginBottom: '2px' }}>External Verification:</div>
-              <div>Working GitHub repository artifacts and deployed API test suite runs.</div>
+              <div>Repository links and test results you provide. This workspace does not independently verify them.</div>
             </div>
           </div>
         </div>

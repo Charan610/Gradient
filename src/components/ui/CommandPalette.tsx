@@ -1,128 +1,55 @@
 'use client';
-
-import React, { useState, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Compass, Map, RotateCcw, Briefcase, Terminal, BookOpen } from 'lucide-react';
+import { ArrowUpRight, Search, X } from 'lucide-react';
+import { LibraryResult, searchLibrary } from '@/lib/db/library-search';
 import styles from './CommandPalette.module.scss';
-import clsx from 'clsx';
-import { PHASES, SUBJECTS, RESOURCES, PROJECT_TEMPLATES } from '@/lib/db/curriculum-data';
 
-interface CommandPaletteProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
+export function CommandPalette({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const router = useRouter();
+  const dialogRef = useRef<HTMLDialogElement>(null);
   const [query, setQuery] = useState('');
-  const [selectedIndex, setSelectedIndex] = useState(0);
-
-  // Close on Escape, toggle on Cmd+K
+  const [selected, setSelected] = useState(0);
+  const results = searchLibrary(query);
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        if (isOpen) onClose();
-      }
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
-
-  const quickActions = [
-    { id: 'act-today', title: 'Continue Daily Study Session', href: '/app/today', tag: 'Action', icon: Compass },
-    { id: 'act-roadmap', title: 'View Sequence Roadmap (P0-P8)', href: '/app/roadmap', tag: 'Navigate', icon: Map },
-    { id: 'act-review', title: 'Open Spaced Repetition Queue', href: '/app/review', tag: 'Practice', icon: RotateCcw },
-    { id: 'act-apps', title: 'Job Application Tracker', href: '/app/career/applications', tag: 'Career', icon: Briefcase },
-    { id: 'act-projects', title: 'Projects Portfolio Studio', href: '/app/projects', tag: 'Build', icon: Terminal }
-  ];
-
-  const filteredPhases = PHASES.filter(
-    p => p.title.toLowerCase().includes(query.toLowerCase()) || p.phase_code.toLowerCase().includes(query.toLowerCase())
-  ).map(p => ({
-    id: p.id,
-    title: `${p.phase_code}: ${p.title}`,
-    href: `/app/roadmap/${p.id}`,
-    tag: 'Phase',
-    icon: Map
-  }));
-
-  const filteredSubjects = SUBJECTS.filter(s =>
-    s.title.toLowerCase().includes(query.toLowerCase()) || s.slug.toLowerCase().includes(query.toLowerCase())
-  ).map(s => ({
-    id: s.id,
-    title: s.title,
-    href: `/app/subjects/${s.id.toLowerCase()}`,
-    tag: 'Subject',
-    icon: BookOpen
-  }));
-
-  const filteredProjects = PROJECT_TEMPLATES.filter(p =>
-    p.name.toLowerCase().includes(query.toLowerCase())
-  ).map(p => ({
-    id: p.id,
-    title: p.name,
-    href: `/app/projects/${p.id}`,
-    tag: 'Project',
-    icon: Terminal
-  }));
-
-  const allItems = [...quickActions, ...filteredPhases, ...filteredSubjects, ...filteredProjects];
-
-  const handleSelect = (href: string) => {
+    if (!isOpen) return;
+    setQuery(''); setSelected(0);
+    const dialog = dialogRef.current;
+    dialog?.showModal();
+    return () => dialog?.close();
+  }, [isOpen]);
+  useEffect(() => {
+    dialogRef.current?.querySelector('[data-selected="true"]')?.scrollIntoView({ block: 'nearest' });
+  }, [selected]);
+  const choose = (result: LibraryResult) => {
     onClose();
-    router.push(href);
+    if (result.external) window.open(result.href, '_blank', 'noopener,noreferrer');
+    else router.push(result.href);
   };
-
-  return (
-    <div className={styles.backdrop} onClick={onClose} role="dialog" aria-modal="true">
-      <div className={styles.modal} onClick={e => e.stopPropagation()}>
-        <div className={styles.inputWrapper}>
-          <Search className={styles.searchIcon} />
-          <input
-            autoFocus
-            type="text"
-            placeholder="Search phases, topics, resources, actions..."
-            value={query}
-            onChange={e => {
-              setQuery(e.target.value);
-              setSelectedIndex(0);
-            }}
-            className={styles.input}
-          />
-          <span className={styles.escBadge}>ESC</span>
-        </div>
-
-        <ul className={styles.resultsList}>
-          {allItems.length === 0 ? (
-            <li className={styles.resultItem}>
-              <span className={styles.itemSub}>No results found for &quot;{query}&quot;</span>
-            </li>
-          ) : (
-            allItems.slice(0, 10).map((item, idx) => {
-              const Icon = item.icon;
-              return (
-                <li
-                  key={item.id}
-                  className={clsx(styles.resultItem, idx === selectedIndex && styles.selected)}
-                  onClick={() => handleSelect(item.href)}
-                >
-                  <div className={styles.itemMain}>
-                    <Icon size={16} className={styles.searchIcon} />
-                    <span className={styles.itemTitle}>{item.title}</span>
-                  </div>
-                  <span className={styles.itemTag}>{item.tag}</span>
-                </li>
-              );
-            })
-          )}
-        </ul>
-      </div>
+  if (!isOpen) return null;
+  return <dialog ref={dialogRef} className={styles.modal} aria-label="Search your learning workspace"
+    onCancel={event => { event.preventDefault(); onClose(); }}
+    onClick={event => { if (event.target === event.currentTarget) { const r=event.currentTarget.getBoundingClientRect(); if (event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom) onClose(); } }}>
+    <div className={styles.inputWrapper}>
+      <Search size={18} aria-hidden="true" />
+      <input autoFocus className={styles.input} aria-label="Search lessons, courses, and resources" placeholder="Find a lesson, course, or resource…" value={query}
+        onChange={event=>{setQuery(event.target.value);setSelected(0);}}
+        onKeyDown={event=>{
+          if(event.key==='ArrowDown'){event.preventDefault();setSelected(index=>Math.min(index+1,results.length-1));}
+          if(event.key==='ArrowUp'){event.preventDefault();setSelected(index=>Math.max(0,index-1));}
+          if(event.key==='Enter'&&results[selected]){event.preventDefault();choose(results[selected]);}
+        }} />
+      <button className={styles.close} onClick={onClose} aria-label="Close search"><X size={18} aria-hidden="true" /></button>
     </div>
-  );
+    <div className={styles.hint}>Search by topic or lesson code, such as P0-D06. Use ↑ ↓ and Enter.</div>
+    <ul className={styles.resultsList} aria-label="Search results">
+      {results.map((item,index)=><li key={item.id}><a data-selected={index===selected} className={`${styles.resultItem} ${index===selected?styles.selected:''}`} href={item.href}
+        target={item.external?'_blank':undefined} rel={item.external?'noopener noreferrer':undefined}
+        onMouseEnter={()=>setSelected(index)} onFocus={()=>setSelected(index)}
+        onClick={event=>{if(!event.metaKey&&!event.ctrlKey&&!event.shiftKey&&!event.altKey){event.preventDefault();choose(item);}}}>
+        <span className={styles.itemTitle}>{item.title}</span><span className={styles.itemTag}>{item.kind}{item.external&&<ArrowUpRight size={12} aria-label="Opens in a new tab" />}</span>
+      </a></li>)}
+      {results.length===0&&<li className={styles.hint}>No matching results. Try a shorter topic or a day code.</li>}
+    </ul>
+  </dialog>;
 }

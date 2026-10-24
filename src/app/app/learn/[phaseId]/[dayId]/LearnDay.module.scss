@@ -3,21 +3,23 @@
 
 .learnLayout {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 28px;
 
-  @include desktop {
-    grid-template-columns: 7fr 5fr;
+  @media (min-width: 1280px) {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
     align-items: start;
   }
 }
 
 .mainColumn {
+  min-width: 0;
   display: flex;
   flex-direction: column;
 }
 
 .sideColumn {
+  min-width: 0;
   display: flex;
   flex-direction: column;
 }
