@@ -12,7 +12,7 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
-  padding-bottom: 72px; // Space for mobile tab bar
+  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); // Space for mobile tab bar
 
   @include desktop {
     padding-bottom: 32px;
@@ -33,3 +33,13 @@
     padding: 36px 32px;
   }
 }
+
+.contentContainer { animation: workspace-enter 450ms var(--ease-out) both; }
+.workspaceStatus {
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
+  font-size: 11px; color: var(--muted); margin-bottom: 28px;
+  > span, a { display: inline-flex; align-items: center; gap: 7px; }
+  a { min-height: 32px; &:hover { color: var(--accent); } }
+}
+.statusDot { width: 4px; height: 4px; border-radius: 50%; background: var(--muted); }
+@media(max-width:600px) { .workspaceStatus { margin-bottom: 20px; > span { font-size: 10px; } } }

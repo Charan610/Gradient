@@ -6,18 +6,24 @@
 
 :root,
 [data-theme='light'] {
-  --canvas: #F7F7F3;
+  color-scheme: light;
+  --brand-fill: #A94D27;
+  --hero-bg: #2A2923;
+  --hero-text: #FFFCF5;
+  --hero-muted: #D5D0C2;
+  --ease-out: cubic-bezier(.22, 1, .36, 1);
+  --canvas: #F7F6F2;
   --surface: #FFFFFF;
-  --surface-soft: #F0F0EC;
-  --surface-hover: #EBEBE6;
-  --ink: #21231F;
-  --ink-secondary: #40443D;
-  --muted: #676B64;
-  --hairline: #E1E3DC;
-  --hairline-subtle: #ECEEE8;
-  --accent: #485B49;
-  --accent-soft: #E8EDE6;
-  --accent-hover: #3D4E3E;
+  --surface-soft: #F0EEE8;
+  --surface-hover: #E9E6DE;
+  --ink: #26241F;
+  --ink-secondary: #514D45;
+  --muted: #736D61;
+  --hairline: #E3DFD5;
+  --hairline-subtle: #EEEBE4;
+  --accent: #A94D27;
+  --accent-soft: #F9EADF;
+  --accent-hover: #8F3F20;
   --warning: #80674D;
   --warning-soft: #F5EFE8;
   --danger: #78352C;
@@ -27,18 +33,19 @@
 }
 
 [data-theme='dark'] {
-  --canvas: #121412;
-  --surface: #1B1E1A;
-  --surface-soft: #252922;
-  --surface-hover: #2D322A;
-  --ink: #ECEEE7;
-  --ink-secondary: #CBD0C5;
-  --muted: #B0B7AB;
-  --hairline: #353B34;
-  --hairline-subtle: #272C25;
-  --accent: #A5B49D;
-  --accent-soft: #1E281D;
-  --accent-hover: #BAC6B3;
+  color-scheme: dark;
+  --canvas: #171613;
+  --surface: #211F1A;
+  --surface-soft: #2B2821;
+  --surface-hover: #363128;
+  --ink: #F3F0E8;
+  --ink-secondary: #D4CEBF;
+  --muted: #B1A897;
+  --hairline: #403A30;
+  --hairline-subtle: #322D25;
+  --accent: #F1AC7E;
+  --accent-soft: #3C291F;
+  --accent-hover: #FFC59C;
   --warning: #BCA384;
   --warning-soft: #2E261E;
   --danger: #D47E72;
@@ -61,7 +68,7 @@ html {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   scroll-behavior: smooth;
-  color-scheme: light dark;
+
 }
 
 body {
@@ -103,14 +110,15 @@ select {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  background-color: var(--ink);
-  color: var(--canvas) !important;
+  background: var(--brand-fill);
+  color: #fff !important;
+  box-shadow: 0 3px 8px #a94d2720, inset 0 1px 0 #ffffff24;
   font-size: 14px;
   font-weight: 500;
   padding: 8px 12px 8px 16px;
   border-radius: 11px;
   border: 1px solid transparent;
-  transition: transform $transition-fast, background-color $transition-fast;
+  transition: transform 220ms var(--ease-out), box-shadow 220ms ease, background-color 180ms ease;
   min-height: 44px;
   cursor: pointer;
   white-space: nowrap;
@@ -129,7 +137,8 @@ select {
 
   &:hover {
     transform: translateY(-1px);
-    background-color: var(--accent);
+    background-color: #8F3F20;
+    box-shadow: 0 6px 18px #a94d2730;
   }
 
   &:active {
@@ -224,3 +233,21 @@ select {
 .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
 
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; } }
+
+// Shared motion language: entrances are brief, interactions stay responsive.
+@keyframes workspace-enter {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes check-pop {
+  from { transform: scale(.75); opacity: .4; }
+  to { transform: scale(1); opacity: 1; }
+}
+@keyframes panel-reveal { from { opacity: 0; } to { opacity: 1; } }
+.buttonPrimary svg, .buttonSecondary svg { transition: transform 220ms var(--ease-out); }
+@media (hover: hover) {
+  .buttonPrimary:hover svg, .buttonSecondary:hover svg { transform: translateX(2px); }
+}
+.buttonSecondary:active { transform: scale(.98); }
+input, select, textarea { transition: border-color 180ms ease, box-shadow 180ms ease; }
+::selection { background: var(--accent-soft); color: var(--ink); }

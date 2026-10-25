@@ -52,3 +52,11 @@
   font-size: 13px;
   color: var(--muted);
 }
+
+.stripGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; background: transparent; border: 0; border-radius: 0; overflow: visible; }
+.metricCard { border: 1px solid var(--hairline); border-radius: 16px; background: var(--surface); box-shadow: var(--shadow-subtle); padding: 20px 24px; &:last-child { border-bottom: 1px solid var(--hairline); } }
+.label { display: flex; align-items: center; gap: 8px; font-family: inherit; text-transform: none; letter-spacing: 0; font-size: 12px; svg { color: var(--accent); } }
+.numeral { font-family: inherit; font-size: 32px; font-weight: 650; letter-spacing: -.05em; font-variant-numeric: tabular-nums; }
+.valueRow { gap: 8px 12px; }
+.subText { font-size: 11px; }
+@media(max-width:700px) { .stripGrid { gap: 8px; } .metricCard { padding: 14px 12px; } .label { font-size: 10px; align-items: flex-start; svg { display:none; } } .numeral { font-size: 25px; } .subText { font-size: 10px; line-height: 1.5; } }

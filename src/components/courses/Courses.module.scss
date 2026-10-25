@@ -33,3 +33,19 @@
 .resource { padding: 16px 0; border-top: 1px solid var(--hairline); a { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 550; min-height: 36px; } p { font-size: 12px; margin-top: 4px; } }
 @media(max-width:600px) { .search { flex-basis:100%; } .filters { width:100%; button { flex:1; padding:8px; } } .lesson { padding:16px 12px; gap:10px; } .topicBody { padding-left:22px; } .heading { margin-bottom:22px; } }
 @media(prefers-reduced-motion:reduce) { .card { transition:none; } }
+
+.featured { background: radial-gradient(ellipse at 0% 100%, #a37b364d, transparent 60%), var(--hero-bg); color: var(--hero-text); border: 1px solid #ffffff15; box-shadow: 0 12px 30px #30281c0d; border-radius: 22px; }
+.featuredProgress { background: #ffffff06; border-color: #ffffff15; progress { accent-color: #e9b787; } }
+.featuredActions a:first-child { background: #FFFCF5; color: #2A2923; border-radius: 10px; transition: transform 220ms var(--ease-out), box-shadow 180ms ease; &:hover { transform: translateY(-2px); box-shadow: 0 4px 16px #00000020; } }
+.filters { border: 1px solid var(--hairline); padding: 5px; button { transition: color 180ms ease, background-color 180ms ease, box-shadow 180ms ease; &[aria-pressed='true'] { color: var(--accent); } } }
+.search { transition: border-color 180ms ease, box-shadow 180ms ease; &:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent); } }
+.card { border-radius: 20px; box-shadow: var(--shadow-subtle); animation: workspace-enter 450ms var(--ease-out) backwards; transition: transform 300ms var(--ease-out), border-color 200ms ease, box-shadow 300ms ease; @for $i from 1 through 6 { &:nth-child(#{$i}) { animation-delay: #{$i * 35}ms; } } }
+@media(hover:hover) { .card:hover { transform: translateY(-5px); border-color: color-mix(in srgb, var(--accent) 45%, var(--hairline)); box-shadow: 0 12px 28px #30281c12; .symbol { transform: translateY(-4px) rotate(-5deg); } .cardFooter svg { transform: translate(2px, -2px); } } }
+.cover { min-height: 150px; background-image: radial-gradient(circle at 1px 1px, color-mix(in srgb, currentColor 12%, transparent) 1px, transparent 0); background-size: 16px 16px; border-bottom: 1px solid color-mix(in srgb, currentColor 10%, transparent); }
+.symbol { font-size: 44px; transition: transform 350ms var(--ease-out); }
+.coverLabel { background: var(--surface); border: 1px solid var(--hairline); padding: 5px 8px; border-radius: 6px; font-size: 10px; color: var(--ink-secondary); }
+.badge { font-family: inherit; font-size: 11px; font-weight: 600; background: var(--accent-soft); border-radius: 20px; align-self: flex-start; padding: 4px 9px; }
+.cardFooter a { color: var(--accent); svg { transition: transform 220ms var(--ease-out); } }
+.panel { box-shadow: var(--shadow-subtle); border-radius: 18px; }
+.lesson { transition: background-color 180ms ease; }
+.topic { transition: border-color 180ms ease; &[open] { border-color: color-mix(in srgb, var(--accent) 40%, var(--hairline)); .topicBody { animation: workspace-enter 250ms var(--ease-out); } } }

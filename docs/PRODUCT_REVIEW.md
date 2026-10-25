@@ -53,3 +53,11 @@ The Today page, course cards, resource heading, navigation, and search dialog we
 Desktop layout reflows to a single content column below 1280px, the sidebar scrolls on short displays, content width adapts to wide monitors, and cards avoid minimum-width overflow. Browser checks covered five pages at 390, 960, 1024, 1280, 1440, 1920, and 2560 CSS pixels (35 combinations), with no horizontal overflow. These effective viewport widths cover common zoom/scaling layouts; OS display settings were not changed. Course filtering, no-result recovery, 30 lesson links, lesson-code search, keyboard navigation, four CS-core checkpoints, invalid course handling, and dark mode were checked. The test suite now contains 25 tests.
 
 Reference pages opened during content work: LearnCpp, USACO Bronze, PostgreSQL tutorial, FastAPI tutorial, OSTEP, MDN HTTP overview, Hugging Face LLM Course, and Sentence Transformers semantic-search documentation. Outlines and practice checkpoints are original guidance, not republished lessons.
+
+## SaaS interface refresh — October 25, 2026
+
+- Warm ivory, charcoal, and burnt-orange palette in light and dark modes; no purple or blue accents.
+- Dashboard summary cards, prominent lesson banner, and an interactive 30-lesson map derived from saved completion records.
+- Updated course cards, segmented filters, sidebar selection, translucent header, task controls, and command palette.
+- Brief CSS entrance and hover transitions; reduced-motion preferences respected without an additional animation dependency.
+- Verification: 29 regression tests passed, production build passed, 20 responsive checks across four routes at 390–2560px passed. Checked both themes, lesson-map navigation, evidence expansion, course filtering, command palette, and reduced-motion styles in the browser.

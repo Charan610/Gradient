@@ -16,9 +16,10 @@ export function DayHero({ day, isCompleted = false }: DayHeroProps) {
 
   return (
     <section className={styles.heroCard} aria-labelledby="today-hero-heading">
+      <div className={styles.heroArt} aria-hidden="true"><span>DAY</span><strong>{dayStr}</strong><span>LEARN / BUILD / REPEAT</span></div>
       <div className={styles.eyebrowRow}>
         <span className={styles.eyebrow}>
-          C++ FOUNDATIONS · YOUR CURRENT LESSON
+          C++ FOUNDATIONS · CONTINUE LEARNING
         </span>
         <span className={styles.modeBadge}>
           <Clock size={12} />

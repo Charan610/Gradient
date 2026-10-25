@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { JourneyCard } from '@/components/today/JourneyCard';
 import { StudyGuide } from '@/components/learn/StudyGuide';
 import React, { useEffect, useState } from 'react';
 import { AppShell } from '@/components/layout/AppShell';
@@ -63,7 +64,7 @@ export default function TodayPage() {
   return (
     <AppShell>
       <header className={styles.pageHeading}>
-        <div><span className={styles.kicker}>YOUR NEXT SMALL STEP</span><h1>{profile?.alias && profile.alias !== 'Student Engineer' ? `Let’s make progress, ${profile.alias}.` : 'A little progress. Every day.'}</h1><p>A clear plan, a little practice, and something to show for it.</p></div>
+        <div><span className={styles.kicker}>YOUR DAILY WORKSPACE</span><h1>{profile?.alias && profile.alias !== 'Student Engineer' ? `Let’s make progress, ${profile.alias}.` : 'A little progress. Every day.'}</h1><p>A clear plan, a little practice, and something to show for it.</p></div>
         <Link href="/app/subjects" className="buttonSecondary">Browse your courses <span aria-hidden="true">↗</span></Link>
       </header>
       {loadError ? <p role="alert">Could not load your saved progress. <button className="buttonSecondary" onClick={loadData}>Try again</button></p> : loading ? (
@@ -71,6 +72,13 @@ export default function TodayPage() {
           Loading daily study workspace...
         </div>
       ) : (
+        <>
+            <MetricStrip
+              completedDaysCount={completedDaysCount}
+              phaseModulesCount={phase0Modules.filter(m => { const days = LEARNING_DAYS.filter(d => d.tasks.some(t => t.required && t.module_id === m.id)); return days.length > 0 && days.every(d => completedIds.includes(d.id)); }).length}
+              totalPhaseModules={phase0Modules.length}
+              dueReviewsCount={dueReviews.length}
+            />
         <div className={styles.dashboardGrid}>
           <div className={styles.primaryColumn}>
             {curriculumFinished ? (
@@ -100,16 +108,12 @@ export default function TodayPage() {
           </div>
 
           <div className={styles.supportingColumn}>
-            <MetricStrip
-              completedDaysCount={completedDaysCount}
-              phaseModulesCount={phase0Modules.filter(m => { const days = LEARNING_DAYS.filter(d => d.tasks.some(t => t.required && t.module_id === m.id)); return days.length > 0 && days.every(d => completedIds.includes(d.id)); }).length}
-              totalPhaseModules={phase0Modules.length}
-              dueReviewsCount={dueReviews.length}
-            />
+            <JourneyCard completedIds={completedIds} activeDayId={activeDay.id} />
             <DueReviewsList reviews={dueReviews} onReviewCompleted={loadData} />
             <NextMilestoneCard currentPhaseId={activeDay.phase_id} />
           </div>
         </div>
+        </>
       )}
     </AppShell>
   );

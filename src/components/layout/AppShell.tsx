@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+import { HardDrive, ArrowUpRight } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { SidebarNavigation } from './SidebarNavigation';
 import { MobileTabBar } from './MobileTabBar';
@@ -29,7 +31,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           currentPhaseCode="P0"
           currentDaySeq={profile?.active_day_index ?? 1}
         />
-        <main className={styles.contentContainer}><p style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 18 }}>LOCAL WORKSPACE · Progress saved on this device · <a href="/app/settings" style={{ textDecoration: 'underline' }}>Back up your progress</a></p>{children}</main>
+        <main className={styles.contentContainer}>
+          <div className={styles.workspaceStatus}>
+            <span><HardDrive size={13} aria-hidden="true" /> Personal workspace <span className={styles.statusDot} aria-hidden="true" /> Saved on this device</span>
+            <Link href="/app/settings">Manage backups <ArrowUpRight size={13} aria-hidden="true" /></Link>
+          </div>
+          {children}
+        </main>
       </div>
       <MobileTabBar />
     </div>

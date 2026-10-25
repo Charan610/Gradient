@@ -7,7 +7,7 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: 60px;
+  height: calc(64px + env(safe-area-inset-bottom, 0px));
   background-color: var(--surface);
   border-top: 1px solid var(--hairline);
   padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -44,3 +44,6 @@
     height: 20px;
   }
 }
+
+.mobileBar { background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(16px); }
+.tabItem { border-radius: 12px; transition: color 180ms ease, background-color 180ms ease; &.active { color: var(--accent); background: var(--accent-soft); } }
