@@ -1,10 +1,11 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Settings, Download, Trash2, ShieldCheck, Sun, Moon, AlertTriangle } from 'lucide-react';
+import { Download, Upload, Trash2, Sun, Moon, AlertTriangle } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { ProgressRepository } from '@/lib/db/progress-repository';
 import { UserProfile } from '@/lib/db/types';
+import { MAX_BACKUP_BYTES, parseStudyBackup, restoreStudyBackup } from '@/lib/db/study-backup';
 import { useTheme } from '@/components/context/ThemeContext';
 
 export default function SettingsPage() {
@@ -16,6 +17,9 @@ export default function SettingsPage() {
   const [mode, setMode] = useState<'light' | 'normal' | 'deep' | 'maintenance'>('normal');
   const [savedFeedback, setSavedFeedback] = useState<string | null>(null);
 
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
   useEffect(() => {
     ProgressRepository.getProfile().then(p => {
       setProfile(p);
@@ -23,37 +27,66 @@ export default function SettingsPage() {
       setSemester(p.academic_semester);
       setDailyMinutes(p.preferred_daily_minutes);
       setMode(p.preferred_mode);
-    });
+    }).catch(() => setError('Your saved preferences could not be loaded. Reload and try again.'));
   }, []);
 
   const handleSavePreferences = async (e: React.FormEvent) => {
     e.preventDefault();
-    const updated = await ProgressRepository.updateProfile('local_user', {
-      alias,
-      academic_semester: semester,
-      preferred_daily_minutes: dailyMinutes,
-      preferred_mode: mode
-    });
-    setProfile(updated);
-    setSavedFeedback('Preferences successfully saved.');
-    setTimeout(() => setSavedFeedback(null), 3000);
+    setBusy(true);
+    setSavedFeedback(null);
+    setError(null);
+    try {
+      const updated = await ProgressRepository.updateProfile('local_user', {
+        alias: alias.trim(),
+        academic_semester: semester,
+        preferred_daily_minutes: dailyMinutes,
+        preferred_mode: mode
+      });
+      setProfile(updated);
+      setSavedFeedback('Preferences successfully saved.');
+    } catch {
+      setError('Preferences could not be saved. Check browser storage and try again.');
+    } finally { setBusy(false); }
   };
 
   const handleExportData = async () => {
-    const jsonStr = await ProgressRepository.exportUserData('local_user');
-    const blob = new Blob([jsonStr], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `foundation_study_export_${Date.now()}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    setError(null);
+    try {
+      const jsonStr = await ProgressRepository.exportUserData('local_user');
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `gradient_study_export_${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch { setError('Backup could not be exported. Please try again.'); }
+  };
+
+  const handleImportData = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setError(null);
+    setBusy(true);
+    try {
+      if (file.size > MAX_BACKUP_BYTES) throw new Error('Backup must be smaller than 5 MB.');
+      const source = await file.text();
+      const records = parseStudyBackup(source);
+      if (!confirm(`Restore ${Object.keys(records).length} study records? This replaces this browser's current progress, notes, and applications. Export a backup first if you want to keep them.`)) return;
+      restoreStudyBackup(source, localStorage);
+      window.location.reload();
+    } catch (err) {
+      setError(err instanceof Error ? `Restore failed: ${err.message}` : 'Restore failed. Your previous records were kept.');
+    } finally { setBusy(false); }
   };
 
   const handleResetData = async () => {
     if (confirm('Warning: This will permanently erase all local study progress, checked tasks, and job applications. Continue?')) {
-      await ProgressRepository.clearAllUserData('local_user');
-      window.location.reload();
+      try {
+        await ProgressRepository.clearAllUserData('local_user');
+        window.location.reload();
+      } catch { setError('Data could not be reset. Check browser storage and try again.'); }
     }
   };
 
@@ -61,13 +94,14 @@ export default function SettingsPage() {
     <AppShell>
       <div style={{ marginBottom: '28px' }}>
         <h1 style={{ fontSize: '26px', fontWeight: 600, color: 'var(--ink)', marginBottom: '8px' }}>
-          Preferences & Data Governance
+          Settings & study backups
         </h1>
         <p style={{ fontSize: '15px', color: 'var(--ink-secondary)', maxWidth: '72ch', lineHeight: 1.55 }}>
           Adjust your daily learning allocation, toggle exam maintenance mode, or export your saved study records.
         </p>
       </div>
 
+      {error && <p role="alert" style={{ color: 'var(--danger)', marginBottom: '16px' }}>{error}</p>}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))', gap: '24px', alignItems: 'start' }}>
         <form
           onSubmit={handleSavePreferences}
@@ -84,10 +118,10 @@ export default function SettingsPage() {
           <h2 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)' }}>Learner Profile</h2>
 
           <div>
-            <label style={{ fontSize: '12.5px', fontWeight: 550, color: 'var(--ink)', display: 'block', marginBottom: '4px' }}>
+            <label htmlFor="study-alias" style={{ fontSize: '12.5px', fontWeight: 550, color: 'var(--ink)', display: 'block', marginBottom: '4px' }}>
               Your Alias / Name
             </label>
-            <input
+            <input id="study-alias"
               type="text"
               value={alias}
               onChange={e => setAlias(e.target.value)}
@@ -96,10 +130,10 @@ export default function SettingsPage() {
           </div>
 
           <div>
-            <label style={{ fontSize: '12.5px', fontWeight: 550, color: 'var(--ink)', display: 'block', marginBottom: '4px' }}>
+            <label htmlFor="study-semester" style={{ fontSize: '12.5px', fontWeight: 550, color: 'var(--ink)', display: 'block', marginBottom: '4px' }}>
               Current Academic Semester
             </label>
-            <select
+            <select id="study-semester"
               value={semester}
               onChange={e => setSemester(e.target.value)}
               style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--hairline)', backgroundColor: 'var(--canvas)', color: 'var(--ink)', fontSize: '13px' }}
@@ -113,10 +147,10 @@ export default function SettingsPage() {
           </div>
 
           <div>
-            <label style={{ fontSize: '12.5px', fontWeight: 550, color: 'var(--ink)', display: 'block', marginBottom: '4px' }}>
+            <label htmlFor="study-minutes" style={{ fontSize: '12.5px', fontWeight: 550, color: 'var(--ink)', display: 'block', marginBottom: '4px' }}>
               Daily Study Time Budget
             </label>
-            <select
+            <select id="study-minutes"
               value={dailyMinutes}
               onChange={e => setDailyMinutes(Number(e.target.value))}
               style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--hairline)', backgroundColor: 'var(--canvas)', color: 'var(--ink)', fontSize: '13px' }}
@@ -130,14 +164,15 @@ export default function SettingsPage() {
           </div>
 
           <div>
-            <label style={{ fontSize: '12.5px', fontWeight: 550, color: 'var(--ink)', display: 'block', marginBottom: '4px' }}>
+            <label htmlFor="study-mode" style={{ fontSize: '12.5px', fontWeight: 550, color: 'var(--ink)', display: 'block', marginBottom: '4px' }}>
               Study Operating Mode
             </label>
-            <select
+            <select id="study-mode"
               value={mode}
-              onChange={e => setMode(e.target.value as any)}
+              onChange={e => setMode(e.target.value as UserProfile['preferred_mode'])}
               style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1px solid var(--hairline)', backgroundColor: 'var(--canvas)', color: 'var(--ink)', fontSize: '13px' }}
             >
+              <option value="light">Light Study Mode</option>
               <option value="normal">Normal Study Mode (New material + Reviews)</option>
               <option value="maintenance">Maintenance Mode (Exams: 15-30m reviews only)</option>
               <option value="deep">Deep Focus Mode (Extended practice drills)</option>
@@ -157,6 +192,7 @@ export default function SettingsPage() {
               <button
                 type="button"
                 className="buttonSecondary"
+                aria-pressed={theme === 'light'}
                 onClick={() => setTheme('light')}
                 style={{
                   flex: 1,
@@ -170,6 +206,7 @@ export default function SettingsPage() {
               <button
                 type="button"
                 className="buttonSecondary"
+                aria-pressed={theme === 'dark'}
                 onClick={() => setTheme('dark')}
                 style={{
                   flex: 1,
@@ -184,12 +221,12 @@ export default function SettingsPage() {
           </div>
 
           {savedFeedback && (
-            <div style={{ fontSize: '13px', color: 'var(--accent)', fontFamily: 'monospace' }}>
+            <div role="status" style={{ fontSize: '13px', color: 'var(--accent)', fontFamily: 'monospace' }}>
               ✓ {savedFeedback}
             </div>
           )}
 
-          <button type="submit" className="buttonPrimary" style={{ marginTop: '8px' }}>
+          <button disabled={busy || !profile} type="submit" className="buttonPrimary" style={{ marginTop: '8px' }}>
             <span>Save Preferences</span>
           </button>
         </form>
@@ -197,10 +234,10 @@ export default function SettingsPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--hairline)', borderRadius: '14px', padding: '24px' }}>
             <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '8px' }}>
-              Data Export & Ownership
+              Back up & move your progress
             </h3>
             <p style={{ fontSize: '13px', color: 'var(--ink-secondary)', lineHeight: 1.5, marginBottom: '16px' }}>
-              You own 100% of your progress history, notes, and application records. Download your local study records, including task evidence, reviews, and project notes in JSON format.
+              Progress is saved in this browser, separately on each website address. To move from localhost to the live site or another computer, export here, then restore the file there. Backups include task evidence, reviews, project notes, and applications.
             </p>
             <button
               type="button"
@@ -211,6 +248,13 @@ export default function SettingsPage() {
               <Download size={14} />
               <span>Export Private Data (JSON)</span>
             </button>
+            <label htmlFor="study-backup" style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '20px', marginBottom: '8px', fontWeight: 600 }}>
+              <Upload size={14} /> Restore a study backup
+            </label>
+            <input id="study-backup" type="file" accept=".json,application/json" disabled={busy} onChange={handleImportData} style={{ width: '100%', minWidth: 0 }} aria-describedby="backup-help" />
+            <p id="backup-help" style={{ fontSize: '12px', color: 'var(--ink-secondary)', marginTop: '8px', lineHeight: 1.5 }}>
+              Choose an exported JSON file (up to 5 MB). You will confirm before existing study records are replaced. Keep your backup private; it contains your notes.
+            </p>
           </div>
 
           <div style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--hairline)', borderRadius: '14px', padding: '24px' }}>

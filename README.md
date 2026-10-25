@@ -44,4 +44,9 @@ Learning references consulted during the improvement pass: [LearnCpp loop explan
 
 Open `/app/subjects` for six course tracks. C++ has the 30 guided lessons; DSA, SQL, CS core, backend, and AI have self-directed practice outlines and resource shelves. Search or filter lessons, revisit completed work, and preview future lessons. Press Ctrl+K (Windows/Linux) or Command+K (macOS) to search lessons, courses, phases, projects, and resources. Use arrow keys and Enter or normal Tab navigation.
 
-The responsive UI is checked from 390px to 2560px, with scrolling sidebar navigation on short desktop windows. The full test suite has 25 tests. Course guidance lives in `src/lib/db/course-guides.ts`; library filtering and workspace search have dedicated regression tests.
+The responsive UI is checked from 390px to 2560px, with scrolling sidebar navigation on short desktop windows. The full test suite has 29 tests. Course guidance lives in `src/lib/db/course-guides.ts`; library filtering and workspace search have dedicated regression tests.
+
+
+## Moving study progress between devices or website addresses
+
+In Settings, export your study records as JSON, then open Settings on the destination browser or deployed site and choose **Restore a study backup**. Localhost and the production domain have separate browser storage. Restore validates the complete version 1 backup, asks before replacing study records, and rolls back writes if browser storage fails. Theme settings and unrelated browser records are preserved. Keep the JSON file private because it contains notes and task evidence. Backups are limited to 5 MB; this is a manual transfer, not cloud sync.
