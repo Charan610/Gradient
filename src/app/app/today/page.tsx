@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { LearningStudio } from '@/components/studio/LearningStudio';
 import { JourneyCard } from '@/components/today/JourneyCard';
 import { StudyGuide } from '@/components/learn/StudyGuide';
 import React, { useEffect, useState } from 'react';
@@ -95,6 +96,7 @@ export default function TodayPage() {
               </section>
             ) : <>
               <DayHero day={activeDay} isCompleted={isDayCompleted} />
+              <LearningStudio key={activeDay.id} day={activeDay} />
               <StudyGuide day={activeDay} minutes={profile?.preferred_daily_minutes} />
             </>}
             {!curriculumFinished && profile?.preferred_mode !== 'maintenance' &&

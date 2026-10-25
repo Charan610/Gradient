@@ -61,3 +61,13 @@ Reference pages opened during content work: LearnCpp, USACO Bronze, PostgreSQL t
 - Updated course cards, segmented filters, sidebar selection, translucent header, task controls, and command palette.
 - Brief CSS entrance and hover transitions; reduced-motion preferences respected without an additional animation dependency.
 - Verification: 29 regression tests passed, production build passed, 20 responsive checks across four routes at 390–2560px passed. Checked both themes, lesson-map navigation, evidence expansion, course filtering, command palette, and reduced-motion styles in the browser.
+
+## Interactive component pass — October 25, 2026
+
+Used https://bytune.space/#features as a visual and interaction reference, adapting the layered surfaces, floating navigation, feature previews, and switchable controls with original Gradient content and the requested neutral palette.
+
+- Rebuilt the homepage with espresso/champagne surfaces, feature cards, original C++ preview, live Study Studio, local-data explanation, and accessible FAQ disclosures.
+- Added the same Study Studio beneath the current lesson on Today: adjustable 5–60 minute timer, start/pause/resume/reset, revealable recall, and a clickable plan populated from the actual lesson.
+- Timer uses a wall-clock deadline and recalculates on visibility changes; switching tool tabs keeps it running. It does not save progress or complete tasks. Leaving the page ends the timer.
+- Browser checks: 5-minute timer reached 04:50 after 10 seconds; paused value stayed fixed; resume and elapsed completion reached 00:00; reset returned 05:00. Recall answer, keyboard tab navigation, task selection and FAQ passed. Homepage and Today had no horizontal overflow at 375, 768, 1024, 1440, or 2560px. Tested reduced-motion and dark presentation.
+- All 29 existing regression tests passed. The final production build, including scroll reveals, passed.

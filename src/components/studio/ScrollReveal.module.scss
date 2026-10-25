@@ -1,0 +1,3 @@
+@media (prefers-reduced-motion: no-preference) {
+  .reveal[data-entered='true'] { animation: workspace-enter 600ms var(--ease-out) both; }
+}
