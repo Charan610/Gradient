@@ -56,7 +56,7 @@ Reference pages opened during content work: LearnCpp, USACO Bronze, PostgreSQL t
 
 ## SaaS interface refresh — October 25, 2026
 
-- Warm stone, forest green, and muted champagne palette in light and dark modes; no purple or blue accents.
+- Soft ivory, espresso, taupe, and muted champagne palette in light and dark modes; no purple or blue accents.
 - Dashboard summary cards, prominent lesson banner, and an interactive 30-lesson map derived from saved completion records.
 - Updated course cards, segmented filters, sidebar selection, translucent header, task controls, and command palette.
 - Brief CSS entrance and hover transitions; reduced-motion preferences respected without an additional animation dependency.

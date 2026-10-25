@@ -90,8 +90,8 @@
   font-family: $font-mono;
 }
 
-.heroCard { background: radial-gradient(ellipse at 100% 0%, #a89e6426, transparent 65%), var(--hero-bg); color: var(--hero-text); border-color: #ffffff12; border-radius: 22px; padding: clamp(24px, 3vw, 36px); min-height: 280px; box-shadow: 0 8px 24px #30281c12; > :not(.heroArt) { position: relative; z-index: 1; } }
-.eyebrow { color: #D4CCAA; font-family: inherit; font-size: 10px; letter-spacing: .1em; }
+.heroCard { background: radial-gradient(ellipse at 100% 0%, #b49a7d20, transparent 65%), var(--hero-bg); color: var(--hero-text); border-color: #ffffff12; border-radius: 22px; padding: clamp(24px, 3vw, 36px); min-height: 280px; box-shadow: 0 8px 24px #30281c12; > :not(.heroArt) { position: relative; z-index: 1; } }
+.eyebrow { color: #DBCAAF; font-family: inherit; font-size: 10px; letter-spacing: .1em; }
 .modeBadge { color: var(--hero-muted); background: #ffffff0c; border-color: #ffffff24; border-radius: 20px; font-family: inherit; padding: 5px 10px; }
 .title { color: var(--hero-text); font-size: clamp(24px, 2.4vw, 34px); line-height: 1.2; max-width: 24ch; font-weight: 600; margin-top: 20px; letter-spacing: -.04em; }
 .goal { color: var(--hero-muted); font-size: 14px; max-width: 58ch; margin-top: 14px; line-height: 1.75; }
