@@ -34,9 +34,9 @@
 @media(max-width:600px) { .search { flex-basis:100%; } .filters { width:100%; button { flex:1; padding:8px; } } .lesson { padding:16px 12px; gap:10px; } .topicBody { padding-left:22px; } .heading { margin-bottom:22px; } }
 @media(prefers-reduced-motion:reduce) { .card { transition:none; } }
 
-.featured { background: radial-gradient(ellipse at 0% 100%, #a37b364d, transparent 60%), var(--hero-bg); color: var(--hero-text); border: 1px solid #ffffff15; box-shadow: 0 12px 30px #30281c0d; border-radius: 22px; }
-.featuredProgress { background: #ffffff06; border-color: #ffffff15; progress { accent-color: #e9b787; } }
-.featuredActions a:first-child { background: #FFFCF5; color: #2A2923; border-radius: 10px; transition: transform 220ms var(--ease-out), box-shadow 180ms ease; &:hover { transform: translateY(-2px); box-shadow: 0 4px 16px #00000020; } }
+.featured { background: radial-gradient(ellipse at 0% 100%, #a89e6426, transparent 60%), var(--hero-bg); color: var(--hero-text); border: 1px solid #ffffff15; box-shadow: 0 12px 30px #30281c0d; border-radius: 22px; }
+.featuredProgress { background: #ffffff06; border-color: #ffffff15; progress { accent-color: #C9C5A0; } }
+.featuredActions a:first-child { background: #FFFCF5; color: #25372E; border-radius: 10px; transition: transform 220ms var(--ease-out), box-shadow 180ms ease; &:hover { transform: translateY(-2px); box-shadow: 0 4px 16px #00000020; } }
 .filters { border: 1px solid var(--hairline); padding: 5px; button { transition: color 180ms ease, background-color 180ms ease, box-shadow 180ms ease; &[aria-pressed='true'] { color: var(--accent); } } }
 .search { transition: border-color 180ms ease, box-shadow 180ms ease; &:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent); } }
 .card { border-radius: 20px; box-shadow: var(--shadow-subtle); animation: workspace-enter 450ms var(--ease-out) backwards; transition: transform 300ms var(--ease-out), border-color 200ms ease, box-shadow 300ms ease; @for $i from 1 through 6 { &:nth-child(#{$i}) { animation-delay: #{$i * 35}ms; } } }
