@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ArrowDown, ArrowUpRight, BookOpen, Check, Command, Layers, LockKeyhole, RotateCcw, Terminal } from 'lucide-react';
+import { ReactiveSurface } from '@/components/ui/ReactiveSurface';
 import { ScrollReveal } from '@/components/studio/ScrollReveal';
 import { LearningStudio } from '@/components/studio/LearningStudio';
 import { LEARNING_DAYS } from '@/lib/db/curriculum-data';
@@ -16,18 +17,20 @@ export default function HomePage() {
       </header>
       <main id="main">
         <section className={styles.hero}>
+          <div className={styles.orbital} aria-hidden="true"><svg viewBox="0 0 1100 520" fill="none"><ellipse cx="550" cy="260" rx="490" ry="170" /><ellipse cx="550" cy="260" rx="490" ry="170" transform="rotate(-18 550 260)" /><ellipse cx="550" cy="260" rx="490" ry="170" transform="rotate(18 550 260)" /><circle cx="60" cy="260" r="4" /><circle cx="1040" cy="260" r="4" /></svg></div>
+          <div className={styles.heroCoordinates} aria-hidden="true"><span>GR / LEARNING SYSTEM</span><span>DESIGNED FOR YOUR NEXT STEP ↗</span></div>
           <div className={styles.heroLabel}><span /> YOUR PERSONAL LEARNING SPACE</div>
           <h1>A little direction.<br />A lot of <em>possibility.</em></h1>
           <p>The next lesson. A place to focus. Proof of what you built.<br className={styles.desktopBreak} /> Bring your learning together, one small step at a time.</p>
           <div className={styles.heroActions}><Link href="/sign-up" className={styles.cta}>Build my study routine <ArrowUpRight size={16} /></Link><a href="#studio" className={styles.quietLink}>Try the workspace <ArrowDown size={15} /></a></div>
           <div className={styles.heroFacts}><span><Check size={13} />30 guided C++ lessons</span><span><Check size={13} />No account needed</span><span><Check size={13} />Your own pace</span></div>
-          <div className={styles.heroWindow}>
+          <ReactiveSurface className={styles.heroWindow}>
             <div className={styles.windowBar}><span><i /><i /><i /></span><span>gradient / your next step</span><Command size={13} /></div>
             <div className={styles.windowContent}>
               <div className={styles.windowIntro}><span className={styles.label}>THE FIRST OF MANY SMALL WINS</span><h2>Hello, world.<br /><span>Hello, possibility.</span></h2><p>Your first program doesn’t need to be impressive. It needs to run. Start there.</p><Link href="/app/learn/P0/P0-D01">Explore lesson 01 <ArrowUpRight size={15} /></Link></div>
               <div className={styles.codeCard}><div><Terminal size={14} /><span>hello.cpp</span><span>C++</span></div><pre><code><span>#include &lt;iostream&gt;</span>{'\n\n'}int main() {'{'}{'\n'}  std::cout &lt;&lt; <b>"Hello, world!"</b>;{'\n'}  return 0;{'\n'}{'}'}</code></pre><div className={styles.terminal}><span>OUTPUT</span><p>Hello, world!</p><span><Check size={12} /> Illustrative example</span></div></div>
             </div>
-          </div>
+          </ReactiveSurface>
         </section>
 
         <section id="features" className={styles.section}>

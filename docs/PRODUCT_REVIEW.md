@@ -71,3 +71,9 @@ Used https://bytune.space/#features as a visual and interaction reference, adapt
 - Timer uses a wall-clock deadline and recalculates on visibility changes; switching tool tabs keeps it running. It does not save progress or complete tasks. Leaving the page ends the timer.
 - Browser checks: 5-minute timer reached 04:50 after 10 seconds; paused value stayed fixed; resume and elapsed completion reached 00:00; reset returned 05:00. Recall answer, keyboard tab navigation, task selection and FAQ passed. Homepage and Today had no horizontal overflow at 375, 768, 1024, 1440, or 2560px. Tested reduced-motion and dark presentation.
 - All 29 existing regression tests passed. The final production build, including scroll reveals, passed.
+
+## Futuristic visual refinement — October 26, 2026
+
+Added muted orbital framing, precision grids, layered panel borders, metallic typography, an instrument-style focus dial, and reusable pointer-reactive lighting. Lighting uses requestAnimationFrame without per-move React renders, is mouse-only, and is disabled for reduced motion. Existing espresso/champagne preferences are retained.
+
+Validation: 29 tests and production build passed. Homepage and Today fit 375, 768, 1440, and 2560px without horizontal overflow. Browser-tested recall, timer start/pause, pointer lighting, and reduced-motion behavior.

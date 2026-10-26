@@ -37,3 +37,18 @@
 .studio { container-type:inline-size; }
 @container(max-width:850px) { .layout { grid-template-columns:1fr; } .navigation { border-right:0; border-bottom:1px solid #ffffff12; padding:14px 20px; h2, > p { display:none; } } .tabs { flex-direction:row; button { flex:1; justify-content:center; > svg:last-child { display:none; } } } }
 @container(max-width:520px) { .focusView { grid-template-columns:1fr; } .dial { width:185px; } .topline > span:last-child { display:none; } }
+
+// Instrument-panel detail, kept quiet enough for sustained reading.
+.studio { border-radius:18px; border-color:#d5bea62e; background:linear-gradient(120deg,#d5bea608,transparent 50%),#171615; box-shadow:inset 0 1px 0 #ffffff0a,0 14px 40px #00000016; }
+.topline { background:#ffffff03; }
+.instrumentBar { display:flex; align-items:center; gap:24px; padding:10px 24px; border-bottom:1px solid #ffffff0b; font:8px/1.5 monospace; letter-spacing:.13em; color:#b9b1a5; }
+.signal { margin-left:auto; color:var(--studio-accent); letter-spacing:3px; }
+.panel { background-image:radial-gradient(#d5bea612 .7px,transparent .7px); background-size:18px 18px; }
+.dial { width:min(100%,260px); border-radius:50%; background:radial-gradient(circle,#d5bea609,transparent 65%); strong { font-family:monospace; font-weight:400; font-size:clamp(32px,3.5vw,46px); letter-spacing:-.07em; } .micro { font-size:8px; } }
+.ticks { stroke:#d5bea64a; stroke-width:1; }
+.arc { stroke-width:2.5; filter:drop-shadow(0 0 4px #d5bea640); }
+.dial[data-running=true] { box-shadow:0 0 42px #d5bea60a; .arc { stroke:#f0dfc6; } }
+.tabs button { border-radius:7px; &[aria-selected=true] { box-shadow:inset 2px 0 var(--studio-accent),0 0 20px #d5bea606; background:linear-gradient(90deg,#d5bea614,transparent); } }
+.primary { border-radius:7px; border:1px solid #fff7e94d; box-shadow:inset 0 1px 0 #ffffff70,0 4px 15px #00000020; }
+.recallView,.planView { background:#17161580; border:1px solid #ffffff0b; border-radius:12px; padding:20px; }
+@container(max-width:520px) { .instrumentBar { gap:14px; font-size:7px; padding:10px 20px; } .signal { display:none; } .dial { width:210px; } .recallView,.planView { padding:14px; } }

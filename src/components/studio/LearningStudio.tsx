@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowUpRight, BookOpen, Brain, Check, ChevronRight, Pause, Play, RotateCcw, Timer } from 'lucide-react';
 import { LearningDay } from '@/lib/db/types';
 import { STUDY_GUIDANCE } from '@/lib/db/study-guidance';
+import { ReactiveSurface } from '@/components/ui/ReactiveSurface';
 import styles from './LearningStudio.module.scss';
 
 type View = 'focus' | 'recall' | 'plan';
@@ -52,8 +53,9 @@ export function LearningStudio({ day, preview = false }: { day: LearningDay; pre
   const progress = 1 - remaining / (minutes * 60);
 
   return (
-    <section className={styles.studio} aria-label={preview ? 'Interactive workspace preview' : 'Study tools'}>
+    <ReactiveSurface className={styles.studio} label={preview ? 'Interactive workspace preview' : 'Study tools'}>
       <div className={styles.topline}><span><span className={styles.dot} />{preview ? 'INTERACTIVE PREVIEW · DAY 01' : `STUDY STUDIO · DAY ${String(day.sequence_index).padStart(2, '0')}`}</span><span>MAKE SPACE TO LEARN</span></div>
+      <div className={styles.instrumentBar} aria-hidden="true"><span>01 / FOCUS</span><span>02 / RECALL</span><span>03 / APPLY</span><span className={styles.signal}>▂ ▄ ▆ ▄ ▂</span></div>
       <div className={styles.layout}>
         <div className={styles.navigation}>
           <h2>Less friction.<br /><span>More focus.</span></h2>
@@ -68,8 +70,8 @@ export function LearningStudio({ day, preview = false }: { day: LearningDay; pre
         <div className={styles.panel} role="tabpanel" id={`${id}-panel`} aria-labelledby={`${id}-${view}`} tabIndex={0}>
           <div key={view} className={styles.panelContent}>
             {view === 'focus' && <div className={styles.focusView}>
-              <div className={styles.dial}>
-                <svg viewBox="0 0 200 200" aria-hidden="true"><circle className={styles.track} cx="100" cy="100" r="89" /><circle className={styles.arc} cx="100" cy="100" r="89" strokeDasharray={559.2} strokeDashoffset={559.2 * progress} /></svg>
+              <div className={styles.dial} data-running={running}>
+                <svg viewBox="0 0 200 200" aria-hidden="true"><g className={styles.ticks}>{Array.from({ length: 60 }, (_, index) => <line key={index} x1="100" y1="7" x2="100" y2={index % 5 === 0 ? '14' : '10'} transform={`rotate(${index * 6} 100 100)`} />)}</g><circle className={styles.track} cx="100" cy="100" r="79" /><circle className={styles.arc} cx="100" cy="100" r="79" strokeDasharray={496.4} strokeDashoffset={496.4 * progress} /></svg>
                 <div><span className={styles.micro}>{running ? 'IN YOUR FLOW' : remaining === 0 ? 'SESSION COMPLETE' : 'ONE THING AT A TIME'}</span><strong role="timer" aria-label={`${Math.floor(remaining / 60)} minutes ${remaining % 60} seconds remaining`}>{formatted}</strong><span className={styles.micro}>{running ? 'You’ve got this.' : remaining === 0 ? 'Take a breath. Then reflect.' : 'Ready when you are.'}</span></div>
               </div>
               <div className={styles.focusControls}>
@@ -101,6 +103,6 @@ export function LearningStudio({ day, preview = false }: { day: LearningDay; pre
           </div>
         </div>
       </div>
-    </section>
+    </ReactiveSurface>
   );
 }
