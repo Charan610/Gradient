@@ -23,9 +23,9 @@ export default function SignUpPage() {
   return <main className="workspaceEntry">
     <Link href="/" className="buttonTertiary"><ArrowLeft size={14} /> Home</Link>
     <section className="workspaceEntryCard">
-      <span className="phaseBadge">A PERSONAL STUDY WORKSPACE</span>
-      <h1>Build a foundation. One lesson at a time.</h1>
-      <p>Start with 30 guided C++ foundation lessons. Read a little, write code, test it, and explain what you learned.</p>
+      <span className="phaseBadge">NO ACCOUNT NEEDED</span>
+      <h1>Make it yours. Then begin.</h1>
+      <p>Set your name and learning preferences, then start immediately. Your 30 guided C++ foundation lessons follow a simple rhythm: exercise, self-check, clear next step.</p>
       <form onSubmit={async e => {
         e.preventDefault(); setBusy(true); setError('');
         try {
@@ -47,7 +47,7 @@ export default function SignUpPage() {
         {error && <p role="alert">{error}</p>}
         <button className="buttonPrimary" disabled={busy}>{busy ? 'Preparing…' : 'Open my study plan'} <ArrowUpRight size={16} /></button>
       </form>
-      <p className="workspaceEntryNote">Saved on this browser only. No email, password, or cloud account required. Back up your progress from Settings.</p>
+      <p className="workspaceEntryNote">Saved locally in this browser. Transfer your progress with a JSON backup from Settings. No account required. Automatic cloud sync is not available.</p>
     </section>
   </main>;
 }

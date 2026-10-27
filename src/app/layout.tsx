@@ -5,7 +5,7 @@ import '@/styles/globals.scss';
 export const metadata: Metadata = {
   title: 'GRADIENT — Day-Based Career Preparation Operating System',
   description:
-    'A personal study operating system for ambitious undergraduate software engineers. Ordered learning days, concrete practice, local progress storage, spaced repetition, and placement tracking without arbitrary calendar anxiety.',
+    'Build your C++ foundations with 30 guided lessons, focused practice, and spaced recall. Self-paced learning with browser-local progress and JSON backups. No account required.',
   keywords: [
     'Career Roadmap',
     'SDE Preparation',
