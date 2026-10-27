@@ -2,6 +2,7 @@
 import { use, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, ArrowRight, ArrowUpRight, Search, Check, Play, BookOpen } from 'lucide-react';
+import { StudyGuide } from '@/components/learn/StudyGuide';
 import { AppShell } from '@/components/layout/AppShell';
 import { COURSE_GUIDES } from '@/lib/db/course-guides';
 import { LEARNING_DAYS, SUBJECTS } from '@/lib/db/curriculum-data';
@@ -26,6 +27,7 @@ export default function SubjectDetailPage({ params }: { params: Promise<{ subjec
       <div><span className={styles.eyebrow}>{course.phase} · {guided?'GUIDED COURSE':'SELF-DIRECTED OUTLINE'}</span><h1>{course.title}</h1><p>{course.description}</p></div>
       {guided && <Link href={active?`/app/learn/${active.phase_id}/${active.id}`:'/app/roadmap/P0'} className="buttonPrimary">{active?'Continue learning':'Check readiness'} <ArrowRight size={16} aria-hidden="true" /></Link>}
     </header>
+    {guided && active && !loading && !error && <details className={styles.guidePreview}><summary>Your next lesson · Day {String(active.sequence_index).padStart(2, '0')}<span>Open study guide +</span></summary><StudyGuide day={active} /></details>}
     <div className={styles.detailLayout}>
       <section>
         {guided ? <>

@@ -69,3 +69,10 @@
 .panel { border-radius:12px; background:linear-gradient(130deg,color-mix(in srgb,var(--accent) 3%,var(--surface)),var(--surface)); }
 .lessonNumber { border-radius:8px; font-size:11px; }
 .topic { border-radius:10px; }
+
+.guidePreview { margin:0 0 28px; border:1px solid var(--hairline); background:var(--surface); border-radius:16px; overflow:hidden; > summary { display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; padding:20px 24px; cursor:pointer; font-weight:600; min-height:60px; list-style:none; &::-webkit-details-marker { display:none; } span { font-size:12px; color:var(--accent); } } > section { margin:0; border:0; border-top:1px solid var(--hairline); border-radius:0; } }
+.card { background:linear-gradient(145deg,color-mix(in srgb,var(--accent) 4%,var(--surface)),var(--surface) 60%); box-shadow:inset 0 1px 0 color-mix(in srgb,var(--ink) 8%,transparent),var(--shadow-subtle); }
+.cover::before { content:''; position:absolute; pointer-events:none; inset:-60% -30%; background:linear-gradient(110deg,transparent 40%,#ffffff0c 50%,transparent 60%); transform:translateX(-35%); transition:transform 850ms var(--ease-out); }
+@media(hover:hover) { .card:hover .cover::before { transform:translateX(35%); } }
+.resource a { min-height:44px; }
+@media(prefers-reduced-motion:reduce) { .card, .card *, .topic[open] .topicBody, .quickPreview > div, .featuredActions a { animation:none; transition:none; } .card:hover, .card:hover .symbol, .card:hover .cardFooter svg { transform:none; } .cover::before { display:none; } }
