@@ -8,6 +8,7 @@ import clsx from 'clsx';
 
 interface TaskRowProps {
   task: DayTask;
+  disabled?: boolean;
   progress?: UserTaskProgress;
   onToggle: (taskId: string, completed: boolean) => Promise<void>;
   onSaveEvidence: (taskId: string, evidenceText: string) => Promise<void>;
@@ -15,6 +16,7 @@ interface TaskRowProps {
 
 export function TaskRow({
   task,
+  disabled = false,
   progress,
   onToggle,
   onSaveEvidence
@@ -50,6 +52,7 @@ export function TaskRow({
         <div className={styles.checkboxContainer}>
           <button
             type="button"
+            disabled={disabled || isSaving}
             role="checkbox"
             aria-checked={isCompleted}
             aria-label={`Mark task "${task.title}" as ${isCompleted ? 'incomplete' : 'complete'}`}
@@ -96,6 +99,7 @@ export function TaskRow({
               </div>
 
               <input
+                disabled={disabled}
                 type="text"
                 aria-label={`Evidence for ${task.title}`}
                 placeholder="Paste GitHub commit URL or note your proof of work..."
@@ -104,12 +108,13 @@ export function TaskRow({
                 onBlur={handleEvidenceBlur}
                 className={styles.evidenceInput}
               />
-              {saveError && <span role="alert">{saveError}</span>}
+
               {isSaving && <span className={styles.evidenceSaved}>Saving evidence...</span>}
             </div>
           )}
         </div>
       </div>
+      {saveError && <p role="alert" style={{ color: 'var(--danger)', fontSize: 12, marginTop: 8 }}>{saveError}</p>}
     </div>
   );
 }

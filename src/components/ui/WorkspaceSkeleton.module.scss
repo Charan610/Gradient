@@ -1,0 +1,8 @@
+.skeleton { i,b { display:block; height:12px; width:60%; border-radius:5px; background:var(--surface-soft); margin-bottom:18px; } b { height:32px; width:40%; } }
+.metrics { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; margin-bottom:24px; > div { padding:24px; border:1px solid var(--hairline); border-radius:14px; background:var(--surface); } }
+.columns { display:grid; grid-template-columns:2fr 1fr; gap:24px; }
+.hero,.card { padding:28px; border:1px solid var(--hairline); border-radius:16px; background:var(--surface); min-height:300px; }
+.hero b { width:90%; height:70px; } .tiles { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; span { height:38px; background:var(--surface-soft); border-radius:6px; } }
+@media(prefers-reduced-motion:no-preference) { .skeleton i,.skeleton b,.tiles span { animation:skeleton-breathe 1.8s ease-in-out infinite alternate; } }
+@keyframes skeleton-breathe { to { opacity:.45; } }
+@media(max-width:700px) { .metrics { gap:8px; > div { padding:18px 12px; } } .columns { grid-template-columns:1fr; } }

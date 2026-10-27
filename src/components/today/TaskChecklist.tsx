@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AlertCircle, CheckCircle, ArrowRight } from 'lucide-react';
 import { LearningDay, UserTaskProgress } from '@/lib/db/types';
 import { ProgressRepository } from '@/lib/db/progress-repository';
+import { UndoToast } from '@/components/ui/UndoToast';
 import { TaskRow } from './TaskRow';
 import styles from './TaskChecklist.module.scss';
 
@@ -22,6 +23,14 @@ export function TaskChecklist({
   onDayCompletedChange
 }: TaskChecklistProps) {
   const router = useRouter();
+  const locks = useRef(new Set<string>());
+  const [pending, setPending] = useState<string[]>([]);
+  const [undo, setUndo] = useState<{taskId:string; status:UserTaskProgress['status']; expected:UserTaskProgress['status']; message:string} | null>(null);
+  const finishing = useRef(false);
+  const markPending = (taskId:string, value:boolean) => {
+    if (value) locks.current.add(taskId); else locks.current.delete(taskId);
+    setPending([...locks.current]);
+  };
   const [taskMap, setTaskMap] = useState<Record<string, UserTaskProgress>>(initialTaskMap);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -29,23 +38,33 @@ export function TaskChecklist({
 
   useEffect(() => {
     setTaskMap(initialTaskMap);
+    setUndo(null);
     setValidationError(null);
     setSuccessMessage(null);
   }, [day.id, initialTaskMap]);
 
-  const handleToggle = async (taskId: string, completed: boolean) => {
-    const status = completed ? 'completed' : 'not_started';
-    const updated = await ProgressRepository.updateTaskProgress(
-      'local_user',
-      day.id,
-      taskId,
-      status
-    );
-    setTaskMap(prev => ({ ...prev, [taskId]: updated }));
-    setValidationError(null);
+  const updateStatus = async (taskId: string, status: UserTaskProgress['status'], offerUndo = true) => {
+    if (locks.current.has(taskId) || finishing.current) return;
+    const previous = taskMap[taskId];
+    markPending(taskId, true);
+    if (offerUndo) setUndo(null);
+    setTaskMap(prev => ({ ...prev, [taskId]: { ...previous, user_id:'local_user', day_task_id:taskId, status } }));
+    try {
+      const updated = await ProgressRepository.updateTaskProgress('local_user', day.id, taskId, status);
+      setTaskMap(prev => ({ ...prev, [taskId]: updated }));
+      setValidationError(null);
+      if (offerUndo) setUndo({ taskId, status:previous?.status || 'not_started', expected:status, message:status === 'completed' ? 'Task completed.' : 'Task reopened.' });
+    } catch (error) {
+      setTaskMap(prev => { const next = { ...prev }; if (previous) next[taskId] = previous; else delete next[taskId]; return next; });
+      throw error;
+    } finally { markPending(taskId, false); }
   };
+  const handleToggle = (taskId: string, completed: boolean) => updateStatus(taskId, completed ? 'completed' : 'not_started');
 
   const handleSaveEvidence = async (taskId: string, evidenceText: string) => {
+    if (locks.current.has(taskId) || finishing.current) return;
+    markPending(taskId, true);
+    try {
     const currentStatus = taskMap[taskId]?.status || 'not_started';
     const updated = await ProgressRepository.updateTaskProgress(
       'local_user',
@@ -55,9 +74,13 @@ export function TaskChecklist({
       evidenceText
     );
     setTaskMap(prev => ({ ...prev, [taskId]: updated }));
+    } finally { markPending(taskId, false); }
   };
 
   const handleFinishDay = async () => {
+    if (finishing.current || locks.current.size) return;
+    finishing.current = true;
+    setUndo(null);
     setIsSubmitting(true);
     setValidationError(null);
     setSuccessMessage(null);
@@ -68,9 +91,11 @@ export function TaskChecklist({
     } catch {
       setValidationError('Could not save progress. Check browser storage and try again.');
       setIsSubmitting(false);
+      finishing.current = false;
       return;
     }
     setIsSubmitting(false);
+    finishing.current = false;
 
     if (!result.success) {
       if (result.error === 'incomplete_required_tasks') {
@@ -121,6 +146,7 @@ export function TaskChecklist({
             <TaskRow
               key={t.id}
               task={t}
+              disabled={pending.includes(t.id) || isSubmitting}
               progress={taskMap[t.id]}
               onToggle={handleToggle}
               onSaveEvidence={handleSaveEvidence}
@@ -136,6 +162,7 @@ export function TaskChecklist({
             <TaskRow
               key={t.id}
               task={t}
+              disabled={pending.includes(t.id) || isSubmitting}
               progress={taskMap[t.id]}
               onToggle={handleToggle}
               onSaveEvidence={handleSaveEvidence}
@@ -151,6 +178,7 @@ export function TaskChecklist({
             <TaskRow
               key={t.id}
               task={t}
+              disabled={pending.includes(t.id) || isSubmitting}
               progress={taskMap[t.id]}
               onToggle={handleToggle}
               onSaveEvidence={handleSaveEvidence}
@@ -166,6 +194,7 @@ export function TaskChecklist({
             <TaskRow
               key={t.id}
               task={t}
+              disabled={pending.includes(t.id) || isSubmitting}
               progress={taskMap[t.id]}
               onToggle={handleToggle}
               onSaveEvidence={handleSaveEvidence}
@@ -198,7 +227,7 @@ export function TaskChecklist({
           className="buttonPrimary"
           id="finish-day-button"
           onClick={handleFinishDay}
-          disabled={isSubmitting || isDayCompleted}
+          disabled={isSubmitting || isDayCompleted || pending.length > 0}
         >
           <span>{isDayCompleted ? 'Day Completed' : 'Finish Day & Advance Sequence'}</span>
           <span className="iconCapsule">
@@ -206,6 +235,13 @@ export function TaskChecklist({
           </span>
         </button>
       </div>
+      {undo && <UndoToast key={`${undo.taskId}-${undo.status}`} message={undo.message} onClose={() => setUndo(null)} onUndo={async () => {
+        const record = await ProgressRepository.getDayProgress('local_user', day.id);
+        if (record?.state === 'completed') { setUndo(null); return; }
+        const latest = await ProgressRepository.getDayTaskProgresses('local_user', day.id);
+        if ((latest[undo.taskId]?.status || 'not_started') !== undo.expected) { setValidationError('This task changed in another window. Reload to see the latest progress.'); return; }
+        await updateStatus(undo.taskId, undo.status, false);
+      }} />}
     </section>
   );
 }

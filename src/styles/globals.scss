@@ -251,3 +251,11 @@ select {
 .buttonSecondary:active { transform: scale(.98); }
 input, select, textarea { transition: border-color 180ms ease, box-shadow 180ms ease; }
 ::selection { background: var(--accent-soft); color: var(--ink); }
+
+h1,h2,h3 { text-wrap:balance; }
+progress, [role='timer'], kbd { font-variant-numeric:tabular-nums; }
+button:disabled { cursor:not-allowed; }
+@supports(corner-shape:superellipse(1.4)) { .buttonPrimary,.buttonSecondary,dialog { corner-shape:superellipse(1.4); } }
+::view-transition-old(root),::view-transition-new(root) { animation-duration:180ms; }
+::view-transition-group(root) { animation-duration:180ms; }
+@media(prefers-reduced-motion:reduce) { ::view-transition-old(root),::view-transition-new(root),::view-transition-group(root) { animation:none!important; } }

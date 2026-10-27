@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowUpRight, BookOpen, Brain, Check, ChevronRight, Pause, Play, RotateCcw, Timer } from 'lucide-react';
 import { LearningDay } from '@/lib/db/types';
 import { STUDY_GUIDANCE } from '@/lib/db/study-guidance';
+import { transitionView } from '@/lib/view-transition';
 import { ReactiveSurface } from '@/components/ui/ReactiveSurface';
 import styles from './LearningStudio.module.scss';
 
@@ -61,9 +62,9 @@ export function LearningStudio({ day, preview = false }: { day: LearningDay; pre
           <h2>Less friction.<br /><span>More focus.</span></h2>
           <p>Small tools for the part that matters: doing the work.</p>
           <div role="tablist" aria-label="Study tool" className={styles.tabs}>
-            {views.map(({ id: tab, label, icon: Icon }, index) => <button key={tab} ref={el => { tabs.current[index] = el; }} type="button" role="tab" id={`${id}-${tab}`} aria-controls={`${id}-panel`} aria-selected={view === tab} tabIndex={view === tab ? 0 : -1} onClick={() => setView(tab)} onKeyDown={event => {
+            {views.map(({ id: tab, label, icon: Icon }, index) => <button key={tab} ref={el => { tabs.current[index] = el; }} type="button" role="tab" id={`${id}-${tab}`} aria-controls={`${id}-panel`} aria-selected={view === tab} tabIndex={view === tab ? 0 : -1} onClick={() => transitionView(() => setView(tab))} onKeyDown={event => {
               const target = event.key === 'ArrowRight' || event.key === 'ArrowDown' ? (index + 1) % views.length : event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? (index + views.length - 1) % views.length : event.key === 'Home' ? 0 : event.key === 'End' ? views.length - 1 : null;
-              if (target !== null) { event.preventDefault(); setView(views[target].id); tabs.current[target]?.focus(); }
+              if (target !== null) { event.preventDefault(); transitionView(() => setView(views[target].id)); tabs.current[target]?.focus(); }
             }}><Icon size={16} aria-hidden="true" /><span>{label}</span>{tab === 'focus' && running ? <span className={styles.running}>ON</span> : <ChevronRight size={14} aria-hidden="true" />}</button>)}
           </div>
         </div>

@@ -145,3 +145,4 @@
 .textBlock { min-width: 0; }
 .evidenceSection { animation: workspace-enter 250ms var(--ease-out); }
 .evidenceInput { min-height: 44px; border-radius: 9px; &:focus { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 10%, transparent); } }
+.checkbox:disabled { opacity:.6; cursor:wait; }

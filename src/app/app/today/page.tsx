@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { WorkspaceSkeleton } from '@/components/ui/WorkspaceSkeleton';
 import { LearningStudio } from '@/components/studio/LearningStudio';
 import { JourneyCard } from '@/components/today/JourneyCard';
 import { StudyGuide } from '@/components/learn/StudyGuide';
@@ -69,9 +70,7 @@ export default function TodayPage() {
         <Link href="/app/subjects" className="buttonSecondary">Browse your courses <span aria-hidden="true">↗</span></Link>
       </header>
       {loadError ? <p role="alert">Could not load your saved progress. <button className="buttonSecondary" onClick={loadData}>Try again</button></p> : loading ? (
-        <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--muted)' }}>
-          Loading daily study workspace...
-        </div>
+        <WorkspaceSkeleton />
       ) : (
         <>
             <MetricStrip

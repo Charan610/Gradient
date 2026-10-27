@@ -202,7 +202,20 @@ export class ProgressRepository {
   // ----------------------------------------------------------------------------
   // 3. Atomic finishLearningDay Transaction
   // ----------------------------------------------------------------------------
-  static async finishLearningDay(userId: string = 'local_user', dayId: string): Promise<{
+  private static completionRequests = new Map<string, Promise<{success:boolean; error?:string; remaining_count?:number; next_day_sequence?:number}>>();
+
+  // Stable local operation identity deduplicates double clicks and overlapping callers.
+  // Persisted day completion remains the guard for later retries.
+  static finishLearningDay(userId: string = 'local_user', dayId: string) {
+    const key = JSON.stringify([userId, dayId]);
+    const pending = this.completionRequests.get(key);
+    if (pending) return pending;
+    const request = this.completeLearningDay(userId, dayId).finally(() => this.completionRequests.delete(key));
+    this.completionRequests.set(key, request);
+    return request;
+  }
+
+  private static async completeLearningDay(userId: string = 'local_user', dayId: string): Promise<{
     success: boolean;
     error?: string;
     remaining_count?: number;

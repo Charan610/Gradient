@@ -99,3 +99,5 @@
 .header { background: color-mix(in srgb, var(--surface) 84%, transparent); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
 .phaseBadge { border: 1px solid color-mix(in srgb, var(--accent) 15%, transparent); border-radius: 20px; padding: 6px 12px; font-family: inherit; font-size: 12px; }
 .searchButton { min-height: 40px; background: var(--canvas); border-radius: 10px; }
+.searchButton { min-height:44px; min-width:44px; }
+.header { padding-left:max(16px,env(safe-area-inset-left)); padding-right:max(16px,env(safe-area-inset-right)); }
