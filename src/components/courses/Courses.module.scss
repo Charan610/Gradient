@@ -49,3 +49,23 @@
 .panel { box-shadow: var(--shadow-subtle); border-radius: 18px; }
 .lesson { transition: background-color 180ms ease; }
 .topic { transition: border-color 180ms ease; &[open] { border-color: color-mix(in srgb, var(--accent) 40%, var(--hairline)); .topicBody { animation: workspace-enter 250ms var(--ease-out); } } }
+
+// Restrained material palette: each track gets a distinct warm metal finish.
+.card { --track-bg:#302722; --track-ink:#dfc7ab; --track-glow:#c7a57e; border-radius:14px; position:relative; &[data-tone='1'] { --track-bg:#292725; --track-ink:#d6cec2; --track-glow:#b2aaa0; } &[data-tone='2'] { --track-bg:#352820; --track-ink:#e2bc9a; --track-glow:#b98a66; } &[data-tone='3'] { --track-bg:#2b2422; --track-ink:#d7bcb0; --track-glow:#ac8678; } &[data-tone='4'] { --track-bg:#302d27; --track-ink:#d5c9aa; --track-glow:#b8a681; } &[data-tone='5'] { --track-bg:#292421; --track-ink:#d9c8ba; --track-glow:#b39b89; } }
+.card .cover { min-height:174px; background:radial-gradient(ellipse at 100% 10%,color-mix(in srgb,var(--track-glow) 16%,transparent),transparent 70%),var(--track-bg); color:var(--track-ink); border-bottom:1px solid #ffffff12; padding:24px; &::after { width:100px; height:100px; right:32px; bottom:-66px; opacity:.16; box-shadow:none; } }
+.coverLabel { background:#ffffff05; border-color:#ffffff1f; color:var(--track-ink); border-radius:5px; line-height:1.7; z-index:1; }
+.courseDiagram { position:absolute; width:80%; height:100%; top:0; left:0; color:var(--track-ink); opacity:.18; stroke:currentColor; stroke-width:.8; pointer-events:none; circle:last-child { fill:currentColor; } }
+.symbol { font-size:42px; text-shadow:0 0 28px color-mix(in srgb,var(--track-glow) 35%,transparent); }
+.cardBody { padding:22px; }
+.cardBody h2 { font-size:21px; }
+.cardBody > p { margin-bottom:14px; }
+.quickPreview { border-top:1px solid var(--hairline-subtle); margin:0 0 12px; summary { list-style:none; display:flex; justify-content:space-between; align-items:center; gap:12px; min-height:44px; cursor:pointer; color:var(--ink-secondary); font-size:12px; &::-webkit-details-marker { display:none; } span { font-size:18px; color:var(--accent); transition:transform 200ms ease; } } &[open] summary span { transform:rotate(45deg); } > div { background:var(--canvas); border:1px solid var(--hairline); border-radius:9px; padding:16px; margin-bottom:8px; animation:workspace-enter 250ms var(--ease-out); } ol { list-style:none; counter-reset:topic; margin:10px 0 18px; } li { counter-increment:topic; display:flex; gap:10px; margin:9px 0; font-size:12px; line-height:1.5; color:var(--ink-secondary); &::before { content:counter(topic,decimal-leading-zero); font:10px/1.8 monospace; color:var(--accent); flex-shrink:0; } } p { font-size:12px; line-height:1.7; margin:8px 0 0; } }
+.previewLabel { font:9px/1.6 monospace; color:var(--muted); letter-spacing:.08em; }
+.cardFooter { padding-top:12px; }
+.featured { border-radius:16px; background:radial-gradient(ellipse at 20% 120%,#bd9b7222,transparent 60%),#211c19; border-color:#d5bea633; }
+.featuredProgress { background-image:linear-gradient(#d5bea608 1px,transparent 1px),linear-gradient(90deg,#d5bea608 1px,transparent 1px); background-size:24px 24px; strong { color:#e8d8c3; } }
+.filters { border-radius:9px; background:var(--surface-soft); button { border-radius:6px; } }
+.heading h1 { letter-spacing:-.055em; font-weight:600; }
+.panel { border-radius:12px; background:linear-gradient(130deg,color-mix(in srgb,var(--accent) 3%,var(--surface)),var(--surface)); }
+.lessonNumber { border-radius:8px; font-size:11px; }
+.topic { border-radius:10px; }

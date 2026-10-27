@@ -77,3 +77,9 @@ Used https://bytune.space/#features as a visual and interaction reference, adapt
 Added muted orbital framing, precision grids, layered panel borders, metallic typography, an instrument-style focus dial, and reusable pointer-reactive lighting. Lighting uses requestAnimationFrame without per-move React renders, is mouse-only, and is disabled for reduced motion. Existing espresso/champagne preferences are retained.
 
 Validation: 29 tests and production build passed. Homepage and Today fit 375, 768, 1440, and 2560px without horizontal overflow. Browser-tested recall, timer start/pause, pointer lighting, and reduced-motion behavior.
+
+## Course material finishes — October 27, 2026
+
+Extended the precision-panel design across the course library and dashboard with warm graphite, espresso, copper, and stone finishes; no blue, purple, or green accents. Course covers use decorative circuit line art. Native disclosure previews now expose each course's real topic groups and prerequisites without leaving the library. The foundation feature panel uses shared reactive lighting.
+
+Validation: 29 regression tests and production build passed. Course preview open/close and filtering (one guided course, five outlines) passed in the browser. No horizontal overflow at 375, 768, 1024, 1440, or 2560px. Inspected both themes.

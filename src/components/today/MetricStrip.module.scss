@@ -60,3 +60,6 @@
 .valueRow { gap: 8px 12px; }
 .subText { font-size: 11px; }
 @media(max-width:700px) { .stripGrid { gap: 8px; } .metricCard { padding: 14px 12px; } .label { font-size: 10px; align-items: flex-start; svg { display:none; } } .numeral { font-size: 25px; } .subText { font-size: 10px; line-height: 1.5; } }
+.metricCard { position:relative; overflow:hidden; border-radius:12px; background:linear-gradient(130deg,color-mix(in srgb,var(--accent) 4%,var(--surface)),var(--surface) 65%); &::after { content:''; position:absolute; right:0; top:0; width:48px; height:48px; background:linear-gradient(135deg,transparent 49%,var(--hairline-subtle) 50%,transparent 52%); pointer-events:none; } }
+.label svg { padding:5px; width:26px; height:26px; border:1px solid var(--hairline); border-radius:7px; background:var(--surface); }
+.numeral { font-weight:500; }

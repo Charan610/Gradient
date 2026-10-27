@@ -43,3 +43,5 @@
 }
 .statusDot { width: 4px; height: 4px; border-radius: 50%; background: var(--muted); }
 @media(max-width:600px) { .workspaceStatus { margin-bottom: 20px; > span { font-size: 10px; } } }
+.mainWrapper { background-image:radial-gradient(color-mix(in srgb,var(--muted) 12%,transparent) .6px,transparent .6px); background-size:24px 24px; }
+.workspaceStatus { font-family:monospace; font-size:10px; letter-spacing:.02em; }
