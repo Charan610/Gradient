@@ -1,0 +1,51 @@
+[
+  {
+    "start": 0.5,
+    "end": 7.6,
+    "text": "AI is changing how we build. Understanding why your code works still starts with the fundamentals.",
+    "duration": 6.545063,
+    "model": "eleven_multilingual_v2"
+  },
+  {
+    "start": 8.4,
+    "end": 16.6,
+    "text": "Meet Gradient. A personal workspace for turning your next learning step into something you can build, test, and explain.",
+    "duration": 8.021875,
+    "model": "eleven_multilingual_v2"
+  },
+  {
+    "start": 17.4,
+    "end": 29.4,
+    "text": "Start with thirty guided C plus plus lessons. Write something small. Check your understanding. Save the work that shows what you learned. One exercise. One clear next step.",
+    "duration": 11.419375,
+    "model": "eleven_multilingual_v2"
+  },
+  {
+    "start": 30.4,
+    "end": 42.5,
+    "text": "Know what to read, what to practice, and what to check. Make space for focused work, then return to the ideas you want to remember.",
+    "duration": 8.171583,
+    "model": "eleven_multilingual_v2"
+  },
+  {
+    "start": 43.4,
+    "end": 55.4,
+    "text": "As your foundation grows, connect practice to projects and organize your internship preparation. Build evidence of your thinking, one working result at a time.",
+    "duration": 10.072833,
+    "model": "eleven_multilingual_v2"
+  },
+  {
+    "start": 56.3,
+    "end": 66.7,
+    "text": "Start without an account. Your progress stays in your browser. Transfer it with a JSON backup, and explore self-directed outlines when you are ready.",
+    "duration": 9.326313,
+    "model": "eleven_multilingual_v2"
+  },
+  {
+    "start": 67.5,
+    "end": 77.2,
+    "text": "You do not need to learn everything today. You need a clear next step. A little direction. A lot of possibility. Start with Gradient.",
+    "duration": 8.119979,
+    "model": "eleven_multilingual_v2"
+  }
+]
