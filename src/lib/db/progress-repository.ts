@@ -14,18 +14,20 @@ import {
 } from './types';
 import { STUDY_GUIDANCE } from './study-guidance';
 import { LEARNING_DAYS } from './curriculum-data';
+import {workspaceStorageKey,portableStorageKey} from '@/lib/account/workspace';
 import { createClient } from '../supabase/client';
 
 const LOCAL_STORAGE_KEY_PREFIX = 'foundation_career_os_';
 
 export class ProgressRepository {
   private static getStorageKey(userId: string, suffix: string): string {
-    return `${LOCAL_STORAGE_KEY_PREFIX}${userId}_${suffix}`;
+    const key = `${LOCAL_STORAGE_KEY_PREFIX}${userId}_${suffix}`;
+    return userId === 'local_user' ? workspaceStorageKey(key) : key;
   }
 
   private static ownsLocalKey(userId: string, key: string): boolean {
-    if (userId === 'local_user' && key.startsWith('foundation_proj_')) return true;
-    const prefix = this.getStorageKey(userId, '');
+    if (userId === 'local_user') { const portable = portableStorageKey(key); if (!portable) return false; key = portable; if (key.startsWith('foundation_proj_')) return true; }
+    const prefix = `${LOCAL_STORAGE_KEY_PREFIX}${userId}_`;
     if (!key.startsWith(prefix)) return false;
     const suffix = key.slice(prefix.length);
     return ['profile', 'reviews', 'applications'].includes(suffix) ||
@@ -513,7 +515,8 @@ export class ProgressRepository {
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         if (key && this.ownsLocalKey(userId, key)) {
-          local_records[key] = localStorage.getItem(key)!;
+          const portable = userId === 'local_user' ? portableStorageKey(key)! : key;
+          local_records[portable] = localStorage.getItem(key)!;
         }
       }
     }

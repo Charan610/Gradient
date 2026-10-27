@@ -1,3 +1,4 @@
+import {workspaceStorageKey,portableStorageKey} from '@/lib/account/workspace';
 import { z } from 'zod';
 
 const text = z.string();
@@ -62,12 +63,13 @@ export function parseStudyBackup(source: string): Record<string, string> {
 
 /** Replace study records only; roll back on quota/write failure. */
 export function restoreStudyBackup(source: string, storage: Storage): number {
-  const records = parseStudyBackup(source);
+  const records = Object.fromEntries(Object.entries(parseStudyBackup(source)).map(([key,value])=>[workspaceStorageKey(key),value]));
   const previous = new Map<string, string>();
   for (let i = 0; i < storage.length; i++) {
     const key = storage.key(i)!;
-    const suffix = key.startsWith(prefix) ? key.slice(prefix.length) : '';
-    if (key.startsWith('foundation_proj_') || ['profile', 'reviews', 'applications'].includes(suffix) || /^(tasks|day)_P\d+-D\d+$/.test(suffix) || /^gate_P\d+$/.test(suffix)) previous.set(key, storage.getItem(key)!);
+    const portable = portableStorageKey(key); if (!portable) continue;
+    const suffix = portable.startsWith(prefix) ? portable.slice(prefix.length) : '';
+    if (portable.startsWith('foundation_proj_') || ['profile', 'reviews', 'applications'].includes(suffix) || /^(tasks|day)_P\d+-D\d+$/.test(suffix) || /^gate_P\d+$/.test(suffix)) previous.set(key, storage.getItem(key)!);
   }
   const touched = new Set([...previous.keys(), ...Object.keys(records)]);
   try {

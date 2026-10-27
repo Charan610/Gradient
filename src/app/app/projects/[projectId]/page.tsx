@@ -1,5 +1,6 @@
 'use client';
 
+import {projectStorageKey} from '@/lib/account/workspace';
 import React, { use, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Check, Terminal, ExternalLink, HelpCircle } from 'lucide-react';
@@ -23,7 +24,7 @@ export default function ProjectDetailPage({ params }: PageProps) {
   const [notes, setNotes] = useState('');
 
   useEffect(() => {
-    const key = `foundation_proj_${project.id}`;
+    const key = projectStorageKey(project.id);
     const stored = localStorage.getItem(key);
     if (stored) {
       try {
@@ -41,14 +42,14 @@ export default function ProjectDetailPage({ params }: PageProps) {
     const updated = { ...completedMilestones, [code]: !completedMilestones[code] };
     setCompletedMilestones(updated);
     localStorage.setItem(
-      `foundation_proj_${project.id}`,
+      projectStorageKey(project.id),
       JSON.stringify({ milestones: updated, repoUrl, notes })
     );
   };
 
   const handleSaveRepo = () => {
     localStorage.setItem(
-      `foundation_proj_${project.id}`,
+      projectStorageKey(project.id),
       JSON.stringify({ milestones: completedMilestones, repoUrl, notes })
     );
   };

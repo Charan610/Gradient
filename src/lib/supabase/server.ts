@@ -12,6 +12,7 @@ export async function createServerSideClient() {
   const cookieStore = await cookies();
 
   return createServerClient(supabaseUrl, supabaseKey, {
+    cookieOptions: { httpOnly: true, sameSite: 'lax', secure: process.env.VERCEL === '1' || process.env.NEXT_PUBLIC_SITE_URL?.startsWith('https://') === true },
     cookies: {
       getAll() {
         return cookieStore.getAll();

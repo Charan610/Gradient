@@ -53,7 +53,7 @@ export default function PrivacyPage() {
               2. Stored in Your Browser
             </h2>
             <p style={{ fontSize: '14px', color: 'var(--ink-secondary)', lineHeight: 1.55 }}>
-              This personal workspace stores progress, evidence, reviews, and application records in this browser. It does not provide cloud sync or password protection. Anyone with access to this browser profile may access these records.
+              Your username, account preferences, and sign-in identity are stored in Supabase. Optional passwords are hashed by Supabase Auth; plaintext passwords are not stored. Sign-in uses HttpOnly session cookies. Study progress, evidence, reviews, and application records stay in this browser, separated by account. These local records are not encrypted and do not automatically sync. A person with access to this browser profile may inspect its stored data. Password-free access stays with the current browser; email password recovery is not available.
             </p>
           </div>
 

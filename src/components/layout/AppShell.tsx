@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import {useAccount} from '@/components/account/AccountProvider';
 import { HardDrive, ArrowUpRight } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { SidebarNavigation } from './SidebarNavigation';
@@ -11,6 +12,7 @@ import { UserProfile } from '@/lib/db/types';
 import styles from './AppShell.module.scss';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
+  const {account}=useAccount();
   const [profile, setProfile] = useState<UserProfile | null>(null);
 
   useEffect(() => {
@@ -33,7 +35,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         />
         <main className={styles.contentContainer}>
           <div className={styles.workspaceStatus}>
-            <span><HardDrive size={13} aria-hidden="true" /> Personal workspace <span className={styles.statusDot} aria-hidden="true" /> Saved on this device</span>
+            <span><HardDrive size={13} aria-hidden="true" /> {account?`Signed in as ${account.username}`:'Personal workspace'} <span className={styles.statusDot} aria-hidden="true" /> Saved on this device</span>
             <Link href="/app/settings">Manage backups <ArrowUpRight size={13} aria-hidden="true" /></Link>
           </div>
           {children}

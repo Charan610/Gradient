@@ -1,5 +1,6 @@
 'use client';
 
+import {AccountSettings} from '@/components/account/AccountSettings';
 import React, { useEffect, useState } from 'react';
 import { Download, Upload, Trash2, Sun, Moon, AlertTriangle } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
@@ -92,6 +93,7 @@ export default function SettingsPage() {
 
   return (
     <AppShell>
+      <AccountSettings/>
       <div style={{ marginBottom: '28px' }}>
         <h1 style={{ fontSize: '26px', fontWeight: 600, color: 'var(--ink)', marginBottom: '8px' }}>
           Settings & study backups
