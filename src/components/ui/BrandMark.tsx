@@ -1,0 +1,1 @@
+export function BrandMark() { return <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true"><rect x="2" y="17" width="6" height="9" rx="2" fill="currentColor" opacity=".45"/><rect x="11" y="10" width="6" height="16" rx="2" fill="currentColor" opacity=".7"/><rect x="20" y="2" width="6" height="24" rx="2" fill="currentColor"/></svg>; }

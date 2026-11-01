@@ -100,7 +100,7 @@ export function TaskChecklist({
     if (!result.success) {
       if (result.error === 'incomplete_required_tasks') {
         setValidationError(
-          `Cannot finish day: ${result.remaining_count} required task(s) remain incomplete. Complete all mandatory items before advancing.`
+          `Almost there: ${result.remaining_count} required task(s) remain incomplete. Finish the required activities, then try again.`
         );
       } else if (result.error === 'out_of_sequence') {
         setValidationError('This is a preview. Finish your current learning day before advancing this one.');
@@ -112,7 +112,7 @@ export function TaskChecklist({
       return;
     }
 
-    setSuccessMessage('Day completed! Next session unlocked in your sequence.');
+    setSuccessMessage('Lesson completed. Your work is saved and the next lesson is ready.');
     if (onDayCompletedChange) {
       onDayCompletedChange();
     }
@@ -132,7 +132,7 @@ export function TaskChecklist({
     <section className={styles.checklistSection} aria-labelledby="checklist-heading">
       <div className={styles.sectionHeader}>
         <h2 id="checklist-heading" className={styles.heading}>
-          Today&apos;s Focus Tasks
+          Lesson activities
         </h2>
         <span className={styles.progressCounter}>
           {completedCount} of {totalCount} Completed
@@ -141,7 +141,7 @@ export function TaskChecklist({
 
       {learnTasks.length > 0 && (
         <>
-          <div className={styles.groupTitle}>1. Learn & Comprehend</div>
+          <div className={styles.groupTitle}>1. Learn the idea</div>
           {learnTasks.map(t => (
             <TaskRow
               key={t.id}
@@ -157,7 +157,7 @@ export function TaskChecklist({
 
       {practiceTasks.length > 0 && (
         <>
-          <div className={styles.groupTitle}>2. Practice & Code</div>
+          <div className={styles.groupTitle}>2. Try it yourself</div>
           {practiceTasks.map(t => (
             <TaskRow
               key={t.id}
@@ -173,7 +173,7 @@ export function TaskChecklist({
 
       {applyTasks.length > 0 && (
         <>
-          <div className={styles.groupTitle}>3. Apply & Artifact</div>
+          <div className={styles.groupTitle}>3. Explain your work</div>
           {applyTasks.map(t => (
             <TaskRow
               key={t.id}
@@ -189,7 +189,7 @@ export function TaskChecklist({
 
       {reviewTasks.length > 0 && (
         <>
-          <div className={styles.groupTitle}>4. Spaced Retrieval</div>
+          <div className={styles.groupTitle}>4. Recall what you learned</div>
           {reviewTasks.map(t => (
             <TaskRow
               key={t.id}
@@ -229,7 +229,7 @@ export function TaskChecklist({
           onClick={handleFinishDay}
           disabled={isSubmitting || isDayCompleted || pending.length > 0}
         >
-          <span>{isDayCompleted ? 'Day Completed' : 'Finish Day & Advance Sequence'}</span>
+          <span>{isDayCompleted ? 'Lesson completed' : 'Complete lesson'}</span>
           <span className="iconCapsule">
             <ArrowRight size={15} />
           </span>

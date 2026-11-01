@@ -53,3 +53,5 @@
   line-height: 1.5;
   margin-bottom: 16px;
 }
+
+.title { font:400 clamp(32px,4vw,44px)/1.15 var(--font-display); letter-spacing:-.035em; } .sidePanel { background:var(--sage-soft); }

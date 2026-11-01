@@ -6,8 +6,7 @@
 }
 
 .title {
-  font-size: 26px;
-  font-weight: 600;
+  font:400 clamp(30px,4vw,44px)/1.15 var(--font-display);
   color: var(--ink);
   margin-bottom: 8px;
 }
@@ -22,19 +21,21 @@
 .tabsRow {
   display: flex;
   gap: 8px;
+  flex-wrap:wrap;
   margin-bottom: 24px;
   border-bottom: 1px solid var(--hairline);
   padding-bottom: 8px;
 }
 
 .tabBtn {
-  font-family: $font-mono;
+  font-family: inherit;
+  min-height:44px;
   font-size: 13px;
   padding: 6px 14px;
   border-radius: 6px;
   color: var(--muted);
   cursor: pointer;
-  transition: all $transition-fast;
+  transition: background-color $transition-fast, color $transition-fast;
 
   &:hover {
     color: var(--ink);
@@ -104,3 +105,5 @@
   gap: 10px;
   margin-top: auto;
 }
+
+.buttonRow { flex-wrap:wrap; } .card { padding:28px; border-radius:18px; } .prompt { font-size:18px; line-height:1.6; margin:18px 0; } .answerBlock { line-height:1.8; animation:panel-reveal 180ms ease; }

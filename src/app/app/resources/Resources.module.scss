@@ -147,3 +147,5 @@
 @media(hover:hover) { .card:hover { transform:translateY(-3px); border-color:color-mix(in srgb,var(--accent) 40%,var(--hairline)); box-shadow:0 12px 26px #241c1410; } }
 @media(max-width:700px) { .orientation { grid-template-columns:1fr; gap:24px; } .providerFilter { width:100%; select { flex:1; max-width:100%; min-width:0; } } }
 @media(prefers-reduced-motion:reduce) { .card { transition:none; &:hover { transform:none; } } }
+
+.title { font-family:var(--font-display); font-weight:400; letter-spacing:-.03em; }

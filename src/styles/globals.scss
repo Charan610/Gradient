@@ -7,23 +7,27 @@
 :root,
 [data-theme='light'] {
   color-scheme: light;
-  --brand-fill: #6B5144;
+  --brand-fill: #A54C35;
   --hero-bg: #302722;
   --hero-text: #FFFCF5;
   --hero-muted: #D5D0C2;
+  --font-display: Iowan Old Style, Palatino Linotype, Book Antiqua, Georgia, serif;
+  --sage: #657354;
+  --sage-soft: #EDF0E6;
+  --terracotta: #C66C50;
   --ease-out: cubic-bezier(.22, 1, .36, 1);
-  --canvas: #F7F4EF;
+  --canvas: #FAF7F0;
   --surface: #FFFFFF;
-  --surface-soft: #F0EAE2;
+  --surface-soft: #EAE4D9;
   --surface-hover: #E9E0D5;
-  --ink: #26241F;
+  --ink: #292723;
   --ink-secondary: #514D45;
-  --muted: #736D61;
+  --muted: #70685D;
   --hairline: #E3DACE;
   --hairline-subtle: #EEEBE4;
-  --accent: #6B5144;
-  --accent-soft: #EEE5DC;
-  --accent-hover: #564035;
+  --accent: #A54C35;
+  --accent-soft: #F4E4DA;
+  --accent-hover: #873B28;
   --warning: #80674D;
   --warning-soft: #F5EFE8;
   --danger: #78352C;
@@ -34,6 +38,8 @@
 
 [data-theme='dark'] {
   color-scheme: dark;
+  --sage: #B4C4A0;
+  --sage-soft: #30382A;
   --canvas: #1B1816;
   --surface: #26211E;
   --surface-soft: #332B26;
@@ -43,9 +49,9 @@
   --muted: #B1A897;
   --hairline: #4A3E34;
   --hairline-subtle: #382F29;
-  --accent: #D5BEA6;
+  --accent: #E8AC96;
   --accent-soft: #3A2F28;
-  --accent-hover: #E6D4BF;
+  --accent-hover: #F4C5B1;
   --warning: #BCA384;
   --warning-soft: #2E261E;
   --danger: #D47E72;
@@ -137,7 +143,7 @@ select {
 
   &:hover {
     transform: translateY(-1px);
-    background-color: #564035;
+    background-color: #873B28;
     box-shadow: 0 6px 18px #4b362830;
   }
 
@@ -186,6 +192,7 @@ select {
 }
 
 .buttonTertiary {
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
   gap: 6px;

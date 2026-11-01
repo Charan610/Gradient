@@ -1,66 +1,22 @@
 import Link from 'next/link';
-import { ArrowDown, ArrowUpRight, BookOpen, Check, Command, Layers, LockKeyhole, RotateCcw, Terminal } from 'lucide-react';
-import { ReactiveSurface } from '@/components/ui/ReactiveSurface';
-import { ScrollReveal } from '@/components/studio/ScrollReveal';
-import { LearningStudio } from '@/components/studio/LearningStudio';
-import { LEARNING_DAYS } from '@/lib/db/curriculum-data';
+import {ArrowRight,ArrowUpRight,BookOpen,RotateCcw,FolderHeart} from 'lucide-react';
+import {BrandMark} from '@/components/ui/BrandMark';
+import {FirstProgramDemo} from '@/components/learn/FirstProgramDemo';
 import styles from './Home.module.scss';
-
-export default function HomePage() {
-  return (
-    <div className={styles.home}>
-      <a className={styles.skip} href="#main">Skip to content</a>
-      <header className={styles.nav}>
-        <Link href="/" className={styles.brand}><span>G<span className={styles.brandDot}>.</span></span><strong>Gradient</strong></Link>
-        <nav aria-label="Main navigation"><a href="#features">Features</a><a href="#studio">Inside the workspace</a><a href="#questions">Questions</a></nav>
-        <Link href="/app/today" className={styles.navAction}>Open workspace <ArrowUpRight size={15} /></Link>
-      </header>
-      <main id="main">
-        <section className={styles.hero}>
-          <div className={styles.orbital} aria-hidden="true"><svg viewBox="0 0 1100 520" fill="none"><ellipse cx="550" cy="260" rx="490" ry="170" /><ellipse cx="550" cy="260" rx="490" ry="170" transform="rotate(-18 550 260)" /><ellipse cx="550" cy="260" rx="490" ry="170" transform="rotate(18 550 260)" /><circle cx="60" cy="260" r="4" /><circle cx="1040" cy="260" r="4" /></svg></div>
-          <div className={styles.heroCoordinates} aria-hidden="true"><span>GR / LEARNING SYSTEM</span><span>DESIGNED FOR YOUR NEXT STEP ↗</span></div>
-          <div className={styles.heroLabel}><span /> DAY-BASED CAREER PREPARATION</div>
-          <h1>A little direction.<br />A lot of <em>possibility.</em></h1>
-          <p>Gradient — Day-Based Career Preparation Operating System<br className={styles.desktopBreak} /> Build your C++ foundations with 30 guided lessons, focused practice, and a clear next step.</p>
-          <div className={styles.heroActions}><Link href="/sign-up" className={styles.cta}>Start learning <ArrowUpRight size={16} /></Link><Link href="/app/subjects" className={styles.quietLink}>Explore the curriculum <ArrowDown size={15} /></Link></div>
-          <div className={styles.heroFacts}><span><Check size={13} />30 guided C++ lessons</span><span><Check size={13} />Password optional</span><span><Check size={13} />Your own pace</span></div>
-          <ReactiveSurface className={styles.heroWindow}>
-            <div className={styles.windowBar}><span><i /><i /><i /></span><span>gradient / your next step</span><Command size={13} /></div>
-            <div className={styles.windowContent}>
-              <div className={styles.windowIntro}><span className={styles.label}>THE FIRST OF MANY SMALL WINS</span><h2>Hello, world.<br /><span>Hello, possibility.</span></h2><p>Your first program doesn’t need to be impressive. It needs to run.</p><Link href="/app/learn/P0/P0-D01">Explore lesson 01 <ArrowUpRight size={15} /></Link></div>
-              <div className={styles.codeCard}><div><Terminal size={14} /><span>hello.cpp</span><span>C++</span></div><pre><code><span>#include &lt;iostream&gt;</span>{'\n\n'}int main() {'{'}{'\n'}  std::cout &lt;&lt; <b>"Hello, world!"</b>;{'\n'}  return 0;{'\n'}{'}'}</code></pre><div className={styles.terminal}><span>OUTPUT</span><p>Hello, world!</p><span><Check size={12} /> Illustrative example</span></div></div>
-            </div>
-          </ReactiveSurface>
-        </section>
-
-        <section id="features" className={styles.section}>
-          <div className={styles.sectionIntro}><span className={styles.label}>01 / BUILT AROUND YOUR LEARNING</span><h2>A small step.<br /><span>A repeatable rhythm.</span></h2><p>Practice each concept, check your understanding, and save evidence of your work before moving forward. Your code is not automatically checked.</p></div>
-          <ScrollReveal><div className={styles.features}>
-            <Link href="/app/subjects" className={styles.feature}><BookOpen size={20} /><h3>A path, not another playlist.</h3><p>30 ordered C++ foundation lessons. Move at your own pace, one learning day at a time.</p><div className={styles.miniList}>{['Exercise', 'Self-check', 'Clear next step'].map((text,index)=><div key={text}><span>0{index+1}</span>{text}<Chevron /></div>)}</div><span className={styles.featureLink}>Browse the course <ArrowUpRight size={15} /></span></Link>
-            <Link href="/app/review" className={styles.feature}><RotateCcw size={20} /><h3>Make it stick.</h3><p>Return to concepts at spaced intervals. Try recalling first, then revisit what needs another look.</p><div className={styles.recallVisual}><span>READ → RECALL → REVISIT</span><strong>“Could I explain this<br />without my notes?”</strong><div>{[1,3,7,21,45].map(n=><span key={n}>+{n}d</span>)}</div></div><span className={styles.featureLink}>Open review queue <ArrowUpRight size={15} /></span></Link>
-            <Link href="/app/projects" className={styles.feature}><Layers size={20} /><h3>Keep the work that matters.</h3><p>Save notes, code links, and project milestones alongside your progress. Give your next session somewhere to begin.</p><div className={styles.evidenceVisual}><div><Terminal size={14} /><span>YOUR WORK, COLLECTED</span></div><span>Code & build notes</span><span>Checks & edge cases</span><span>What I would improve</span></div><span className={styles.featureLink}>Explore projects <ArrowUpRight size={15} /></span></Link>
-          </div></ScrollReveal>
-        </section>
-
-        <section id="studio" className={styles.section}>
-          <div className={styles.sectionIntro}><span className={styles.label}>02 / TOUCH THE CONTROLS</span><h2>This is your space.<br /><span>Make yourself at home.</span></h2><p>Start with 25 quiet minutes, or choose a session from 5 to 60 minutes. Practice recall and explore your lesson plan with the tabs below.</p></div>
-          <ScrollReveal><LearningStudio day={LEARNING_DAYS[0]} preview /></ScrollReveal>
-          <p className={styles.caption}>A live preview of Day 01. Practicing here won’t change your saved study progress.</p>
-        </section>
-
-        <section className={`${styles.section} ${styles.ownership}`}><div><span className={styles.label}>03 / YOUR PROGRESS BELONGS TO YOU</span><h2>Pick up where<br />you left off.</h2><p>Your work is stored in this browser. Export a JSON backup to keep a separate copy, or restore it in another browser or on another device. Choose a username. Password optional. Automatic cloud sync is not available.</p><Link href="/app/settings" className={styles.quietLink}>Manage your data <ArrowUpRight size={16} /></Link></div><div className={styles.backupCard}><LockKeyhole size={22} /><span className={styles.label}>A WORKSPACE YOU OWN</span><h3>Keep the work.<br /><span>Carry it forward.</span></h3><div><span>Task evidence</span><Check size={14} /></div><div><span>Study notes & reviews</span><Check size={14} /></div><div><span>Project milestones</span><Check size={14} /></div><p>Saved locally · Transfer by JSON backup</p></div></section>
-
-        <section id="questions" className={styles.section}><div className={styles.sectionIntro}><span className={styles.label}>04 / BEFORE YOU BEGIN</span><h2>A few things to know.</h2></div><div className={styles.faq}>{[
-          ['How do I get started?', 'Choose a username and your study preferences. A password is optional; add one to sign in again on another browser. Your account is saved securely, while study progress stays on this device.'],
-          ['Is the entire roadmap a guided course?', 'The 30 guided lessons cover C++ foundations only. DSA, SQL, CS fundamentals, backend, and AI provide self-directed outlines for further study, not complete guided courses.'],
-          ['What happens if I miss a day?', 'Nothing falls behind. Learning days advance when you complete them, not when the calendar changes. Resume at your next step.'],
-          ['Does Gradient check my code automatically?', 'No. Exercises include checks and evidence prompts for self-assessment. Compile and test your work, then compare it with the lesson criteria.'],
-          ['Will my progress appear on another computer?', 'Use Settings to export a backup, then restore it in the other browser. Automatic cloud sync is not available.'],
-        ].map(([question, answer])=><details key={question}><summary>{question}<span aria-hidden="true">+</span></summary><p>{answer}</p></details>)}</div></section>
-        <section className={styles.closing}><span className={styles.label}>THE NEXT STEP IS SMALL.</span><h2>Make it yours.<br />Then begin.</h2><p>Set your name and preferences. Open your first lesson. Start something small.</p><Link href="/sign-up" className={styles.cta}>Start learning <ArrowUpRight size={16} /></Link></section>
-      </main>
-      <footer className={styles.footer}><Link href="/" className={styles.brand}><strong>Gradient<span className={styles.brandDot}>.</span></strong></Link><p>Your personal study workspace.</p><div><Link href="/app/subjects">Courses</Link><Link href="/explore">Roadmap</Link><Link href="/privacy">Privacy</Link></div></footer>
-    </div>
-  );
-}
-function Chevron() { return <ArrowUpRight size={12} aria-hidden="true" />; }
+export default function HomePage(){return <div className={styles.home}>
+<a className={styles.skip} href="#main">Skip to content</a>
+<header className={styles.nav}><Link href="/" className={styles.brand}><BrandMark/>Gradient</Link><nav aria-label="Main navigation"><a href="#how-it-works">The approach</a><a href="#curriculum">What you’ll learn</a><a href="#questions">Questions</a></nav><Link href="/app/today" className={styles.signin}>Open workspace <ArrowUpRight size={14}/></Link></header>
+<main id="main">
+<section className={styles.hero}><div className={styles.heroCopy}><span className={styles.eyebrow}>A LITTLE PRACTICE. A NEW POSSIBILITY.</span><h1>Great things<br/>start with<br/><em>small steps.</em></h1><p>A thoughtful space to learn to code. Find your next lesson, put an idea into practice, and build the confidence to keep going.</p><div className={styles.actions}><Link href="/sign-up" className="buttonPrimary">Start learning <ArrowRight size={16}/></Link><a href="#curriculum" className={styles.textLink}>Explore the path</a></div><span className={styles.caption}>30 guided C++ lessons · Your pace, always</span></div><div className={styles.heroPreview}><div className={styles.previewNote}><span>01 / YOUR FIRST SMALL WIN</span><span>Give it a try ↓</span></div><FirstProgramDemo/><div className={styles.marginNote}><span aria-hidden="true">✳</span> You don’t have to know everything.<br/>Just begin with one idea.</div></div></section>
+<section id="how-it-works" className={styles.section}><div className={styles.sectionHeading}><span className={styles.eyebrow}>A RHYTHM YOU CAN RETURN TO</span><h2>Less figuring out what’s next.<br/><em>More finding your feet.</em></h2><p>A simple structure, with room to learn your way.</p></div><div className={styles.features}>{[{icon:BookOpen,n:'01',title:'Understand one idea.',text:'Start with a focused lesson, a useful resource, and a question worth thinking about.'},{icon:FolderHeart,n:'02',title:'Make something with it.',text:'Try the exercise. Test your work yourself. Keep your code links and notes beside the lesson.'},{icon:RotateCcw,n:'03',title:'Come back to what matters.',text:'Recall prompts bring earlier concepts back into view as you advance through learning days.'}].map(({icon:Icon,n,title,text})=><article key={n}><div><Icon size={22}/><span>{n}</span></div><h3>{title}</h3><p>{text}</p></article>)}</div></section>
+<section id="curriculum" className={`${styles.section} ${styles.curriculum}`}><div><span className={styles.eyebrow}>YOUR LEARNING SHELF</span><h2>A foundation first.<br/><em>Possibilities after.</em></h2><p>Begin with C++. When you’re ready, explore the ideas behind useful software. Every path tells you what’s included.</p><Link href="/explore" className={styles.textLink}>See the full roadmap <ArrowUpRight size={15}/></Link></div><div className={styles.shelf}><Link href="/app/subjects/cpp" className={styles.foundation}><span className={styles.book} aria-hidden="true">C<span>++</span></span><div><span className={styles.eyebrow}>START HERE · GUIDED COURSE</span><h3>C++ Foundations</h3><p>30 lessons. From hello, world to a program you can explain.</p><span className={styles.textLink}>Look inside <ArrowRight size={15}/></span></div></Link>{[['DSA','Data structures & algorithms'],['DB','SQL & databases'],['CS','Computer science'],['BE','Backend engineering'],['AI','AI foundations']].map(([id,title])=><Link className={styles.shelfRow} href={`/app/subjects/${id.toLowerCase()}`} key={id}><span>{title}</span><small>Study outline</small><ArrowUpRight size={14}/></Link>)}</div></section>
+<section className={styles.ownership}><span className={styles.eyebrow}>A WORKSPACE, NOT A RACE</span><h2>Life happens.<br/><em>Your place stays.</em></h2><p>No missed-day penalties. No streak to rescue. Learning days move forward when you complete them. Your notes and progress stay in this browser; export a backup to take them with you.</p><Link href="/sign-up" className="buttonPrimary">Find your starting point <ArrowRight size={16}/></Link></section>
+<section id="questions" className={styles.section}><div className={styles.sectionHeading}><span className={styles.eyebrow}>BEFORE YOU BEGIN</span><h2>A few good questions.</h2></div><div className={styles.faq}>{[
+['Do I need to know how to code?','No. The guided C++ foundation starts with your first program. You’ll need a computer and a C++ compiler for the exercises; the first lesson helps you get set up.'],
+['What is guided, and what is an outline?','C++ Foundations has 30 guided lessons with exercises, self-checks, and recall. DSA, SQL, computer science, backend, and AI currently offer self-directed study outlines and resources, not complete guided courses.'],
+['Does Gradient run or grade my code?','No. Compile and test your work in your own development environment, then compare it with the lesson criteria. The interactive example above is a prediction exercise.'],
+['How do accounts and progress work?','Choose a username. When account services are available, you can add an optional password for signing in on another browser. Study progress is stored locally. Use Settings to export or restore a JSON backup; automatic cloud sync is not available.'],
+['What if I need a few sessions for one lesson?','Take them. Your lesson stays in place until you finish its required activities. Your session budget helps you plan; it is not a deadline.']
+].map(([q,a])=><details key={q}><summary>{q}<span aria-hidden="true">+</span></summary><p>{a}</p></details>)}</div></section>
+<section className={styles.closing}><BrandMark/><h2>Your next chapter<br/>starts with <em>one line.</em></h2><Link href="/sign-up" className="buttonPrimary">Start learning <ArrowRight size={16}/></Link></section>
+</main><footer className={styles.footer}><Link href="/" className={styles.brand}><BrandMark/>Gradient</Link><p>Room to learn. Space to grow.</p><div><Link href="/explore">Roadmap</Link><Link href="/privacy">Privacy</Link><Link href="/sign-in">Sign in</Link></div></footer></div>}

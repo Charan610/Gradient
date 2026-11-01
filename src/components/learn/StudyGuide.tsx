@@ -2,6 +2,7 @@ import { RESOURCES } from '@/lib/db/curriculum-data';
 import { LearningDay } from '@/lib/db/types';
 import { STUDY_GUIDANCE } from '@/lib/db/study-guidance';
 import styles from './StudyGuide.module.scss';
+import {FirstProgramDemo} from './FirstProgramDemo';
 
 export function StudyGuide({ day, minutes = 90 }: { day: LearningDay; minutes?: number }) {
   const guide = STUDY_GUIDANCE[day.sequence_index];
@@ -9,23 +10,27 @@ export function StudyGuide({ day, minutes = 90 }: { day: LearningDay; minutes?: 
   const requiredMinutes = day.tasks.filter(t => t.required).reduce((sum, t) => sum + t.estimate_minutes, 0);
   return (
     <section className={styles.card} aria-labelledby={`guide-${day.id}`}>
-      <div className={styles.eyebrow}>YOUR PLAN FOR THIS LESSON</div>
-      <h2 id={`guide-${day.id}`}>Understand it. Build it. Explain it.</h2>
+      <div className={styles.eyebrow}>LEARN → PRACTICE → RECALL</div>
+      <h2 id={`guide-${day.id}`}>One idea. Then make it yours.</h2>
       <p className={styles.pacing}>Your budget: {minutes} min per session · About {requiredMinutes} min of required work.
         {minutes < requiredMinutes ? ` Plan for ${Math.ceil(requiredMinutes / minutes)} sessions. Save your work and resume this same learning day.` : ' Stop when the checks pass; extra practice is optional.'}</p>
-      <div className={styles.goal}><span>YOUR TARGET</span><p>{day.goal}</p></div>
+      {day.sequence_index === 1 && <FirstProgramDemo/>}
       <ol className={styles.steps}>
         <li><strong>Read with one question in mind</strong><p>{guide.prompt} Use the assigned resource, then close it and explain in your own words.</p></li>
         <li><strong>Build independently</strong><p>{guide.exercise}</p></li>
         <li><strong>Check before marking complete</strong><p>{guide.checks}</p></li>
       </ol>
-      <details className={styles.help}>
-        <summary>Read exactly what you need</summary>
+      <details className={styles.help} open>
+        <summary>Start with these lesson resources</summary>
         <p>Use the sections below for this lesson. You do not need to finish the whole resource.</p>
         {day.tasks.flatMap(task => (task.assigned_resources || []).map((assignment, index) => {
           const resource = RESOURCES.find(item => item.id === assignment.resource_id);
           return resource ? <div className={styles.source} key={`${task.id}-${index}`}><a href={resource.url} target="_blank" rel="noopener noreferrer">{resource.title} ↗<span className="sr-only"> (opens in a new tab)</span></a><p><strong>Read:</strong> {assignment.exact_assigned_sections}</p><p><strong>Use it to:</strong> {assignment.purpose}</p>{assignment.note_what_to_skip && <p><strong>Save for later:</strong> {assignment.note_what_to_skip}</p>}</div> : null;
         }))}
+      </details>
+      <details className={styles.help}>
+        <summary>Check your understanding: {guide.prompt}</summary>
+        <p>Try answering before opening this explanation.</p><p>{guide.answer}</p>
       </details>
       <details className={styles.help}>
         <summary>Stuck? Follow this recovery plan</summary>

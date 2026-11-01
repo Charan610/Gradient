@@ -1,0 +1,4 @@
+.links { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:28px; border-bottom:1px solid var(--hairline); padding-bottom:12px;
+  a { padding:10px 14px; min-height:44px; display:inline-flex; align-items:center; border-radius:8px; color:var(--ink-secondary); font-size:13px; }
+  a:hover, a[aria-current] { background:var(--accent-soft); color:var(--accent); }
+}

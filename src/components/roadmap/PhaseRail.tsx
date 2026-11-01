@@ -15,7 +15,7 @@ interface PhaseRailProps {
 
 export function PhaseRail({
   phases,
-  activePhaseId = 'P0',
+  activePhaseId,
   passedPhaseIds = []
 }: PhaseRailProps) {
   return (
@@ -41,7 +41,7 @@ export function PhaseRail({
             </div>
 
             <div className={styles.headerRow}>
-              <span className={styles.phaseBadge}>{phase.phase_code}</span>
+              <span className={styles.phaseBadge}>{phase.phase_code}</span><span style={{fontSize:11,color:"var(--muted)"}}>{phase.id==='P0'?'30 guided lessons':'Study outline'}{isPassed?' · Self-assessment passed':''}</span>
               {phase.optional_parallel && (
                 <span style={{ fontSize: '11px', color: 'var(--muted)', fontFamily: 'monospace' }}>
                   Parallel Elective
@@ -68,9 +68,9 @@ export function PhaseRail({
               <Link
                 href={`/app/roadmap/${phase.id}`}
                 className="buttonSecondary"
-                style={{ minHeight: '34px', fontSize: '12.5px', padding: '4px 12px' }}
+                style={{ minHeight: '44px', fontSize: '12.5px', padding: '4px 12px' }}
               >
-                <span>Modules & Gate</span>
+                <span>Explore phase</span>
                 <ArrowRight size={12} />
               </Link>
             </div>

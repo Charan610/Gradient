@@ -25,8 +25,8 @@ export default function PlacementsPage() {
   return (
     <AppShell>
       <div style={{ marginBottom: '28px' }}>
-        <h1 style={{ fontSize: '26px', fontWeight: 600, color: 'var(--ink)', marginBottom: '8px' }}>
-          New-Grad Placement Sprint Playbooks
+        <h1 style={{ fontSize: 'clamp(30px, 4vw, 42px)', fontWeight: 400, fontFamily: 'var(--font-display)', color: 'var(--ink)', marginBottom: '8px' }}>
+          Prepare to tell your story.
         </h1>
         <p style={{ fontSize: '15px', color: 'var(--ink-secondary)', maxWidth: '72ch', lineHeight: 1.55 }}>
           Disciplined interview execution frameworks for online assessments (OA), 45-minute live coding mocks, and behavioral STAR rounds.

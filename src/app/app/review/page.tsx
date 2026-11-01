@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { AppShell } from '@/components/layout/AppShell';
 import { HelpCircle, Check, RotateCcw } from 'lucide-react';
 import { ProgressRepository } from '@/lib/db/progress-repository';
 import { ConceptReview, UserProfile } from '@/lib/db/types';
 import styles from './Review.module.scss';
 import clsx from 'clsx';
+import Link from 'next/link';
 
 export default function ReviewPage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -14,13 +15,21 @@ export default function ReviewPage() {
   const [activeTab, setActiveTab] = useState<'ready' | 'later' | 'stable'>('ready');
   const [revealedMap, setRevealedMap] = useState<Record<string, boolean>>({});
 
+  const [loading,setLoading]=useState(true);
+  const [error,setError]=useState('');
+  const [saveError,setSaveError]=useState('');
+  const [saving,setSaving]=useState(false);
+  const savingRef=useRef(false);
   const loadReviews = async () => {
+    setError('');
+    try {
     const prof = await ProgressRepository.getProfile();
     setProfile(prof);
 
     // Fetch all reviews
     const all = await ProgressRepository.getDueReviews('local_user', 9999);
     setReviews(all);
+    } catch { setError("Your recall queue could not be loaded. Please try again."); } finally { setLoading(false); }
   };
 
   useEffect(() => {
@@ -38,9 +47,14 @@ export default function ReviewPage() {
   };
 
   const handleRate = async (id: string, rating: 'needs_work' | 'stable') => {
-    await ProgressRepository.recordReviewAttempt('local_user', id, rating);
-    setRevealedMap({});
-    await loadReviews();
+    if(savingRef.current)return;
+    savingRef.current=true;setSaving(true);setSaveError('');
+    try {
+      await ProgressRepository.recordReviewAttempt('local_user', id, rating);
+      setRevealedMap({});
+      await loadReviews();
+    } catch { setSaveError('Your review could not be saved. Select your rating again to retry.'); }
+    finally { savingRef.current=false;setSaving(false); }
   };
 
   const displayedList =
@@ -53,39 +67,41 @@ export default function ReviewPage() {
   return (
     <AppShell>
       <div className={styles.headerArea}>
-        <h1 className={styles.title}>Spaced Repetition Review Queue</h1>
+        <h1 className={styles.title}>A little recall goes a long way.</h1>
         <p className={styles.subtitle}>
-          Review gaps of 1, 3, 7, 21, and 45 learning days, measured from your latest attempt, never calendar dates. Reinforce mental models with active recall before starting new material.
+          Try answering from memory, then reveal the explanation. Concepts return after 1, 3, 7, 21, and 45 learning days—not calendar dates.
         </p>
       </div>
 
+      {saveError&&<p role="alert" className={styles.answerBlock}>{saveError}</p>}
+      {error&&<div role="alert" className={styles.answerBlock}>{error} <button className="buttonSecondary" onClick={loadReviews}>Try again</button></div>}
       <div className={styles.tabsRow}>
         <button
           type="button"
           className={clsx(styles.tabBtn, activeTab === 'ready' && styles.active)}
-          onClick={() => setActiveTab('ready')}
+          aria-pressed={activeTab==='ready'} onClick={() => setActiveTab('ready')}
         >
-          Ready to Review ({readyReviews.length})
+          Ready now ({readyReviews.length})
         </button>
         <button
           type="button"
           className={clsx(styles.tabBtn, activeTab === 'later' && styles.active)}
-          onClick={() => setActiveTab('later')}
+          aria-pressed={activeTab==='later'} onClick={() => setActiveTab('later')}
         >
-          Review Later ({laterReviews.length})
+          For later ({laterReviews.length})
         </button>
         <button
           type="button"
           className={clsx(styles.tabBtn, activeTab === 'stable' && styles.active)}
-          onClick={() => setActiveTab('stable')}
+          aria-pressed={activeTab==='stable'} onClick={() => setActiveTab('stable')}
         >
-          Stable Concepts ({stableReviews.length})
+          Feeling confident ({stableReviews.length})
         </button>
       </div>
 
-      {displayedList.length === 0 ? (
+      {loading ? <p role="status">Opening your recall queue…</p> : error ? null : displayedList.length === 0 ? (
         <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--muted)' }}>
-          No concepts in this category. Complete daily learning lessons to populate your spaced recall queue.
+          <h2>Room for your next idea.</h2><p>Finish a guided lesson to add its concepts here. Nothing is overdue.</p><Link href="/app/today" className="buttonSecondary">Back to your next lesson</Link>
         </div>
       ) : (
         <div className={styles.flashcardGrid}>
@@ -96,7 +112,7 @@ export default function ReviewPage() {
                 <div className={styles.cardHeader}>
                   <span className={styles.intervalBadge}>Step {item.interval_step}</span>
                   <span style={{ fontSize: '11px', color: 'var(--muted)', fontFamily: 'monospace' }}>
-                    Due Sequence Day {item.next_due_day_index}
+                    Learning day {item.next_due_day_index}
                   </span>
                 </div>
 
@@ -121,25 +137,25 @@ export default function ReviewPage() {
                     <button
                       type="button"
                       className="buttonSecondary"
-                      onClick={() => handleRate(item.id, 'needs_work')}
-                      style={{ flex: 1, minHeight: '36px', fontSize: '12.5px' }}
+                      disabled={saving} onClick={() => handleRate(item.id, 'needs_work')}
+                      style={{ flex: 1, minHeight: '44px', fontSize: '12.5px' }}
                     >
-                      <span>Needs Work (+1 Day)</span>
+                      <span>Practice again (+1 day)</span>
                     </button>
                     <button
                       type="button"
                       className="buttonSecondary"
-                      onClick={() => handleRate(item.id, 'stable')}
+                      disabled={saving} onClick={() => handleRate(item.id, 'stable')}
                       style={{
                         flex: 1,
-                        minHeight: '36px',
+                        minHeight: '44px',
                         fontSize: '12.5px',
                         borderColor: 'var(--accent)',
                         color: 'var(--accent)'
                       }}
                     >
                       <Check size={13} />
-                      <span>Stable Concept</span>
+                      <span>I remembered this</span>
                     </button>
                   </div>
                 )}

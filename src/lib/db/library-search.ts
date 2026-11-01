@@ -3,8 +3,10 @@ import { COURSE_GUIDES } from './course-guides';
 
 export interface LibraryResult { id: string; title: string; href: string; kind: string; external?: boolean; }
 const destinations: LibraryResult[] = [
-  { id: 'today', title: 'Today · your next learning step', href: '/app/today', kind: 'Workspace' },
-  { id: 'courses', title: 'Courses · browse your learning library', href: '/app/subjects', kind: 'Workspace' },
+  { id: 'today', title: 'Home · your next learning step', href: '/app/today', kind: 'Workspace' },
+  { id: 'courses', title: 'Learn · browse your courses', href: '/app/subjects', kind: 'Workspace' },
+  { id: 'progress', title: 'Progress · your saved learning', href: '/app/insights', kind: 'Workspace' },
+  { id: 'career', title: 'Career · projects and opportunities', href: '/app/career', kind: 'Workspace' },
   { id: 'roadmap', title: 'Roadmap · the full study sequence', href: '/app/roadmap', kind: 'Workspace' },
   { id: 'review', title: 'Review · practice recall', href: '/app/review', kind: 'Workspace' },
   { id: 'settings', title: 'Settings · preferences and backups', href: '/app/settings', kind: 'Workspace' },

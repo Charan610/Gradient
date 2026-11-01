@@ -3,19 +3,17 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Compass, BookOpen, RotateCcw, Briefcase, User } from 'lucide-react';
+import { Compass, BookOpen, BarChart2, Briefcase, User } from 'lucide-react';
 import styles from './MobileTabBar.module.scss';
 import clsx from 'clsx';
+import { WORKSPACE_NAV, workspaceGroup } from './workspace-navigation';
 
 export function MobileTabBar() {
   const pathname = usePathname();
 
   const tabs = [
-    { label: 'Today', href: '/app/today', icon: Compass },
-    { label: 'Courses', href: '/app/subjects', icon: BookOpen },
-    { label: 'Review', href: '/app/review', icon: RotateCcw },
-    { label: 'Career', href: '/app/career/applications', icon: Briefcase },
-    { label: 'You', href: '/app/settings', icon: User }
+    ...WORKSPACE_NAV.map((item, index) => ({ ...item, icon: [Compass, BookOpen, BarChart2, Briefcase][index] })),
+    { label: 'You', href: '/app/settings', group: 'profile', icon: User }
   ];
 
   return (
@@ -23,8 +21,7 @@ export function MobileTabBar() {
       {tabs.map(tab => {
         const Icon = tab.icon;
         const isActive =
-          pathname === tab.href ||
-          (tab.href !== '/app/today' && pathname.startsWith(tab.href));
+          workspaceGroup(pathname) === tab.group;
         return (
           <Link
             key={tab.href}

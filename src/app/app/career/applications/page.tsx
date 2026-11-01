@@ -88,8 +88,8 @@ export default function ApplicationsPage() {
     <AppShell>
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '16px', marginBottom: '28px' }}>
         <div>
-          <h1 style={{ fontSize: '26px', fontWeight: 600, color: 'var(--ink)', marginBottom: '6px' }}>
-            Personal Application Pipeline
+          <h1 style={{ fontSize: 'clamp(30px, 4vw, 42px)', fontWeight: 400, fontFamily: 'var(--font-display)', color: 'var(--ink)', marginBottom: '6px' }}>
+            Keep your next opportunity in sight.
           </h1>
           <p style={{ fontSize: '15px', color: 'var(--ink-secondary)', maxWidth: '64ch', lineHeight: 1.5 }}>
             Private CRM for tracking your real internship and placement applications. Displayed in recency order with zero fabricated listings.

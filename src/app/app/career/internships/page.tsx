@@ -17,8 +17,8 @@ export default function InternshipsPage() {
   return (
     <AppShell>
       <div style={{ marginBottom: '28px' }}>
-        <h1 style={{ fontSize: '26px', fontWeight: 600, color: 'var(--ink)', marginBottom: '8px' }}>
-          Internship Readiness & Official Company Portals
+        <h1 style={{ fontSize: 'clamp(30px, 4vw, 42px)', fontWeight: 400, fontFamily: 'var(--font-display)', color: 'var(--ink)', marginBottom: '8px' }}>
+          Find your first opportunity.
         </h1>
         <p style={{ fontSize: '15px', color: 'var(--ink-secondary)', maxWidth: '72ch', lineHeight: 1.55 }}>
           Academic semester target: Apply during 3-1 for summer 3-2 opportunities. Always verify graduating batch eligibility directly on official company portals.
@@ -50,7 +50,7 @@ export default function InternshipsPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
             <Calendar size={18} color="var(--accent)" />
             <h2 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)' }}>
-              Sunday 30-Minute Opportunity Sweep
+              A short opportunity check-in
             </h2>
           </div>
           <ol style={{ paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px', color: 'var(--ink-secondary)', lineHeight: 1.5 }}>
@@ -64,10 +64,10 @@ export default function InternshipsPage() {
       </div>
 
       <h2 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--ink)', marginBottom: '16px' }}>
-        Verified Company Career Portals
+        Official company career portals
       </h2>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))', gap: '16px' }}>
         {COMPANY_PORTALS.map(portal => (
           <div
             key={portal.company}

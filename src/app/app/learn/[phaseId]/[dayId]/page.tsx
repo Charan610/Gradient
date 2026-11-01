@@ -3,12 +3,11 @@
 import { StudyGuide } from '@/components/learn/StudyGuide';
 import React, { use, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft, Clock, BookOpen, CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LearningStudio } from '@/components/studio/LearningStudio';
+import { ArrowLeft, Clock, CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
-import { ResourceAssignmentCard } from '@/components/learn/ResourceAssignmentCard';
 import { TaskChecklist } from '@/components/today/TaskChecklist';
-import { LEARNING_DAYS } from '@/lib/db/curriculum-data';
+import { LEARNING_DAYS, MODULES } from '@/lib/db/curriculum-data';
 import { ProgressRepository } from '@/lib/db/progress-repository';
 import { LearningDay, UserTaskProgress } from '@/lib/db/types';
 import styles from './LearnDay.module.scss';
@@ -21,7 +20,6 @@ interface PageProps {
 }
 
 export default function LearnDayPage({ params }: PageProps) {
-  const router = useRouter();
   const resolvedParams = use(params);
   const { phaseId, dayId } = resolvedParams;
 
@@ -30,25 +28,34 @@ export default function LearnDayPage({ params }: PageProps) {
   const [isDayCompleted, setIsDayCompleted] = useState(false);
   const [minutes, setMinutes] = useState(90);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [activeSequence, setActiveSequence] = useState(1);
 
-  const loadDayData = async () => {
-    const foundDay = LEARNING_DAYS.find(d => d.id === dayId && d.phase_id === phaseId);
-    if (!foundDay) { setDay(null); setLoading(false); return; }
-    setMinutes((await ProgressRepository.getProfile()).preferred_daily_minutes);
-    setDay(foundDay);
-
-    const tasks = await ProgressRepository.getDayTaskProgresses('local_user', foundDay.id);
-    setTaskMap(tasks);
-
-    const dayProg = await ProgressRepository.getDayProgress('local_user', foundDay.id);
-    setIsDayCompleted(dayProg?.state === 'completed');
-
-    setLoading(false);
-  };
+  const loadDayData = React.useCallback(async () => {
+    setLoadError(false);
+    try {
+      const foundDay = LEARNING_DAYS.find(d => d.id === dayId && d.phase_id === phaseId);
+      if (!foundDay) { setDay(null); setLoading(false); return; }
+      const [profile, tasks, dayProg] = await Promise.all([
+        ProgressRepository.getProfile(),
+        ProgressRepository.getDayTaskProgresses('local_user', foundDay.id),
+        ProgressRepository.getDayProgress('local_user', foundDay.id),
+      ]);
+      setMinutes(profile.preferred_daily_minutes);
+      setActiveSequence(profile.active_day_index);
+      setDay(foundDay);
+      setTaskMap(tasks);
+      setIsDayCompleted(dayProg?.state === 'completed');
+    } catch { setLoadError(true); }
+    finally { setLoading(false); }
+  }, [dayId, phaseId]);
 
   useEffect(() => {
-    loadDayData();
-  }, [dayId]);
+    setLoading(true);
+    void loadDayData();
+  }, [loadDayData]);
+
+  if (loadError) return <AppShell><section className={styles.sideCard} role="alert"><h1>Your lesson couldn’t be loaded</h1><p>Your saved progress has not been reset. Check browser storage, then retry.</p><button className="buttonSecondary" onClick={loadDayData}>Try again</button></section></AppShell>;
 
   if (!loading && !day) return <AppShell><h1>Lesson unavailable</h1><Link href="/app/today">Return to your active lesson</Link></AppShell>;
 
@@ -62,8 +69,8 @@ export default function LearnDayPage({ params }: PageProps) {
     );
   }
 
-  // Find assigned resources from tasks
-  const allAssignments = day.tasks.flatMap(t => t.assigned_resources || []);
+  const module = MODULES.find(item => day.tasks.some(task => task.module_id === item.id));
+  const isPreview = day.sequence_index > activeSequence && !isDayCompleted;
 
   // Previous and next learning days
   const currentIndex = LEARNING_DAYS.findIndex(d => d.id === day.id);
@@ -77,13 +84,13 @@ export default function LearnDayPage({ params }: PageProps) {
           <div className={styles.headerBar}>
             <Link href="/app/today" className={styles.backLink}>
               <ArrowLeft size={14} />
-              <span>Back to Daily Cockpit</span>
+              <span>Back to Home</span>
             </Link>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
               <span className="phaseBadge">Phase {day.phase_id.replace('P', '')}</span>
               <span style={{ fontSize: '12px', color: 'var(--muted)', fontFamily: 'monospace' }}>
-                Sequence Day {day.sequence_index < 10 ? `0${day.sequence_index}` : day.sequence_index}
+                Lesson {day.sequence_index < 10 ? `0${day.sequence_index}` : day.sequence_index}
               </span>
             </div>
 
@@ -92,27 +99,16 @@ export default function LearnDayPage({ params }: PageProps) {
 
           <div className={styles.goalCard}>
             <div style={{ fontSize: '11px', fontFamily: 'monospace', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: '4px' }}>
-              Learning Day Target
+              What you’ll learn
             </div>
             <p className={styles.goalText}>{day.goal}</p>
           </div>
 
           <StudyGuide day={day} minutes={minutes} />
 
-          {allAssignments.length > 0 && (
-            <div>
-              <div className={styles.sectionHeading}>
-                <BookOpen size={16} />
-                <span>Assigned Source Study Material</span>
-              </div>
-              {allAssignments.map((assignment, idx) => (
-                <ResourceAssignmentCard
-                  key={`${assignment.resource_id}-${idx}`}
-                  assignment={assignment}
-                />
-              ))}
-            </div>
-          )}
+          {isPreview && <div className={styles.previewNotice} role="note"><strong>You’re previewing a future lesson.</strong><p>You can read ahead. Finish your current lesson before completing this one.</p><Link href="/app/today">Return to your current lesson →</Link></div>}
+
+          {isDayCompleted && <section className={styles.completion} aria-label="Lesson completed"><CheckCircle size={22} /><div><h2>Lesson complete. Nicely done.</h2><p>Your work is saved. {nextDay ? 'Ready for the next small step?' : 'You’ve reached the end of the guided foundation lessons.'}</p><Link className="buttonPrimary" href={nextDay ? `/app/learn/${nextDay.phase_id}/${nextDay.id}` : '/app/roadmap/P0'}>{nextDay ? 'Continue to next lesson' : 'Check foundation readiness'} <ChevronRight size={16} /></Link></div></section>}
 
           <div style={{ marginTop: '24px' }}>
             <TaskChecklist
@@ -127,28 +123,33 @@ export default function LearnDayPage({ params }: PageProps) {
 
         <div className={styles.sideColumn}>
           <div className={styles.sideCard}>
-            <div className={styles.sideHeading}>Session Allocation</div>
+            <div className={styles.sideHeading}>Make this fit your day</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', marginBottom: '12px' }}>
               <Clock size={16} color="var(--accent)" />
               <strong>{day.estimated_minutes} Minutes</strong>
               <span style={{ color: 'var(--muted)', fontSize: '12px' }}>(Recommended pacing)</span>
             </div>
             <p style={{ fontSize: '13px', color: 'var(--ink-secondary)', lineHeight: 1.5 }}>
-              Take breaks as needed. Your active study day does not advance automatically due to elapsed time. Advance only when you complete required work.
+              Your session preference is {minutes} minutes. Take breaks whenever you need. This lesson stays here until you finish its required activities.
             </p>
           </div>
 
-          <div className={styles.sideCard}>
-            <div className={styles.sideHeading}>Required Proof Criteria</div>
+          <details className={styles.sideCard}>
+            <summary className={styles.sideHeading}>How to check your work</summary>
             <ul className={styles.criteriaList}>
               {day.tasks.filter(t => t.required).map(t => (
                 <li key={t.id}>{t.validation_criteria}</li>
               ))}
             </ul>
-          </div>
+          </details>
 
           <div className={styles.sideCard}>
-            <div className={styles.sideHeading}>Sequence Navigation</div>
+            <div className={styles.sideHeading}>Why this lesson matters</div>
+            <p className={styles.context}>{module?.learning_outcomes[0] || day.goal}</p>
+            <p className={styles.context}>{prevDay ? `Builds on lesson ${prevDay.sequence_index}: ${prevDay.title}. Revisit it if you need a refresher.` : 'No programming experience needed. Start with the reading, then try the exercise in your own editor.'}</p>
+          </div>
+          <div className={styles.sideCard}>
+            <div className={styles.sideHeading}>Find your way</div>
             <Link href="/app/subjects/cpp" className="buttonTertiary" style={{ marginBottom: 16 }}>Browse all 30 lessons ↗</Link>
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px' }}>
               {prevDay ? (
@@ -158,7 +159,7 @@ export default function LearnDayPage({ params }: PageProps) {
                   style={{ minHeight: '38px', fontSize: '12px', flex: 1 }}
                 >
                   <ChevronLeft size={13} />
-                  <span>Day {prevDay.sequence_index}</span>
+                  <span>Lesson {prevDay.sequence_index}</span>
                 </Link>
               ) : (
                 <div style={{ flex: 1 }} />
@@ -170,7 +171,7 @@ export default function LearnDayPage({ params }: PageProps) {
                   className="buttonSecondary"
                   style={{ minHeight: '38px', fontSize: '12px', flex: 1 }}
                 >
-                  <span>Day {nextDay.sequence_index}</span>
+                  <span>{isDayCompleted ? "Next" : "Preview"} {nextDay.sequence_index}</span>
                   <ChevronRight size={13} />
                 </Link>
               ) : null}
@@ -178,6 +179,7 @@ export default function LearnDayPage({ params }: PageProps) {
           </div>
         </div>
       </div>
+      <details className={styles.optionalTools}><summary>Optional study tools · focus timer & quick recall</summary><LearningStudio key={day.id} day={day} /></details>
     </AppShell>
   );
 }

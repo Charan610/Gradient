@@ -1,4 +1,3 @@
-import Link from 'next/link';
-import {ArrowLeft} from 'lucide-react';
 import {AccountForm} from '@/components/account/AccountForm';
-export default function SignInPage(){return <main className="workspaceEntry"><Link className="buttonTertiary" href="/"><ArrowLeft size={14}/>Home</Link><AccountForm signin/></main>}
+import {AuthFrame} from '@/components/account/AuthFrame';
+export default function Page(){return <AuthFrame><AccountForm signin/></AuthFrame>}

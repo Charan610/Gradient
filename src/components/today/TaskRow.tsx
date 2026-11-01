@@ -76,33 +76,35 @@ export function TaskRow({
           <button
             type="button"
             className="buttonTertiary"
+            aria-expanded={expanded}
+            aria-controls={`evidence-${task.id}`}
             onClick={() => setExpanded(!expanded)}
             style={{ padding: '2px 0', fontSize: '12px' }}
           >
             {expanded ? (
               <>
-                <span>Hide evidence & criteria</span>
+                <span>Hide notes & self-check</span>
                 <ChevronUp size={13} />
               </>
             ) : (
               <>
-                <span>Add proof / note / criteria</span>
+                <span>Check your work & save a note</span>
                 <ChevronDown size={13} />
               </>
             )}
           </button>
 
           {expanded && (
-            <div className={styles.evidenceSection}>
+            <div id={`evidence-${task.id}`} className={styles.evidenceSection}>
               <div style={{ fontSize: '12px', color: 'var(--muted)' }}>
-                <strong>Validation Criteria:</strong> {task.validation_criteria}
+                <strong>Check before completing:</strong> {task.validation_criteria}
               </div>
 
               <input
                 disabled={disabled}
                 type="text"
                 aria-label={`Evidence for ${task.title}`}
-                placeholder="Paste GitHub commit URL or note your proof of work..."
+                placeholder="Code link, test result, or something you learned…"
                 value={evidence}
                 onChange={e => setEvidence(e.target.value)}
                 onBlur={handleEvidenceBlur}

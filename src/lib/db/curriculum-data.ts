@@ -1059,7 +1059,7 @@ export const LEARNING_DAYS: LearningDay[] = [
     phase_id: 'P0',
     sequence_index: 1,
     stable_code: 'P0-D01',
-    title: 'Computational Foundations & Running Your First C++ Program',
+    title: 'Your first C++ program',
     goal: 'Explain what a program is, how the compiler produces an executable, and successfully run hello.cpp.',
     estimated_minutes: 90,
     tasks: [
@@ -1070,7 +1070,7 @@ export const LEARNING_DAYS: LearningDay[] = [
         task_order: 1,
         kind: 'learn',
         required: true,
-        title: 'Study Computing Basics & Program Structure',
+        title: 'Understand what a program does',
         instructions: 'Watch the first 30 minutes of CS50x Week 0 covering binary and algorithmic thinking. Then read LearnCpp lesson 0.2 through 0.7 on compilers, linkers, and IDE configuration.',
         estimate_minutes: 25,
         validation_criteria: 'Can verbally state the difference between source code, compiler object file, and linked binary executable.',
@@ -1113,7 +1113,7 @@ export const LEARNING_DAYS: LearningDay[] = [
         task_order: 3,
         kind: 'apply',
         required: true,
-        title: 'Document the 4-Stage Execution Pipeline',
+        title: 'Explain how your code becomes a running program',
         instructions: 'Write a 4-sentence summary in a local file notes.txt: (1) Source code, (2) Preprocessor & Compiler, (3) Linker, (4) Operating System execution in RAM.',
         estimate_minutes: 20,
         validation_criteria: 'Accurate 4-sentence summary written without copying from AI.',
@@ -1141,7 +1141,7 @@ export const LEARNING_DAYS: LearningDay[] = [
     phase_id: 'P0',
     sequence_index: 2,
     stable_code: 'P0-D02',
-    title: 'C++ Variables, Primitive Data Types & Standard Input',
+    title: 'Variables: save and read information',
     goal: 'Declare integer, double, and character variables, take user input via std::cin, and display computed results.',
     estimated_minutes: 90,
     tasks: [
@@ -1212,7 +1212,7 @@ export const LEARNING_DAYS: LearningDay[] = [
     phase_id: 'P0',
     sequence_index: 3,
     stable_code: 'P0-D03',
-    title: 'Arithmetic Expressions, Operators & Precedence',
+    title: 'Working with numbers',
     goal: 'Accurately predict integer division, modulo arithmetic, and operator precedence in arithmetic formulas.',
     estimated_minutes: 90,
     tasks: [
@@ -1283,7 +1283,7 @@ export const LEARNING_DAYS: LearningDay[] = [
     phase_id: 'P0',
     sequence_index: 4,
     stable_code: 'P0-D04',
-    title: 'Conditional Branching: if, else if, else & Boolean Logic',
+    title: 'Making decisions with if and else',
     goal: 'Implement multi-way conditional decisions and evaluate boolean expressions using &&, ||, and !.',
     estimated_minutes: 90,
     tasks: [
@@ -1354,7 +1354,7 @@ export const LEARNING_DAYS: LearningDay[] = [
     phase_id: 'P0',
     sequence_index: 5,
     stable_code: 'P0-D05',
-    title: 'Switch Statements, Enumerations & Menu-Driven Architecture',
+    title: 'Building a simple menu',
     goal: 'Build an interactive console menu using switch-case and enum class.',
     estimated_minutes: 90,
     tasks: [

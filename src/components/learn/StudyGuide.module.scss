@@ -31,3 +31,5 @@
 .steps li { transition:background-color 180ms ease; border-radius:10px; }
 @media(hover:hover) { .steps li:hover { background:color-mix(in srgb,var(--accent) 4%,transparent); } }
 @media(prefers-reduced-motion:reduce) { .card *, .help[open] p { animation:none; transition:none; } }
+.code { background:var(--surface-soft); padding:18px; margin:16px 0; border-radius:10px; font:13px/1.8 monospace; overflow-x:auto; color:var(--ink); white-space:pre; }
+.card { background:var(--surface); box-shadow:none; }

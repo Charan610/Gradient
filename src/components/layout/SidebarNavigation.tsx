@@ -5,12 +5,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   Compass,
-  Map,
   BookOpen,
-  Library,
-  RotateCcw,
   Briefcase,
-  Terminal,
   BarChart2,
   Settings,
   Sun,
@@ -19,6 +15,8 @@ import {
 import { useTheme } from '@/components/context/ThemeContext';
 import styles from './SidebarNavigation.module.scss';
 import clsx from 'clsx';
+import {BrandMark} from '@/components/ui/BrandMark';
+import { WORKSPACE_NAV, workspaceGroup } from './workspace-navigation';
 
 interface SidebarNavProps {
   userAlias?: string;
@@ -32,60 +30,25 @@ export function SidebarNavigation({
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
 
-  const primaryNav = [
-    { label: 'Today', href: '/app/today', icon: Compass },
-    { label: 'Roadmap', href: '/app/roadmap', icon: Map },
-    { label: 'Courses', href: '/app/subjects', icon: BookOpen },
-    { label: 'Resources', href: '/app/resources', icon: Library },
-    { label: 'Review Queue', href: '/app/review', icon: RotateCcw }
-  ];
-
-  const engineeringNav = [
-    { label: 'Projects', href: '/app/projects', icon: Terminal },
-    { label: 'Internships', href: '/app/career/internships', icon: Briefcase },
-    { label: 'Applications', href: '/app/career/applications', icon: Briefcase },
-    { label: 'Insights', href: '/app/insights', icon: BarChart2 }
-  ];
+  const primaryNav = WORKSPACE_NAV.map((item, index) => ({ ...item, icon: [Compass, BookOpen, BarChart2, Briefcase][index] }));
 
   return (
     <aside className={styles.sidebar} aria-label="Desktop Navigation">
       <Link href="/app/today" className={styles.brand}>
-        <div className={styles.logoGlyph}>GR</div>
+        <span style={{color:"var(--accent)"}}><BrandMark/></span>
         <div className={styles.brandInfo}>
-          <span className={styles.brandName}>GRADIENT</span>
+          <span className={styles.brandName}>Gradient</span>
           <span className={styles.brandSub}>Learning workspace</span>
         </div>
       </Link>
 
       <div className={styles.navSection}>
-        <div className={styles.sectionLabel}>Your study space</div>
+        <div className={styles.sectionLabel}>Your workspace</div>
         <ul className={styles.navList}>
           {primaryNav.map(item => {
             const Icon = item.icon;
             const isActive =
-              pathname === item.href || (item.href !== '/app/today' && pathname.startsWith(item.href));
-            return (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  aria-current={isActive ? 'page' : undefined}
-                  className={clsx(styles.navItem, isActive && styles.active)}
-                >
-                  <Icon className={styles.navIcon} strokeWidth={1.7} />
-                  <span>{item.label}</span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
-
-      <div className={styles.navSection}>
-        <div className={styles.sectionLabel}>Engineering & Career</div>
-        <ul className={styles.navList}>
-          {engineeringNav.map(item => {
-            const Icon = item.icon;
-            const isActive = pathname.startsWith(item.href);
+              workspaceGroup(pathname) === item.group;
             return (
               <li key={item.href}>
                 <Link
@@ -105,7 +68,7 @@ export function SidebarNavigation({
       <div className={styles.sidebarFooter}>
         <div className={styles.userCard}>
           <div>
-            <div className={styles.userAlias}>{userAlias}</div>
+            <Link href="/app/settings" className={styles.userAlias}>{userAlias}</Link>
             <div className={styles.userSemester}>Semester {semester}</div>
           </div>
           <button
@@ -123,7 +86,7 @@ export function SidebarNavigation({
           className={clsx(styles.navItem, pathname === '/app/settings' && styles.active)}
         >
           <Settings className={styles.navIcon} strokeWidth={1.7} />
-          <span>Settings</span>
+          <span>Profile & settings</span>
         </Link>
       </div>
     </aside>
