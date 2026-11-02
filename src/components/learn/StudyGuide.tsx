@@ -2,6 +2,7 @@ import { RESOURCES } from '@/lib/db/curriculum-data';
 import { LearningDay } from '@/lib/db/types';
 import { STUDY_GUIDANCE } from '@/lib/db/study-guidance';
 import styles from './StudyGuide.module.scss';
+import Link from 'next/link';
 import {FirstProgramDemo} from './FirstProgramDemo';
 
 export function StudyGuide({ day, minutes = 90 }: { day: LearningDay; minutes?: number }) {
@@ -14,7 +15,7 @@ export function StudyGuide({ day, minutes = 90 }: { day: LearningDay; minutes?: 
       <h2 id={`guide-${day.id}`}>One idea. Then make it yours.</h2>
       <p className={styles.pacing}>Your budget: {minutes} min per session · About {requiredMinutes} min of required work.
         {minutes < requiredMinutes ? ` Plan for ${Math.ceil(requiredMinutes / minutes)} sessions. Save your work and resume this same learning day.` : ' Stop when the checks pass; extra practice is optional.'}</p>
-      {day.sequence_index === 1 && <FirstProgramDemo/>}
+      {day.sequence_index === 1 && <><div className={styles.setup}><strong>First time running C++?</strong><p>Install a compiler and build hello.cpp with a short guide for your operating system.</p><Link href="/setup/cpp">Set up C++ →</Link></div><FirstProgramDemo/></>}
       <ol className={styles.steps}>
         <li><strong>Read with one question in mind</strong><p>{guide.prompt} Use the assigned resource, then close it and explain in your own words.</p></li>
         <li><strong>Build independently</strong><p>{guide.exercise}</p></li>

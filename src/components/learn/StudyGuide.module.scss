@@ -33,3 +33,5 @@
 @media(prefers-reduced-motion:reduce) { .card *, .help[open] p { animation:none; transition:none; } }
 .code { background:var(--surface-soft); padding:18px; margin:16px 0; border-radius:10px; font:13px/1.8 monospace; overflow-x:auto; color:var(--ink); white-space:pre; }
 .card { background:var(--surface); box-shadow:none; }
+
+.setup { padding:24px; border:1px solid var(--hairline); border-radius:12px; background:var(--sage-soft); margin:24px 0; font-size:14px; line-height:24px; p { margin:8px 0; color:var(--ink-secondary); } a { display:inline-flex; align-items:center; min-height:44px; color:var(--accent); font-weight:550; } }
