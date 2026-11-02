@@ -66,6 +66,9 @@ export function parseStudyBackup(source: string): Record<string, string> {
 export function restoreStudyBackup(source: string, storage: Storage): number {
   const records = Object.fromEntries(Object.entries(parseStudyBackup(source)).map(([key,value])=>[workspaceStorageKey(key),value]));
   const previous = new Map<string, string>();
+  const checkpointKey=workspaceStorageKey('gradient_backup_checkpoint');
+  const checkpoint=storage.getItem(checkpointKey);
+  if(checkpoint!==null)previous.set(checkpointKey,checkpoint);
   for (let i = 0; i < storage.length; i++) {
     const key = storage.key(i)!;
     const portable = portableStorageKey(key); if (!portable) continue;

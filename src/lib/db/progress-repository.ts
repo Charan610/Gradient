@@ -556,7 +556,7 @@ export class ProgressRepository {
   }
 
   static async clearAllUserData(userId: string = 'local_user'): Promise<void> {
-    if(typeof localStorage!=='undefined')localStorage.removeItem(this.getStorageKey(userId,'completion_journal'));
+    if(typeof localStorage!=='undefined'){localStorage.removeItem(this.getStorageKey(userId,'completion_journal'));if(userId==='local_user')localStorage.removeItem(workspaceStorageKey('gradient_backup_checkpoint'));}
     if (typeof localStorage !== 'undefined') {
       const keysToRemove: string[] = [];
       for (let i = 0; i < localStorage.length; i++) {

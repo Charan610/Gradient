@@ -48,12 +48,12 @@ export function TopHeader({
           <button
             onClick={() => setPaletteOpen(true)}
             className={styles.searchButton}
-            aria-label="Search your library"
+            title="Search your library"
             aria-keyshortcuts="Control+K Meta+K"
           >
             <Search size={15} />
             <span>Search your library</span>
-            <kbd className={styles.kbdShortcut}>Ctrl / ⌘ K</kbd>
+            <kbd aria-hidden="true" className={styles.kbdShortcut}>Ctrl / ⌘ K</kbd>
           </button>
         </div>
       </header>

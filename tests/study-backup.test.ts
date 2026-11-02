@@ -69,3 +69,13 @@ describe('Study backup restore', () => {
     expect(entries).toEqual(original);
   });
 });
+
+it('starts a fresh reminder checkpoint after restoring earlier progress or resetting a course',async()=>{
+  const backup=await ProgressRepository.exportUserData();
+  storage.setItem('gradient_backup_checkpoint','30');
+  restoreStudyBackup(backup,storage);
+  expect(storage.getItem('gradient_backup_checkpoint')).toBeNull();
+  storage.setItem('gradient_backup_checkpoint','30');
+  await ProgressRepository.clearAllUserData();
+  expect(storage.getItem('gradient_backup_checkpoint')).toBeNull();
+});
