@@ -48,7 +48,7 @@ export function TopHeader({
           <button
             onClick={() => setPaletteOpen(true)}
             className={styles.searchButton}
-            aria-label="Search curriculum or execute command"
+            aria-label="Search your library"
             aria-keyshortcuts="Control+K Meta+K"
           >
             <Search size={15} />
