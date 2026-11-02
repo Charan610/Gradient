@@ -1,5 +1,6 @@
 import {beforeEach,afterEach,describe,it,expect,vi} from 'vitest';
 import {ProgressRepository} from '../src/lib/db/progress-repository';
+import {lessonDraftRevision} from '../src/lib/db/lesson-drafts';
 import {restoreStudyBackup} from '../src/lib/db/study-backup';
 import {initializeWorkspace,workspaceStorageKey} from '../src/lib/account/workspace';
 import {LEARNING_DAYS} from '../src/lib/db/curriculum-data';
@@ -62,4 +63,21 @@ it('keeps concurrent course interests and includes them in portable backups',asy
  expect((await ProgressRepository.getProfile()).active_day_index).toBe(7);
  await ProgressRepository.setCourseInterest('local_user','AI',false);
  expect((await ProgressRepository.getProfile()).saved_course_ids).toEqual(['DB']);
+});
+
+it('invalidates tab drafts after restore or reset while preserving another workspace',async()=>{
+ const drafts=new Map<string,string>();vi.stubGlobal('sessionStorage',{getItem:(k:string)=>drafts.get(k)??null,setItem:(k:string,v:string)=>drafts.set(k,v),removeItem:(k:string)=>drafts.delete(k),get length(){return drafts.size},key:(i:number)=>[...drafts.keys()][i]??null});
+ const own=workspaceStorageKey('gradient_lesson_draft_P0-D01_initial');
+ const other='gradient_workspace_someone-else_gradient_lesson_draft_P0-D01_initial';
+ sessionStorage.setItem(own,'Stale text');sessionStorage.setItem(other,'Other account');
+ const backup=await ProgressRepository.exportUserData();restoreStudyBackup(backup,localStorage);
+ expect(sessionStorage.getItem(own)).toBeNull();expect(sessionStorage.getItem(other)).toBe('Other account');
+ const revisionKey=workspaceStorageKey('gradient_notes_revision');const restored=localStorage.getItem(revisionKey);expect(restored).toBeTruthy();
+ sessionStorage.setItem(own,'Another stale draft');await ProgressRepository.clearAllUserData();
+ expect(sessionStorage.getItem(own)).toBeNull();expect(sessionStorage.getItem(other)).toBe('Other account');expect(localStorage.getItem(revisionKey)).not.toBe(restored);
+});
+
+it('keeps a blocked draft revision read from throwing through the editor',()=>{
+ localStorage.getItem=()=>{throw Error('Storage blocked')};
+ expect(()=>lessonDraftRevision()).not.toThrow();expect(lessonDraftRevision()).toBeNull();
 });

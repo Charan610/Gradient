@@ -1,3 +1,4 @@
+import {lessonDraftRevisionKey,newLessonDraftRevision,clearLessonDrafts} from './lesson-drafts';
 import {workspaceStorageKey,portableStorageKey} from '@/lib/account/workspace';
 import { z } from 'zod';
 import {REVIEW_OFFSETS} from './review-schedule';
@@ -77,6 +78,10 @@ export function restoreStudyBackup(source: string, storage: Storage): number {
     const suffix = portable.startsWith(prefix) ? portable.slice(prefix.length) : '';
     if (portable.startsWith('foundation_proj_') || ['profile', 'reviews', 'applications', 'completion_journal'].includes(suffix) || /^(tasks|day)_P\d+-D\d+$/.test(suffix) || /^gate_P\d+$/.test(suffix)) previous.set(key, storage.getItem(key)!);
   }
+  const revisionKey=lessonDraftRevisionKey();
+  const oldRevision=storage.getItem(revisionKey);
+  if(oldRevision!==null)previous.set(revisionKey,oldRevision);
+  records[revisionKey]=newLessonDraftRevision();
   const touched = new Set([...previous.keys(), ...Object.keys(records)]);
   try {
     previous.forEach((_, key) => storage.removeItem(key));
@@ -86,5 +91,6 @@ export function restoreStudyBackup(source: string, storage: Storage): number {
     previous.forEach((value, key) => storage.setItem(key, value));
     throw error;
   }
-  return Object.keys(records).length;
+  clearLessonDrafts();
+  return Object.keys(records).length-1;
 }

@@ -1,3 +1,4 @@
+import {lessonDraftRevisionKey,newLessonDraftRevision,clearLessonDrafts} from './lesson-drafts';
 // ==============================================================================
 // PROGRESS REPOSITORY: DUAL SUPABASE / LOCAL PERSISTENCE LAYER
 // Authoritative Server & Client State Engine
@@ -609,6 +610,7 @@ export class ProgressRepository {
         }
       }
       keysToRemove.forEach(k => localStorage.removeItem(k));
+      if(userId==='local_user'){localStorage.setItem(lessonDraftRevisionKey(),newLessonDraftRevision());clearLessonDrafts();}
     }
   }
 }
