@@ -1,0 +1,21 @@
+'use client';
+import {useEffect,useRef,useState} from 'react';
+import {ProgressRepository} from '@/lib/db/progress-repository';
+import {MAX_BACKUP_BYTES,parseStudyBackup,restoreStudyBackup} from '@/lib/db/study-backup';
+import {acknowledgeBackup,downloadBackup} from '@/lib/db/backup-tools';
+import styles from './Backup.module.scss';
+function completedIn(records:Record<string,string>){return Object.entries(records).filter(([key,value])=>key.includes('_day_')&&JSON.parse(value).state==='completed').length;}
+export function BackupPanel(){
+ const [candidate,setCandidate]=useState<{source:string;name:string;records:number;completed:number}|null>(null);
+ const [message,setMessage]=useState('');const [error,setError]=useState('');const [busy,setBusy]=useState(false);
+ const dialog=useRef<HTMLDialogElement>(null);
+ useEffect(()=>{if(!candidate)return;const previous=document.activeElement;dialog.current?.showModal();return()=>{dialog.current?.close();if(previous instanceof HTMLElement)previous.focus();};},[candidate]);
+ const exportNow=async()=>{setBusy(true);setError('');try{const source=await ProgressRepository.exportUserData();const records=parseStudyBackup(source);downloadBackup(source);acknowledgeBackup(completedIn(records));setMessage('Backup download started. Keep the JSON file somewhere you can find it.');}catch{setError('Your backup could not be prepared. Keep this browser open and try again.');}finally{setBusy(false);}};
+ return <section className={styles.panel} aria-labelledby="backup-title"><h2 id="backup-title">Keep a copy of your progress</h2><p>Your study records live in this browser, on this website address. Signing in elsewhere does not move them. A JSON backup includes lessons, notes, recall, projects, and applications.</p><button className="buttonSecondary" disabled={busy} onClick={exportNow}>{busy?'Preparing your backup…':'Download study backup'}</button><label htmlFor="study-backup" className={styles.fileLabel}>Restore a study backup</label><input id="study-backup" type="file" accept=".json,application/json" disabled={busy} aria-describedby="backup-help" onChange={async event=>{
+ const file=event.target.files?.[0];event.target.value='';if(!file)return;setError('');setMessage('');setBusy(true);
+ try{if(file.size>MAX_BACKUP_BYTES)throw new Error('Choose a JSON backup smaller than 5 MB.');const source=await file.text();const records=parseStudyBackup(source);setCandidate({source,name:file.name,records:Object.keys(records).length,completed:completedIn(records)});}catch(error){setError(error instanceof Error?`This backup could not be opened. ${error.message}`:'This backup could not be read. Choose a JSON file exported by Gradient.');}finally{setBusy(false);}
+ }}/><p id="backup-help" className={styles.help}>Choose a Gradient JSON export up to 5 MB. You’ll review it before anything changes. Keep the file private; it contains your notes.</p>
+ {!candidate&&message&&<p role="status">{message}</p>}{!candidate&&error&&<p role="alert" className={styles.error}>{error}</p>}
+ {candidate&&<dialog ref={dialog} className={styles.dialog} aria-labelledby="restore-title" onCancel={event=>{event.preventDefault();setCandidate(null);}}><h2 id="restore-title">Review this backup</h2><p className={styles.filename}>{candidate.name}</p><p><strong>{candidate.completed} completed lessons</strong> across {candidate.records} saved records.</p><p>Restoring replaces the study records in your current workspace on this browser. Other accounts and your theme stay as they are.</p><p>You can download your current work first if you want to keep both copies.</p><div className={styles.actions}><button className="buttonPrimary" disabled={busy} onClick={()=>{setBusy(true);setError('');try{restoreStudyBackup(candidate.source,localStorage);window.location.reload();}catch{setError('Restore could not finish. Your previous records were kept where browser storage allowed it. Keep both files and retry when storage is available.');setBusy(false);}}}>Restore these records</button><button className="buttonSecondary" disabled={busy} onClick={exportNow}>Export current work first</button><button className="buttonTertiary" disabled={busy} onClick={()=>setCandidate(null)}>Cancel</button></div>{message&&<p role="status">{message}</p>}{error&&<p role="alert" className={styles.error}>{error}</p>}</dialog>}
+ </section>;
+}

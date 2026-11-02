@@ -294,7 +294,7 @@ export class ProgressRepository {
       const records={
         [this.getStorageKey(userId,'profile')]:JSON.stringify({...profile,active_day_index:nextSeq,updated_at:new Date().toISOString()}),
         [reviewsKey]:JSON.stringify(reviews),
-        [this.getStorageKey(userId,`day_${dayId}`)]:JSON.stringify({...dayProgress,state:'completed'}),
+        [this.getStorageKey(userId,`day_${dayId}`)]:JSON.stringify({...dayProgress,state:'completed',completed_at:dayProgress.completed_at||new Date().toISOString()}),
       };
       localStorage.setItem(this.getStorageKey(userId,'completion_journal'),JSON.stringify({version:1,dayId,records}));
       this.recoverCompletion(userId);

@@ -49,3 +49,23 @@ describe('Portable mature recall history',()=>{
   }
  });
 });
+
+it('finishes an interrupted commit when the workspace is reopened, without a second completion click',async()=>{
+ await ready();const set=storage.setItem;let fail=true;
+ storage.setItem=(k,v)=>{if(k===key('reviews')&&fail)throw new Error('quota');set(k,v)};
+ await expect(ProgressRepository.finishLearningDay('local_user','P0-D01')).rejects.toThrow('quota');
+ fail=false;
+ expect((await ProgressRepository.getProfile()).active_day_index).toBe(2);
+ expect((await ProgressRepository.getDayProgress('local_user','P0-D01'))?.state).toBe('completed');
+ expect(await ProgressRepository.getDueReviews('local_user',2)).toHaveLength(1);
+ expect(storage.getItem(key('completion_journal'))).toBeNull();
+});
+it('a local reset removes an interrupted commit so it cannot resurrect erased study records',async()=>{
+ await ready();const set=storage.setItem;
+ storage.setItem=(k,v)=>{if(k===key('reviews'))throw new Error('quota');set(k,v)};
+ await expect(ProgressRepository.finishLearningDay('local_user','P0-D01')).rejects.toThrow();
+ storage.setItem=set;await ProgressRepository.clearAllUserData();
+ expect((await ProgressRepository.getProfile()).active_day_index).toBe(1);
+ expect(await ProgressRepository.getDayProgress('local_user','P0-D01')).toBeNull();
+ expect(await ProgressRepository.getDueReviews('local_user',2)).toEqual([]);
+});

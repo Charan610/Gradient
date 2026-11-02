@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { ArrowRight, BookOpen, Check, ChevronRight, Coffee, RotateCcw, Sprout } from 'lucide-react';
+import {BackupReminder} from '@/components/backup/BackupReminder';
 import { AppShell } from '@/components/layout/AppShell';
 import { WorkspaceSkeleton } from '@/components/ui/WorkspaceSkeleton';
 import { ProgressRepository } from '@/lib/db/progress-repository';
@@ -86,6 +87,7 @@ export default function TodayPage() {
           {data.reviews > 0 ? <><RotateCcw size={21} /><h2>A quick refresh?</h2><p>{data.reviews} concept{data.reviews === 1 ? '' : 's'} ready to revisit. Try recalling before opening your notes.</p><Link href="/app/review">Practice recall <ArrowRight size={15} /></Link></> : <><BookOpen size={21} /><h2>{first ? 'Already know the basics?' : 'Your path, your pace.'}</h2><p>{first ? 'Explore algorithms, SQL, backend engineering, and more. Each course tells you what to know before starting.' : 'Explore another subject whenever you want. Your C++ lesson progress will stay saved.'}</p><Link href="/app/subjects">Explore learning paths <ArrowRight size={15} /></Link></>}
         </aside>
       </div>
+      <BackupReminder completed={journey.completedLessons}/>
       <footer className={styles.footnote}>Your work is saved in this browser. <Link href="/app/settings">Keep a backup</Link> to carry it to another device.</footer>
     </>}
   </div></AppShell>;

@@ -6,7 +6,7 @@ import { Download, Upload, Trash2, Sun, Moon, AlertTriangle } from 'lucide-react
 import { AppShell } from '@/components/layout/AppShell';
 import { ProgressRepository } from '@/lib/db/progress-repository';
 import { UserProfile } from '@/lib/db/types';
-import { MAX_BACKUP_BYTES, parseStudyBackup, restoreStudyBackup } from '@/lib/db/study-backup';
+import {BackupPanel} from '@/components/backup/BackupPanel';
 import { useTheme } from '@/components/context/ThemeContext';
 
 export default function SettingsPage() {
@@ -47,38 +47,6 @@ export default function SettingsPage() {
       setSavedFeedback('Preferences successfully saved.');
     } catch {
       setError('Preferences could not be saved. Check browser storage and try again.');
-    } finally { setBusy(false); }
-  };
-
-  const handleExportData = async () => {
-    setError(null);
-    try {
-      const jsonStr = await ProgressRepository.exportUserData('local_user');
-      const blob = new Blob([jsonStr], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `gradient_study_export_${Date.now()}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch { setError('Backup could not be exported. Please try again.'); }
-  };
-
-  const handleImportData = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    e.target.value = '';
-    if (!file) return;
-    setError(null);
-    setBusy(true);
-    try {
-      if (file.size > MAX_BACKUP_BYTES) throw new Error('Backup must be smaller than 5 MB.');
-      const source = await file.text();
-      const records = parseStudyBackup(source);
-      if (!confirm(`Restore ${Object.keys(records).length} study records? This replaces this browser's current progress, notes, and applications. Export a backup first if you want to keep them.`)) return;
-      restoreStudyBackup(source, localStorage);
-      window.location.reload();
-    } catch (err) {
-      setError(err instanceof Error ? `Restore failed: ${err.message}` : 'Restore failed. Your previous records were kept.');
     } finally { setBusy(false); }
   };
 
@@ -234,30 +202,7 @@ export default function SettingsPage() {
         </form>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--hairline)', borderRadius: '14px', padding: '24px' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ink)', marginBottom: '8px' }}>
-              Back up & move your progress
-            </h3>
-            <p style={{ fontSize: '13px', color: 'var(--ink-secondary)', lineHeight: 1.5, marginBottom: '16px' }}>
-              Progress is saved in this browser, separately on each website address. To move from localhost to the live site or another computer, export here, then restore the file there. Backups include task evidence, reviews, project notes, and applications.
-            </p>
-            <button
-              type="button"
-              className="buttonSecondary"
-              onClick={handleExportData}
-              style={{ width: '100%', justifyContent: 'center' }}
-            >
-              <Download size={14} />
-              <span>Export Private Data (JSON)</span>
-            </button>
-            <label htmlFor="study-backup" style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '20px', marginBottom: '8px', fontWeight: 600 }}>
-              <Upload size={14} /> Restore a study backup
-            </label>
-            <input id="study-backup" type="file" accept=".json,application/json" disabled={busy} onChange={handleImportData} style={{ width: '100%', minWidth: 0 }} aria-describedby="backup-help" />
-            <p id="backup-help" style={{ fontSize: '12px', color: 'var(--ink-secondary)', marginTop: '8px', lineHeight: 1.5 }}>
-              Choose an exported JSON file (up to 5 MB). You will confirm before existing study records are replaced. Keep your backup private; it contains your notes.
-            </p>
-          </div>
+          <BackupPanel/>
 
           <div style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--hairline)', borderRadius: '14px', padding: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--danger)', marginBottom: '8px' }}>

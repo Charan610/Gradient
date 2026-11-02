@@ -5,6 +5,8 @@ import type {StudyAccount} from '@/lib/account/validation';
 import {initializeWorkspace,workspaceStorageKey} from '@/lib/account/workspace';
 import {ProgressRepository} from '@/lib/db/progress-repository';
 import {AccountForm} from './AccountForm';
+import {RecoveryExport} from './RecoveryExport';
+import {readRecoveryIdentity,RECOVERY_SESSION_KEY,RecoveryIdentity} from '@/lib/db/backup-tools';
 
 type AccountState={loading:boolean;configured:boolean;account:StudyAccount|null;localReady:boolean;error:string};
 const Context=createContext<AccountState>({loading:true,configured:false,account:null,localReady:false,error:''});
@@ -15,27 +17,32 @@ export async function accountRequest(action:string,body:Record<string,unknown>={
 }
 export function AccountProvider({children}:{children:React.ReactNode}){
  const pathname=usePathname();
+ const [recovery,setRecovery]=useState<RecoveryIdentity|null>(null);
  const [state,setState]=useState<AccountState>({loading:true,configured:false,account:null,localReady:false,error:''});
 
  useEffect(()=>{
   let cancelled=false;
+  const controller=new AbortController();
+  const timeout=window.setTimeout(()=>controller.abort(),8000);
   (async()=>{
    try{
-    const response=await fetch('/api/account',{cache:'no-store'});const data=await response.json();if(!response.ok)throw new Error(data.error);
+    const response=await fetch('/api/account',{cache:'no-store',signal:controller.signal});const data=await response.json();if(!response.ok)throw new Error(data.error);
     if(cancelled)return;
+    try{sessionStorage.removeItem(RECOVERY_SESSION_KEY)}catch{}
     initializeWorkspace(data.account?.id||null);
     if(data.account&&!localStorage.getItem(workspaceStorageKey('foundation_career_os_local_user_profile'))){await ProgressRepository.updateProfile('local_user',{alias:data.account.username,academic_semester:data.account.semester,preferred_daily_minutes:data.account.minutes});}
     const profile=await ProgressRepository.getProfile();
     const localReady=localStorage.getItem('gradient_onboarding_complete')==='yes'||profile.alias!=='Student Engineer';
+    try{if(data.account||!data.configured&&localReady)sessionStorage.setItem(RECOVERY_SESSION_KEY,JSON.stringify({id:data.account?.id||null,username:data.account?.username||profile.alias}));}catch{}
     if(!cancelled)setState({loading:false,configured:data.configured,account:data.account,localReady,error:''});
-   }catch{if(!cancelled)setState(previous=>({...previous,loading:false,error:'We couldn’t check your sign-in. Please reload to try again.'}));}
-  })();return()=>{cancelled=true};
+   }catch{if(!cancelled){try{setRecovery(readRecoveryIdentity(sessionStorage))}catch{}setState(previous=>({...previous,loading:false,error:'We couldn’t check your sign-in. Your saved work has not been reset. Try again when the connection is ready.'}));}}finally{window.clearTimeout(timeout);}
+  })();return()=>{cancelled=true;window.clearTimeout(timeout);controller.abort()};
  },[]);
  const workspace=pathname.startsWith('/app/');
  const needsSetup=!state.account&&(!state.localReady||state.configured);
 
  return <Context.Provider value={state}>
-  {workspace&&(state.loading||state.error||needsSetup)?<main className="workspaceEntry">{state.loading?<p role="status">Opening your workspace…</p>:state.error?<section className="workspaceEntryCard"><h1>Let’s reconnect.</h1><p role="alert">{state.error}</p><button className="buttonPrimary" onClick={()=>window.location.reload()}>Try again</button></section>:<AccountForm/>}</main>:children}
+  {workspace&&(state.loading||state.error||needsSetup)?<main className="workspaceEntry">{state.loading?<p role="status">Opening your workspace…</p>:state.error?<section className="workspaceEntryCard"><h1>Let’s reconnect.</h1><p role="alert">{state.error}</p><button className="buttonPrimary" onClick={()=>window.location.reload()}>Try again</button>{recovery&&<RecoveryExport identity={recovery}/>}</section>:<AccountForm/>}</main>:children}
 
  </Context.Provider>;
 }
