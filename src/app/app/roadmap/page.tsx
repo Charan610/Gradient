@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { AppShell } from '@/components/layout/AppShell';
 import { PhaseRail } from '@/components/roadmap/PhaseRail';
-import { PHASES } from '@/lib/db/curriculum-data';
+import { LEARNING_DAYS, PHASES } from '@/lib/db/curriculum-data';
 import { ProgressRepository } from '@/lib/db/progress-repository';
 import { UserProfile } from '@/lib/db/types';
 import styles from './Roadmap.module.scss';
@@ -17,12 +17,14 @@ export default function RoadmapPage() {
     Promise.all([ProgressRepository.getProfile(),Promise.all(PHASES.map(p=>ProgressRepository.getGateAttempt('local_user',p.id)))]).then(([p,gates])=>{setProfile(p);setPassed(PHASES.filter((_,i)=>gates[i]?.passed).map(p=>p.id));}).catch(()=>setError(true));
   }, []);
 
+  const activeDay = LEARNING_DAYS.find(day => day.sequence_index === profile?.active_day_index);
+
   return (
     <AppShell>
       <div className={styles.headerArea}>
         <h1 className={styles.title}>A path with room to grow.</h1>
         <p className={styles.subtitle}>
-          A nine-phase study outline from programming foundations to interview preparation. Phase 0 has 30 guided daily lessons; Phases 1–8 currently provide outlines and self-assessment rubrics, not daily lesson plans.
+          A nine-phase path from programming foundations to interview preparation. Phase 0 has 30 guided C++ lessons; Phase 2 includes 20 introductory guided DSA lessons. The rest of Phase 2, including SQL and Python, and all other phases remain study outlines with self-assessment rubrics.
         </p>
       </div>
 
@@ -31,7 +33,7 @@ export default function RoadmapPage() {
         <section aria-label="Phase sequence rail">
           <PhaseRail
             phases={PHASES}
-            activePhaseId={profile && profile.active_day_index<=30 ? 'P0' : undefined}
+            activePhaseId={activeDay?.phase_id}
             passedPhaseIds={passed}
           />
         </section>

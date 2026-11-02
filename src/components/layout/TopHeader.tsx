@@ -1,5 +1,6 @@
 'use client';
 
+import {guidedCourseFor,lessonPosition} from '@/lib/db/guided-courses';
 import { LEARNING_DAYS } from '@/lib/db/curriculum-data';
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -28,7 +29,8 @@ export function TopHeader({
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
-  const dayFormatted = currentDaySeq < 10 ? `0${currentDaySeq}` : `${currentDaySeq}`;
+  const activeDay=LEARNING_DAYS.find(day=>day.sequence_index===currentDaySeq);
+  const lessonLabel=activeDay?`${guidedCourseFor(activeDay).id} · Lesson ${String(lessonPosition(activeDay)).padStart(2,'0')}`:'Find your lesson';
 
   return (
     <>
@@ -40,7 +42,7 @@ export function TopHeader({
           <div className={styles.phaseBadge} title="Active Learning Progression Sequence">
             <span>Phase {currentPhaseCode.replace('P', '')}</span>
             <span>·</span>
-            <span>{currentDaySeq > LEARNING_DAYS.length ? 'Lessons complete' : `Day ${dayFormatted}`}</span>
+            <span>{currentDaySeq > LEARNING_DAYS.length ? 'Lessons complete' : lessonLabel}</span>
           </div>
         </div>
 

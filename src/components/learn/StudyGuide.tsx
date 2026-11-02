@@ -16,6 +16,8 @@ export function StudyGuide({ day, minutes = 90 }: { day: LearningDay; minutes?: 
       <p className={styles.pacing}>Your budget: {minutes} min per session · About {requiredMinutes} min of required work.
         {minutes < requiredMinutes ? ` Plan for ${Math.ceil(requiredMinutes / minutes)} sessions. Save your work and resume this same learning day.` : ' Stop when the checks pass; extra practice is optional.'}</p>
       {day.sequence_index === 1 && <><div className={styles.setup}><strong>First time running C++?</strong><p>Install a compiler and build hello.cpp with a short guide for your operating system.</p><Link href="/setup/cpp">Set up C++ →</Link></div><FirstProgramDemo/></>}
+      {guide.explanation && <div className={styles.source}><h3>The idea</h3><p>{guide.explanation}</p></div>}
+      {guide.example && <div className={styles.source}><h3>Trace a worked example</h3><p><strong>Input:</strong> {guide.example.input}</p><p><strong>Expected output:</strong> {guide.example.output}</p><p>{guide.example.reasoning}</p></div>}
       <ol className={styles.steps}>
         <li><strong>Read with one question in mind</strong><p>{guide.prompt} Use the assigned resource, then close it and explain in your own words.</p></li>
         <li><strong>Build independently</strong><p>{guide.exercise}</p></li>
@@ -24,6 +26,7 @@ export function StudyGuide({ day, minutes = 90 }: { day: LearningDay; minutes?: 
       <details className={styles.help} open>
         <summary>Start with these lesson resources</summary>
         <p>Use the sections below for this lesson. You do not need to finish the whole resource.</p>
+        {guide.reference && <div className={styles.source}><a href={guide.reference.url} target="_blank" rel="noopener noreferrer">{guide.reference.title} ↗<span className="sr-only"> (opens in a new tab)</span></a><p><strong>Focus:</strong> {guide.reference.focus}</p></div>}
         {day.tasks.flatMap(task => (task.assigned_resources || []).map((assignment, index) => {
           const resource = RESOURCES.find(item => item.id === assignment.resource_id);
           return resource ? <div className={styles.source} key={`${task.id}-${index}`}><a href={resource.url} target="_blank" rel="noopener noreferrer">{resource.title} ↗<span className="sr-only"> (opens in a new tab)</span></a><p><strong>Read:</strong> {assignment.exact_assigned_sections}</p><p><strong>Use it to:</strong> {assignment.purpose}</p>{assignment.note_what_to_skip && <p><strong>Save for later:</strong> {assignment.note_what_to_skip}</p>}</div> : null;
@@ -35,6 +38,7 @@ export function StudyGuide({ day, minutes = 90 }: { day: LearningDay; minutes?: 
       </details>
       <details className={styles.help}>
         <summary>Stuck? Follow this recovery plan</summary>
+        {guide.hint && <p><strong>Lesson hint:</strong> {guide.hint}</p>}
         <p>Write the input and expected output for the smallest example. Trace your variables on paper. Read the first compiler error, fix one thing, and rerun. After 15–20 minutes without progress, revisit the relevant explanation or ask for a hint using your code and failing example.</p>
         <p>If you use a worked solution, close it and rebuild from scratch. Save the failing case, your fix, and what you learned in the task evidence. Leave the task incomplete until you can explain it.</p>
       </details>

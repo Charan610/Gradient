@@ -9,6 +9,7 @@ import { MobileTabBar } from './MobileTabBar';
 import { WorkspaceLinks } from './WorkspaceLinks';
 import { TopHeader } from './TopHeader';
 import { ProgressRepository } from '@/lib/db/progress-repository';
+import { LEARNING_DAYS } from '@/lib/db/curriculum-data';
 import { UserProfile } from '@/lib/db/types';
 import styles from './AppShell.module.scss';
 
@@ -23,6 +24,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('foundation-progress', refresh);
   }, []);
 
+  const activeDay = LEARNING_DAYS.find(day => day.sequence_index === profile?.active_day_index);
+  const lastDay = LEARNING_DAYS[LEARNING_DAYS.length - 1];
+  const phaseCode = activeDay?.phase_id ?? (profile && lastDay && profile.active_day_index > lastDay.sequence_index ? lastDay.phase_id : '—');
+
   return (
     <div className={styles.shellContainer}>
       <a href="#workspace-content" className={styles.skipLink}>Skip to content</a>
@@ -32,7 +37,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       />
       <div className={styles.mainWrapper}>
         <TopHeader
-          currentPhaseCode="P0"
+          currentPhaseCode={phaseCode}
           currentDaySeq={profile?.active_day_index ?? 1}
         />
         <main tabIndex={-1} id="workspace-content" className={styles.contentContainer}>

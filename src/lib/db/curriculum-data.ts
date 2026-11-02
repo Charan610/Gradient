@@ -1,3 +1,4 @@
+import { DSA_DAYS } from './dsa-curriculum';
 import { STUDY_GUIDANCE } from './study-guidance';
 // ==============================================================================
 // CANONICAL CURRICULUM DATA OF RECORD
@@ -1531,6 +1532,10 @@ for (const day of LEARNING_DAYS.slice(0, 5)) {
     practice.validation_criteria = STUDY_GUIDANCE[day.sequence_index].checks;
   }
 }
+
+// The guided DSA path is a subset of P2; SQL/Python retain their outlines.
+MODULES.push({id:'P2.07',phase_id:'P2',subject_id:'DSA',stable_code:'P2.07',order_index:7,title:'Guided DSA in C++',expected_minutes:DSA_DAYS.reduce((total,day)=>total+day.estimated_minutes,0),learning_outcomes:['Choose, implement, test, and explain introductory data structures and algorithms in C++.'],prereq_codes:['P0.05']});
+LEARNING_DAYS.push(...DSA_DAYS);
 
 // ------------------------------------------------------------------------------
 // 6. THREE CANONICAL PROJECT TEMPLATES

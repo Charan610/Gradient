@@ -1,5 +1,10 @@
+import { DSA_LESSONS, type DsaLesson } from './dsa-curriculum';
 // Original practice prompts. These are self-checks, not an automated code judge.
 export interface StudyGuidance {
+  explanation?: string;
+  example?: DsaLesson['example'];
+  hint?: string;
+  reference?: DsaLesson['reference'];
   exercise: string;
   checks: string;
   prompt: string;
@@ -42,3 +47,5 @@ const lessons: [string, string, string, string][] = [
 export const STUDY_GUIDANCE: Record<number, StudyGuidance> = Object.fromEntries(
   lessons.map(([exercise, checks, prompt, answer], index) => [index + 1, { exercise, checks, prompt, answer }])
 );
+
+for (const [index, lesson] of DSA_LESSONS.entries()) STUDY_GUIDANCE[index + 31] = lesson;

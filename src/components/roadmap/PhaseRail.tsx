@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Check, ArrowRight, ShieldCheck, Clock, BookOpen } from 'lucide-react';
+import { LEARNING_DAYS } from '@/lib/db/curriculum-data';
 import { PhaseItem } from '@/lib/db/types';
 import styles from './PhaseRail.module.scss';
 import clsx from 'clsx';
@@ -23,6 +24,7 @@ export function PhaseRail({
       {phases.map(phase => {
         const isPassed = passedPhaseIds.includes(phase.id);
         const isActive = activePhaseId === phase.id;
+        const lessonCount = LEARNING_DAYS.filter(day => day.phase_id === phase.id).length;
 
         return (
           <div
@@ -41,7 +43,7 @@ export function PhaseRail({
             </div>
 
             <div className={styles.headerRow}>
-              <span className={styles.phaseBadge}>{phase.phase_code}</span><span style={{fontSize:11,color:"var(--muted)"}}>{phase.id==='P0'?'30 guided lessons':'Study outline'}{isPassed?' · Self-assessment passed':''}</span>
+              <span className={styles.phaseBadge}>{phase.phase_code}</span><span style={{fontSize:11,color:"var(--muted)"}}>{lessonCount ? `${lessonCount} guided ${phase.id==='P2'?'DSA lessons · Remaining material is an outline':'C++ lessons'}` : 'Study outline'}{isPassed?' · Self-assessment passed':''}</span>
               {phase.optional_parallel && (
                 <span style={{ fontSize: '11px', color: 'var(--muted)', fontFamily: 'monospace' }}>
                   Parallel Elective

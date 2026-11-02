@@ -8,6 +8,7 @@ import { ArrowLeft, Clock, CheckCircle, ChevronLeft, ChevronRight } from 'lucide
 import { AppShell } from '@/components/layout/AppShell';
 import { TaskChecklist } from '@/components/today/TaskChecklist';
 import { LEARNING_DAYS, MODULES } from '@/lib/db/curriculum-data';
+import { courseLessons, guidedCourseFor, lessonPosition } from '@/lib/db/guided-courses';
 import { ProgressRepository } from '@/lib/db/progress-repository';
 import { LearningDay, UserTaskProgress } from '@/lib/db/types';
 import styles from './LearnDay.module.scss';
@@ -71,6 +72,8 @@ export default function LearnDayPage({ params }: PageProps) {
     );
   }
 
+  const course=guidedCourseFor(day);
+  const courseDays=courseLessons(course.id);
   const module = MODULES.find(item => day.tasks.some(task => task.module_id === item.id));
   const resumeTask=day.tasks.find(task=>task.required&&taskMap[task.id]?.status!=='completed');
   const hasWork=notes.length>0||Object.values(taskMap).some(task=>task.status==='completed'||task.evidence_text);
@@ -94,7 +97,7 @@ export default function LearnDayPage({ params }: PageProps) {
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
               <span className="phaseBadge">Phase {day.phase_id.replace('P', '')}</span>
               <span style={{ fontSize: '12px', color: 'var(--muted)', fontFamily: 'monospace' }}>
-                Lesson {day.sequence_index < 10 ? `0${day.sequence_index}` : day.sequence_index}
+                {course.title} · Lesson {lessonPosition(day)} of {courseDays.length}
               </span>
             </div>
 
@@ -113,7 +116,7 @@ export default function LearnDayPage({ params }: PageProps) {
 
           {isPreview && <div className={styles.previewNotice} role="note"><strong>You’re previewing a future lesson.</strong><p>You can read ahead. Finish your current lesson before completing this one.</p><Link href="/app/today">Return to your current lesson →</Link></div>}
 
-          {isDayCompleted && <section className={styles.completion} aria-label="Lesson completed"><CheckCircle size={22} /><div><h2>Lesson complete. Nicely done.</h2><p>Your work is saved. {nextDay ? 'Ready for the next small step?' : 'You’ve reached the end of the guided foundation lessons.'}</p><Link className="buttonPrimary" href={nextDay ? `/app/learn/${nextDay.phase_id}/${nextDay.id}` : '/app/roadmap/P0'}>{nextDay ? 'Continue to next lesson' : 'Check foundation readiness'} <ChevronRight size={16} /></Link></div></section>}
+          {isDayCompleted && <section className={styles.completion} aria-label="Lesson completed"><CheckCircle size={22} /><div><h2>Lesson complete. Nicely done.</h2><p>Your work is saved. {nextDay ? 'Ready for the next small step?' : 'You’ve completed both guided paths. Return to recall whenever it helps.'}</p><Link className="buttonPrimary" href={nextDay ? `/app/learn/${nextDay.phase_id}/${nextDay.id}` : '/app/review'}>{nextDay ? 'Continue to next lesson' : 'Practice recall'} <ChevronRight size={16} /></Link></div></section>}
 
           <div style={{ marginTop: '24px' }}>
             <TaskChecklist
@@ -152,12 +155,12 @@ export default function LearnDayPage({ params }: PageProps) {
           <div className={styles.sideCard}>
             <div className={styles.sideHeading}>Why this lesson matters</div>
             <p className={styles.context}>{module?.learning_outcomes[0] || day.goal}</p>
-            <p className={styles.context}>{prevDay ? `Builds on lesson ${prevDay.sequence_index}: ${prevDay.title}. Revisit it if you need a refresher.` : 'No programming experience needed. Start with the reading, then try the exercise in your own editor.'}</p>
+            <p className={styles.context}>{prevDay ? `Builds on ${guidedCourseFor(prevDay).title}, lesson ${lessonPosition(prevDay)}: ${prevDay.title}. Revisit it if you need a refresher.` : 'No programming experience needed. Start with the reading, then try the exercise in your own editor.'}</p>
           </div>
           <div className={styles.sideCard}>
             <div className={styles.sideHeading}>Find your way</div>
-            <Link href="/app/subjects/cpp" className="buttonTertiary" style={{ marginBottom: 16 }}>Browse all 30 lessons ↗</Link>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px' }}>
+            <Link href={`/app/subjects/${course.id.toLowerCase()}`} className="buttonTertiary" style={{ marginBottom: 16 }}>Browse {courseDays.length} {course.title} lessons ↗</Link>
+            <div className={styles.lessonNavigation}>
               {prevDay ? (
                 <Link
                   href={`/app/learn/${prevDay.phase_id}/${prevDay.id}`}
@@ -165,7 +168,7 @@ export default function LearnDayPage({ params }: PageProps) {
                   style={{ minHeight: '38px', fontSize: '12px', flex: 1 }}
                 >
                   <ChevronLeft size={13} />
-                  <span>Lesson {prevDay.sequence_index}</span>
+                  <span>{guidedCourseFor(prevDay).title} · {lessonPosition(prevDay)}</span>
                 </Link>
               ) : (
                 <div style={{ flex: 1 }} />
@@ -177,7 +180,7 @@ export default function LearnDayPage({ params }: PageProps) {
                   className="buttonSecondary"
                   style={{ minHeight: '38px', fontSize: '12px', flex: 1 }}
                 >
-                  <span>{isDayCompleted ? "Next" : "Preview"} {nextDay.sequence_index}</span>
+                  <span>{isDayCompleted ? "Next" : "Preview"}: {guidedCourseFor(nextDay).title} · {lessonPosition(nextDay)}</span>
                   <ChevronRight size={13} />
                 </Link>
               ) : null}

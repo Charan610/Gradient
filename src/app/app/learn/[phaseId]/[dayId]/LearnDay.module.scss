@@ -128,4 +128,6 @@
 .backLink { min-height:44px; } .goalCard { background:var(--sage-soft); border-left-color:var(--sage); } .completion { background:var(--sage-soft); color:var(--sage); }
 
 .resume { padding:24px; border:1px solid var(--hairline); border-radius:12px; background:var(--sage-soft); margin-bottom:24px; h2 { font-size:18px; line-height:28px; } p { font-size:14px; line-height:24px; color:var(--ink-secondary); margin:8px 0; } a { display:inline-flex; min-height:44px; align-items:center; font-size:14px; color:var(--accent); } }
-[id^="task-row-"] { scroll-margin-top:100px; }
+.learnLayout [id^="task-row-"] { scroll-margin-top:100px; }
+
+.lessonNavigation { display:flex; flex-wrap:wrap; gap:8px; a { min-width:0; white-space:normal; overflow-wrap:anywhere; } @media(max-width:600px) { flex-direction:column; } }

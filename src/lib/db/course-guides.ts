@@ -18,7 +18,8 @@ export interface CourseGuide {
   topics: CourseTopic[];
 }
 
-// Original study outlines. Only CPP currently has scheduled daily lessons.
+// Course guides: CPP has 30 guided lessons and DSA has 20 introductory lessons.
+// Other courses and the remaining Phase 2 material are study outlines.
 export const COURSE_GUIDES: CourseGuide[] = [
   {
     id: 'CPP', title: 'C++ Foundations', tagline: 'Start here. Build your programming instincts.',
@@ -36,10 +37,10 @@ export const COURSE_GUIDES: CourseGuide[] = [
   },
   {
     id: 'DSA', title: 'Data Structures & Algorithms', tagline: 'Learn the pattern. Explain the tradeoff.',
-    description: 'Build a reasoning process for unfamiliar problems, from array scans to trees, graphs, and dynamic programming.',
-    prerequisite: 'C++ functions and arrays, basic STL containers, and the ability to debug a small program independently.',
-    outcome: 'Explain a brute-force approach, improve it, justify complexity, and test the final solution.',
-    defer: 'Advanced segment trees, exotic graph algorithms, and collecting multiple problem sheets at once.', phase: 'P1 → P2', symbol: 'O(n)',
+    description: '20 introductory guided lessons in C++, from vectors and complexity to basic trees, graph traversal, and dynamic programming. SQL, Python, and the remaining Phase 2 material stay as study outlines.',
+    prerequisite: 'Complete C++ Foundations or be comfortable with functions, arrays, and debugging small C++ programs. The first lessons introduce vectors and references.',
+    outcome: 'Build a small reading-log query tool, explain the structures and algorithms you chose, and test their boundaries. This is an introduction, not full DSA or interview preparation.',
+    defer: 'Advanced segment trees, exotic graph algorithms, and collecting multiple problem sheets at once.', phase: 'P2 · 20 guided DSA lessons', symbol: 'O(n)',
     resources: [{ title: 'USACO Guide — Bronze', url: 'https://usaco.guide/bronze', focus: 'Start with complexity, simulation, complete search, sorting, and sets.' }, { title: 'CSES Problem Set', url: 'https://cses.fi/problemset', focus: 'Pick problems matching the topic you have studied; do not work through every section immediately.' }],
     topics: [
       { title: 'Complexity and array patterns', learn: 'Time/space costs, frequency maps, prefix sums, and two pointers.', practice: 'Implement duplicate detection, range sums, and a sorted pair-sum search. Start with a brute-force version.', proof: 'State the invariant and compare runtime and memory for both approaches.' },

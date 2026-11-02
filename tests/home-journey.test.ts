@@ -22,8 +22,8 @@ describe('student home journey', () => {
     expect(resolveHomeJourney(2, ['P0-D01'], {}, 'maintenance').state).toBe('maintenance');
   });
   it('only celebrates completion when all lesson records are complete', () => {
-    expect(resolveHomeJourney(31, LEARNING_DAYS.map(d => d.id), {}, 'normal').state).toBe('finished');
-    expect(resolveHomeJourney(31, [], {}, 'normal').state).toBe('unavailable');
+    expect(resolveHomeJourney(LEARNING_DAYS.length+1, LEARNING_DAYS.map(d => d.id), {}, 'normal').state).toBe('finished');
+    expect(resolveHomeJourney(LEARNING_DAYS.length+1, [], {}, 'normal').state).toBe('unavailable');
   });
   it('does not silently turn a corrupt or missing sequence into the last lesson', () => {
     for (const index of [0, -1, NaN, 999, 1.5]) expect(resolveHomeJourney(index, [], {}, 'normal').state).toBe('unavailable');
