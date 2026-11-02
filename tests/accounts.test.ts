@@ -1,5 +1,5 @@
 import {beforeEach,describe,expect,it} from 'vitest';
-import {signupSchema,signinSchema} from '../src/lib/account/validation';
+import {signupSchema,signinSchema,passwordSchema} from '../src/lib/account/validation';
 import {initializeWorkspace,workspaceStorageKey,portableStorageKey} from '../src/lib/account/workspace';
 
 describe('account credentials',()=>{
@@ -59,4 +59,16 @@ it('exports, restores and resets only the current account, including project evi
  initializeWorkspace('a');
  expect((await ProgressRepository.getProfile()).alias).toBe('Account A');
  expect(storage.getItem(workspaceStorageKey('foundation_proj_A'))).toContain('A private note');
+});
+
+import {signupSchema as gatewaySignup} from '../supabase/functions/gradient-accounts/validation';
+describe('Provider-compatible signup',()=>{
+ it('rejects credentials that exceed the provider byte limit at either boundary',()=>{
+  for(const schema of [signupSchema,gatewaySignup]){
+   expect(schema.safeParse({username:'learner',password:'a'.repeat(73)}).success).toBe(false);
+   expect(schema.safeParse({username:'learner',password:'é'.repeat(37)}).success).toBe(false);
+   expect(schema.safeParse({username:'learner',password:'a'.repeat(72)}).success).toBe(true);
+  }
+  expect(passwordSchema.safeParse('é'.repeat(36)).success).toBe(true);
+ });
 });

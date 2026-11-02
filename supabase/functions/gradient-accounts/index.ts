@@ -29,7 +29,7 @@ Deno.serve(async(req:Request)=>{
    if(lookupError)return json({error:'Account service is temporarily unavailable.'},503);
    if(existing)return json({error:'That username is already taken. Try another.'},409);
    const email=`${crypto.randomUUID()}@accounts.gradient.invalid`;
-   const credential=password||`${crypto.randomUUID()}-${crypto.randomUUID()}`;
+   const credential=password||Array.from(crypto.getRandomValues(new Uint8Array(24)),byte=>byte.toString(16).padStart(2,'0')).join('');
    const {data:created,error:createError}=await admin.auth.admin.createUser({email,password:credential,email_confirm:true});
    if(createError||!created.user)return json({error:'Could not create your account. Please try again.'},503);
    const {data:row,error:insertError}=await admin.from('gradient_accounts').insert({user_id:created.user.id,username,has_password:!!password,semester,daily_minutes:minutes}).select().single();
