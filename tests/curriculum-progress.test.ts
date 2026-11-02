@@ -320,15 +320,14 @@ describe('Completion operation identity', () => {
     for (const task of LEARNING_DAYS[0].tasks.filter(task => task.required)) {
       await ProgressRepository.updateTaskProgress('local_user', 'P0-D01', task.id, 'completed');
     }
-    const schedule = vi.spyOn(ProgressRepository, 'scheduleReview');
-    try {
+    {
       const first = ProgressRepository.finishLearningDay('local_user', 'P0-D01');
       expect(ProgressRepository.finishLearningDay('local_user', 'P0-D01')).toBe(first);
       expect((await first).success).toBe(true);
-      expect(schedule).toHaveBeenCalledTimes(1);
+      expect(await ProgressRepository.getDueReviews('local_user', 2)).toHaveLength(1);
       await ProgressRepository.finishLearningDay('local_user', 'P0-D01');
-      expect(schedule).toHaveBeenCalledTimes(1);
+      expect(await ProgressRepository.getDueReviews('local_user', 2)).toHaveLength(1);
       expect((await ProgressRepository.getProfile()).active_day_index).toBe(2);
-    } finally { schedule.mockRestore(); }
+    }
   });
 });

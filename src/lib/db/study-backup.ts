@@ -1,5 +1,6 @@
 import {workspaceStorageKey,portableStorageKey} from '@/lib/account/workspace';
 import { z } from 'zod';
+import {REVIEW_OFFSETS} from './review-schedule';
 
 const text = z.string();
 const integer = z.number().int().nonnegative();
@@ -21,7 +22,7 @@ const day = z.object({ user_id: user, learning_day_id: text,
   self_rating: z.enum(['confident', 'needs_review']).optional(),
 }).passthrough();
 const review = z.object({ id: text, user_id: user, module_id: text, concept_prompt: text, concept_answer: text,
-  last_day_index: integer, next_due_day_index: integer, interval_step: integer.max(4),
+  last_day_index: integer, next_due_day_index: integer, interval_step: integer.max(REVIEW_OFFSETS.length),
   latest_confidence: z.enum(['needs_work', 'stable']), mistake_tag: text.optional(),
 }).passthrough();
 const application = z.object({ id: text, user_id: user, company: text, role: text, location: text,
@@ -69,7 +70,7 @@ export function restoreStudyBackup(source: string, storage: Storage): number {
     const key = storage.key(i)!;
     const portable = portableStorageKey(key); if (!portable) continue;
     const suffix = portable.startsWith(prefix) ? portable.slice(prefix.length) : '';
-    if (portable.startsWith('foundation_proj_') || ['profile', 'reviews', 'applications'].includes(suffix) || /^(tasks|day)_P\d+-D\d+$/.test(suffix) || /^gate_P\d+$/.test(suffix)) previous.set(key, storage.getItem(key)!);
+    if (portable.startsWith('foundation_proj_') || ['profile', 'reviews', 'applications', 'completion_journal'].includes(suffix) || /^(tasks|day)_P\d+-D\d+$/.test(suffix) || /^gate_P\d+$/.test(suffix)) previous.set(key, storage.getItem(key)!);
   }
   const touched = new Set([...previous.keys(), ...Object.keys(records)]);
   try {

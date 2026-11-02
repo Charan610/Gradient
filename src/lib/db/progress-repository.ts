@@ -16,6 +16,7 @@ import { STUDY_GUIDANCE } from './study-guidance';
 import { LEARNING_DAYS } from './curriculum-data';
 import {workspaceStorageKey,portableStorageKey} from '@/lib/account/workspace';
 import { createClient } from '../supabase/client';
+import {REVIEW_OFFSETS} from './review-schedule';
 
 const LOCAL_STORAGE_KEY_PREFIX = 'foundation_career_os_';
 
@@ -34,10 +35,31 @@ export class ProgressRepository {
       /^(tasks|day)_P\d+-D\d+$/.test(suffix) || /^gate_P\d+$/.test(suffix);
   }
 
+  /** Finish an interrupted local commit before exposing its profile or completion. */
+  private static recoverCompletion(userId:string) {
+    if(typeof localStorage==='undefined')return;
+    const journalKey=this.getStorageKey(userId,'completion_journal');
+    const raw=localStorage.getItem(journalKey);
+    if(!raw)return;
+    const journal=JSON.parse(raw);
+    const day=LEARNING_DAYS.find(day=>day.id===journal.dayId);
+    if(journal.version!==1||!day||!journal.records||typeof journal.records!=='object')throw new Error('The saved lesson needs recovery. Keep a backup before resetting.');
+    const allowed=['profile','reviews',`day_${day.id}`].map(suffix=>this.getStorageKey(userId,suffix));
+    if(Object.keys(journal.records).length!==3||Object.entries(journal.records).some(([key,value])=>!allowed.includes(key)||typeof value!=='string'))throw new Error('Invalid completion recovery record.');
+    const profile=JSON.parse(journal.records[allowed[0]]);
+    const completion=JSON.parse(journal.records[allowed[2]]);
+    if(profile.user_id!==userId||!Number.isInteger(profile.active_day_index)||profile.active_day_index<day.sequence_index+1||completion.user_id!==userId||completion.learning_day_id!==day.id||completion.state!=='completed'||!Array.isArray(JSON.parse(journal.records[allowed[1]])))throw new Error('Invalid completion recovery data.');
+    // localStorage writes are synchronous. The journal survives interruption and
+    // is scoped to this workspace; retrying finishes the same authorized commit.
+    for(const key of allowed)localStorage.setItem(key,journal.records[key]);
+    localStorage.removeItem(journalKey);
+  }
+
   // ----------------------------------------------------------------------------
   // 1. Profile Management
   // ----------------------------------------------------------------------------
   static async getProfile(userId: string = 'local_user'): Promise<UserProfile> {
+    this.recoverCompletion(userId);
     const supabase = userId === 'local_user' ? null : createClient();
     if (supabase) {
       const { data, error } = await supabase
@@ -177,6 +199,7 @@ export class ProgressRepository {
   }
 
   static async getDayProgress(userId: string = 'local_user', dayId: string): Promise<UserDayProgress | null> {
+    this.recoverCompletion(userId);
     const supabase = userId === 'local_user' ? null : createClient();
     if (supabase) {
       const { data, error } = await supabase
@@ -230,13 +253,10 @@ export class ProgressRepository {
 
     const profile = await this.getProfile(userId);
     const previous = await this.getDayProgress(userId, dayId);
-    if (previous?.state === 'completed') {
-      return { success: true, next_day_sequence: profile.active_day_index };
-    }
-    if (day.sequence_index !== profile.active_day_index) {
+    if (previous?.state !== 'completed' && day.sequence_index !== profile.active_day_index) {
       return { success: false, error: 'out_of_sequence' };
     }
-    if (profile.preferred_mode === 'maintenance') {
+    if (previous?.state !== 'completed' && profile.preferred_mode === 'maintenance') {
       return { success: false, error: 'maintenance_mode' };
     }
     const taskMap = await this.getDayTaskProgresses(userId, dayId);
@@ -244,7 +264,7 @@ export class ProgressRepository {
     const incompleteTasks = requiredTasks.filter(t => taskMap[t.id]?.status !== 'completed');
 
     // Strict validation: must NOT silently advance if mandatory tasks are incomplete
-    if (incompleteTasks.length > 0) {
+    if (previous?.state !== 'completed' && incompleteTasks.length > 0) {
       return {
         success: false,
         error: 'incomplete_required_tasks',
@@ -260,28 +280,26 @@ export class ProgressRepository {
       }
     }
 
-    // Local transactional simulation
-    const dayProgress: UserDayProgress = {
-      user_id: userId,
-      learning_day_id: dayId,
-      state: 'completed',
-      completed_at: new Date().toISOString(),
-      time_spent_minutes: day.estimated_minutes
-    };
-
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(this.getStorageKey(userId, `day_${dayId}`), JSON.stringify(dayProgress));
-    }
-
-    const currentProfile = await this.getProfile(userId);
-    const nextSeq = Math.max(currentProfile.active_day_index, day.sequence_index + 1);
-    await this.updateProfile(userId, { active_day_index: nextSeq });
-
+    const nextSeq = Math.max(profile.active_day_index, day.sequence_index + 1);
     const guidance = STUDY_GUIDANCE[day.sequence_index];
     const moduleId = day.tasks.find(t => t.module_id)?.module_id;
-    if (guidance && moduleId) {
-      await this.scheduleReview(userId, moduleId, guidance.prompt, guidance.answer, day.sequence_index);
+    const reviewsKey=this.getStorageKey(userId,'reviews');
+    const reviews:ConceptReview[]=typeof localStorage!=='undefined'?JSON.parse(localStorage.getItem(reviewsKey)||'[]'):[];
+    const review=guidance&&moduleId?this.initialReview(userId,moduleId,guidance.prompt,guidance.answer,day.sequence_index):null;
+    const missingReview=review&&!reviews.some(item=>item.id===review.id);
+    if(previous?.state==='completed'&&nextSeq===profile.active_day_index&&!missingReview)return {success:true,next_day_sequence:nextSeq};
+    if(missingReview)reviews.push(review!);
+    const dayProgress:UserDayProgress=previous??{user_id:userId,learning_day_id:dayId,state:'completed',completed_at:new Date().toISOString(),time_spent_minutes:day.estimated_minutes};
+    if(typeof localStorage!=='undefined'){
+      const records={
+        [this.getStorageKey(userId,'profile')]:JSON.stringify({...profile,active_day_index:nextSeq,updated_at:new Date().toISOString()}),
+        [reviewsKey]:JSON.stringify(reviews),
+        [this.getStorageKey(userId,`day_${dayId}`)]:JSON.stringify({...dayProgress,state:'completed'}),
+      };
+      localStorage.setItem(this.getStorageKey(userId,'completion_journal'),JSON.stringify({version:1,dayId,records}));
+      this.recoverCompletion(userId);
     }
+    if(typeof window!=='undefined')window.dispatchEvent(new Event('foundation-progress'));
 
     return {
       success: true,
@@ -292,14 +310,8 @@ export class ProgressRepository {
   // ----------------------------------------------------------------------------
   // 4. Spaced Repetition Review System (+1, +3, +7, +21, +45 day offsets)
   // ----------------------------------------------------------------------------
-  static async scheduleReview(
-    userId: string,
-    moduleId: string,
-    prompt: string,
-    answer: string,
-    currentSeq: number
-  ): Promise<void> {
-    const review: ConceptReview = {
+  private static initialReview(userId:string,moduleId:string,prompt:string,answer:string,currentSeq:number):ConceptReview {
+    return {
       id: `rev_${moduleId}_${encodeURIComponent(prompt)}`,
       user_id: userId,
       module_id: moduleId,
@@ -310,6 +322,16 @@ export class ProgressRepository {
       interval_step: 1,
       latest_confidence: 'needs_work'
     };
+  }
+
+  static async scheduleReview(
+    userId: string,
+    moduleId: string,
+    prompt: string,
+    answer: string,
+    currentSeq: number
+  ): Promise<void> {
+    const review=this.initialReview(userId,moduleId,prompt,answer,currentSeq);
 
     const supabase = userId === 'local_user' ? null : createClient();
     if (supabase) {
@@ -328,6 +350,7 @@ export class ProgressRepository {
   }
 
   static async getDueReviews(userId: string = 'local_user', activeDayIndex: number): Promise<ConceptReview[]> {
+    this.recoverCompletion(userId);
     const supabase = userId === 'local_user' ? null : createClient();
     if (supabase) {
       const { data, error } = await supabase
@@ -358,7 +381,7 @@ export class ProgressRepository {
     reviewId: string,
     rating: 'needs_work' | 'stable'
   ): Promise<void> {
-    const INTERVAL_STEPS = [1, 3, 7, 21, 45];
+    const INTERVAL_STEPS = REVIEW_OFFSETS;
     const profile = await this.getProfile(userId);
 
     if (typeof localStorage !== 'undefined') {
@@ -533,6 +556,7 @@ export class ProgressRepository {
   }
 
   static async clearAllUserData(userId: string = 'local_user'): Promise<void> {
+    if(typeof localStorage!=='undefined')localStorage.removeItem(this.getStorageKey(userId,'completion_journal'));
     if (typeof localStorage !== 'undefined') {
       const keysToRemove: string[] = [];
       for (let i = 0; i < localStorage.length; i++) {
