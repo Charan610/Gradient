@@ -40,3 +40,5 @@
 .courseDiagram { position:absolute; width:70%; height:100%; right:0; top:0; opacity:.15; stroke:currentColor; pointer-events:none; }
 
 .page { max-width:1120px; margin:auto; } .featuredActions a:first-child { background:var(--brand-fill); color:white; } .cover[data-tone="2"],.cover[data-tone="5"] { background:var(--sage-soft); color:var(--sage); } .cover::after { display:none; } .card:focus-within { border-color:var(--accent); } .resource a { min-height:44px; }
+
+.interest { margin:24px 0; padding:16px; border:1px solid var(--hairline); border-radius:12px; background:var(--surface); p { font-size:12px; line-height:20px; margin:12px 0 0; color:var(--muted); } [role=alert] { color:var(--danger); } }

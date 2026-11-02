@@ -135,6 +135,8 @@ export interface UserProfile {
   theme: 'light' | 'dark' | 'system';
   onboarding_status: 'pending' | 'completed';
   active_day_index: number; // Defaults to 1
+  recall_step?: number; // Optional practice cursor; old profiles use active_day_index.
+  saved_course_ids?: string[]; // Local interests, not a notification subscription.
   created_at?: string;
   updated_at?: string;
 }

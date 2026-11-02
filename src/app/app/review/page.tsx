@@ -8,6 +8,7 @@ import { ConceptReview, UserProfile } from '@/lib/db/types';
 import styles from './Review.module.scss';
 import clsx from 'clsx';
 import Link from 'next/link';
+import {recallStep} from '@/lib/db/review-schedule';
 
 export default function ReviewPage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -36,7 +37,7 @@ export default function ReviewPage() {
     loadReviews();
   }, []);
 
-  const currentSeq = profile?.active_day_index ?? 1;
+  const currentSeq = profile?recallStep(profile):1;
 
   const readyReviews = reviews.filter(r => r.next_due_day_index <= currentSeq);
   const laterReviews = reviews.filter(r => r.next_due_day_index > currentSeq);
@@ -69,7 +70,7 @@ export default function ReviewPage() {
       <div className={styles.headerArea}>
         <h1 className={styles.title}>A little recall goes a long way.</h1>
         <p className={styles.subtitle}>
-          Try answering from memory, then reveal the explanation. Concepts return after 1, 3, 7, 21, and 45 learning days—not calendar dates.
+          Try answering from memory, then reveal the explanation. Spacing follows learning steps, never calendar deadlines. A lesson moves one step; you can bring the next set forward whenever you want.
         </p>
       </div>
 
@@ -101,7 +102,7 @@ export default function ReviewPage() {
 
       {loading ? <p role="status">Opening your recall queue…</p> : error ? null : displayedList.length === 0 ? (
         <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--muted)' }}>
-          <h2>Room for your next idea.</h2><p>Finish a guided lesson to add its concepts here. Nothing is overdue.</p><Link href="/app/today" className="buttonSecondary">Back to your next lesson</Link>
+          <h2>{reviews.length?'A good place to pause.':'Room for your next idea.'}</h2><p>{reviews.length?'No concepts are ready at this step. You can bring the next scheduled set forward without changing your current lesson.':'Finish a guided lesson to add its concepts here. Nothing is overdue.'}</p>{laterReviews.length>0?<button className="buttonPrimary" disabled={saving} onClick={async()=>{if(savingRef.current)return;savingRef.current=true;setSaving(true);setSaveError('');try{await ProgressRepository.startNextRecallSession();setActiveTab('ready');setRevealedMap({});await loadReviews();}catch{setSaveError('The next set could not be opened. Your ratings are saved; try again.')}finally{savingRef.current=false;setSaving(false)}}}>Practice next set</button>:null}<Link href="/app/today" className="buttonTertiary">Back to your next lesson</Link>
         </div>
       ) : (
         <div className={styles.flashcardGrid}>
@@ -112,12 +113,13 @@ export default function ReviewPage() {
                 <div className={styles.cardHeader}>
                   <span className={styles.intervalBadge}>Step {item.interval_step}</span>
                   <span style={{ fontSize: '11px', color: 'var(--muted)', fontFamily: 'monospace' }}>
-                    Learning day {item.next_due_day_index}
+                    {item.next_due_day_index<=currentSeq?'Ready in this set':`Learning step ${item.next_due_day_index}`}
                   </span>
                 </div>
 
                 <div className={styles.prompt}>{item.concept_prompt}</div>
 
+                {item.next_due_day_index>currentSeq&&<p className={styles.previewNote}>A preview for another visit. Ratings open when this concept joins your current set.</p>}
                 {isRevealed ? (
                   <div className={styles.answerBlock}>{item.concept_answer}</div>
                 ) : (
@@ -132,7 +134,7 @@ export default function ReviewPage() {
                   </button>
                 )}
 
-                {isRevealed && (
+                {isRevealed && item.next_due_day_index<=currentSeq && (
                   <div className={styles.buttonRow}>
                     <button
                       type="button"
@@ -140,7 +142,7 @@ export default function ReviewPage() {
                       disabled={saving} onClick={() => handleRate(item.id, 'needs_work')}
                       style={{ flex: 1, minHeight: '44px', fontSize: '12.5px' }}
                     >
-                      <span>Practice again (+1 day)</span>
+                      <span>Practice again (+1 step)</span>
                     </button>
                     <button
                       type="button"

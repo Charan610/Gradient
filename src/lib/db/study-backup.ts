@@ -11,6 +11,8 @@ const profile = z.object({
   preferred_mode: z.enum(['light', 'normal', 'deep', 'maintenance']),
   theme: z.enum(['light', 'dark', 'system']), onboarding_status: z.enum(['pending', 'completed']),
   active_day_index: z.number().int().positive(),
+  recall_step:z.number().int().positive().optional(),
+  saved_course_ids:z.array(z.string()).optional(),
 }).passthrough();
 const task = z.object({ user_id: user, day_task_id: text,
   status: z.enum(['not_started', 'in_progress', 'completed', 'skipped_optional']),

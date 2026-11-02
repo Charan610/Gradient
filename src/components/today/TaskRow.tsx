@@ -25,6 +25,7 @@ export function TaskRow({
   const [expanded, setExpanded] = useState(false);
   const [evidence, setEvidence] = useState(progress?.evidence_text || '');
   const [isSaving, setIsSaving] = useState(false);
+  const [savedFeedback,setSavedFeedback]=useState(false);
 
   const [saveError, setSaveError] = useState('');
 
@@ -37,7 +38,7 @@ export function TaskRow({
   const handleEvidenceBlur = async () => {
     if (evidence !== progress?.evidence_text) {
       setIsSaving(true);
-      try { await onSaveEvidence(task.id, evidence); setSaveError(''); }
+      try { await onSaveEvidence(task.id, evidence); setSaveError('');setSavedFeedback(true); }
       catch { setSaveError('Evidence could not be saved. Keep a copy and retry.'); }
       finally { setIsSaving(false); }
     }
@@ -100,18 +101,17 @@ export function TaskRow({
                 <strong>Check before completing:</strong> {task.validation_criteria}
               </div>
 
-              <input
+              <textarea rows={3}
                 disabled={disabled}
-                type="text"
                 aria-label={`Evidence for ${task.title}`}
                 placeholder="Code link, test result, or something you learned…"
                 value={evidence}
-                onChange={e => setEvidence(e.target.value)}
+                onChange={e => {setEvidence(e.target.value);setSavedFeedback(false)}}
                 onBlur={handleEvidenceBlur}
                 className={styles.evidenceInput}
               />
 
-              {isSaving && <span className={styles.evidenceSaved}>Saving evidence...</span>}
+              <span className={styles.evidenceSaved} role="status">{isSaving?'Saving your note…':savedFeedback?'Note saved on this device.':'This task note saves when you leave the field.'}</span>
             </div>
           )}
         </div>

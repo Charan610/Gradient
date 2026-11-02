@@ -12,11 +12,12 @@ import {
   GateAttempt,
   TaskProgressStatus
 } from './types';
+import {COURSE_GUIDES} from './course-guides';
 import { STUDY_GUIDANCE } from './study-guidance';
 import { LEARNING_DAYS } from './curriculum-data';
 import {workspaceStorageKey,portableStorageKey} from '@/lib/account/workspace';
 import { createClient } from '../supabase/client';
-import {REVIEW_OFFSETS} from './review-schedule';
+import {REVIEW_OFFSETS,recallStep} from './review-schedule';
 
 const LOCAL_STORAGE_KEY_PREFIX = 'foundation_career_os_';
 
@@ -124,6 +125,21 @@ export class ProgressRepository {
     return updated;
   }
 
+  static async setCourseInterest(userId:string='local_user',courseId:string,interested:boolean):Promise<UserProfile> {
+    if(!COURSE_GUIDES.some(course=>course.id===courseId))throw new Error('Unknown course.');
+    const fallback=await this.getProfile(userId);
+    if(typeof localStorage==='undefined')throw new Error('Browser storage is unavailable.');
+    const key=this.getStorageKey(userId,'profile');
+    const current=JSON.parse(localStorage.getItem(key)||'null') as UserProfile|null;
+    const profile=current||fallback;
+    const saved=new Set(profile.saved_course_ids||[]);
+    if(interested)saved.add(courseId);else saved.delete(courseId);
+    const updated={...profile,saved_course_ids:[...saved],updated_at:new Date().toISOString()};
+    localStorage.setItem(key,JSON.stringify(updated));
+    if(typeof window!=='undefined')window.dispatchEvent(new Event('foundation-progress'));
+    return updated;
+  }
+
   // ----------------------------------------------------------------------------
   // 2. Task & Day Progress
   // ----------------------------------------------------------------------------
@@ -224,6 +240,18 @@ export class ProgressRepository {
     return null;
   }
 
+  /** Save a reflection without changing completion, task evidence, or the current lesson. */
+  static async updateDayNotes(userId:string='local_user',dayId:string,notes:string):Promise<UserDayProgress> {
+    if(!LEARNING_DAYS.some(day=>day.id===dayId))throw new Error('Unknown lesson.');
+    this.recoverCompletion(userId);
+    if(typeof localStorage==='undefined')throw new Error('Browser storage is unavailable.');
+    const key=this.getStorageKey(userId,`day_${dayId}`);
+    const current=JSON.parse(localStorage.getItem(key)||'null') as UserDayProgress|null;
+    const updated:UserDayProgress={user_id:userId,learning_day_id:dayId,state:'in_progress',time_spent_minutes:0,...current,notes};
+    localStorage.setItem(key,JSON.stringify(updated));
+    return updated;
+  }
+
   // ----------------------------------------------------------------------------
   // 3. Atomic finishLearningDay Transaction
   // ----------------------------------------------------------------------------
@@ -281,18 +309,21 @@ export class ProgressRepository {
     }
 
     const nextSeq = Math.max(profile.active_day_index, day.sequence_index + 1);
+    const step=recallStep(profile);
+    const nextRecallStep=previous?.state==='completed'?Math.max(step,nextSeq):step+1;
     const guidance = STUDY_GUIDANCE[day.sequence_index];
     const moduleId = day.tasks.find(t => t.module_id)?.module_id;
     const reviewsKey=this.getStorageKey(userId,'reviews');
     const reviews:ConceptReview[]=typeof localStorage!=='undefined'?JSON.parse(localStorage.getItem(reviewsKey)||'[]'):[];
-    const review=guidance&&moduleId?this.initialReview(userId,moduleId,guidance.prompt,guidance.answer,day.sequence_index):null;
+    const review=guidance&&moduleId?this.initialReview(userId,moduleId,guidance.prompt,guidance.answer,previous?.state==='completed'?day.sequence_index:step):null;
     const missingReview=review&&!reviews.some(item=>item.id===review.id);
     if(previous?.state==='completed'&&nextSeq===profile.active_day_index&&!missingReview)return {success:true,next_day_sequence:nextSeq};
     if(missingReview)reviews.push(review!);
-    const dayProgress:UserDayProgress=previous??{user_id:userId,learning_day_id:dayId,state:'completed',completed_at:new Date().toISOString(),time_spent_minutes:day.estimated_minutes};
+    const latest=typeof localStorage!=='undefined'?JSON.parse(localStorage.getItem(this.getStorageKey(userId,`day_${dayId}`))||'null') as UserDayProgress|null:null;
+    const dayProgress:UserDayProgress=latest??previous??{user_id:userId,learning_day_id:dayId,state:'completed',completed_at:new Date().toISOString(),time_spent_minutes:day.estimated_minutes};
     if(typeof localStorage!=='undefined'){
       const records={
-        [this.getStorageKey(userId,'profile')]:JSON.stringify({...profile,active_day_index:nextSeq,updated_at:new Date().toISOString()}),
+        [this.getStorageKey(userId,'profile')]:JSON.stringify({...profile,active_day_index:nextSeq,recall_step:nextRecallStep,updated_at:new Date().toISOString()}),
         [reviewsKey]:JSON.stringify(reviews),
         [this.getStorageKey(userId,`day_${dayId}`)]:JSON.stringify({...dayProgress,state:'completed',completed_at:dayProgress.completed_at||new Date().toISOString()}),
       };
@@ -392,7 +423,7 @@ export class ProgressRepository {
         const item = list.find(r => r.id === reviewId);
         if (item) {
           item.latest_confidence = rating;
-          item.last_day_index = profile.active_day_index;
+          item.last_day_index = recallStep(profile);
           if (rating === 'stable') {
             const nextStepIndex = Math.min(item.interval_step, INTERVAL_STEPS.length - 1);
             const offset = INTERVAL_STEPS[nextStepIndex];
@@ -407,6 +438,18 @@ export class ProgressRepository {
         }
       }
     }
+  }
+
+  /** Explicitly bring forward the next set; never changes lesson position or ratings. */
+  static async startNextRecallSession(userId:string='local_user') {
+    const profile=await this.getProfile(userId);
+    const step=recallStep(profile);
+    const reviews=await this.getDueReviews(userId,Number.MAX_SAFE_INTEGER);
+    if(reviews.some(review=>review.next_due_day_index<=step))return {advanced:false,step};
+    const next=Math.min(...reviews.map(review=>review.next_due_day_index));
+    if(!Number.isFinite(next))return {advanced:false,step};
+    await this.updateProfile(userId,{recall_step:next});
+    return {advanced:true,step:next};
   }
 
   // ----------------------------------------------------------------------------

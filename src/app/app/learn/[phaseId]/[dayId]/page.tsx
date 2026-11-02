@@ -3,7 +3,7 @@
 import { StudyGuide } from '@/components/learn/StudyGuide';
 import React, { use, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { LearningStudio } from '@/components/studio/LearningStudio';
+import {LessonNotes} from '@/components/learn/LessonNotes';
 import { ArrowLeft, Clock, CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { TaskChecklist } from '@/components/today/TaskChecklist';
@@ -26,6 +26,7 @@ export default function LearnDayPage({ params }: PageProps) {
   const [day, setDay] = useState<LearningDay | null>(null);
   const [taskMap, setTaskMap] = useState<Record<string, UserTaskProgress>>({});
   const [isDayCompleted, setIsDayCompleted] = useState(false);
+  const [notes,setNotes]=useState('');
   const [minutes, setMinutes] = useState(90);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -43,6 +44,7 @@ export default function LearnDayPage({ params }: PageProps) {
       ]);
       setMinutes(profile.preferred_daily_minutes);
       setActiveSequence(profile.active_day_index);
+      setNotes(dayProg?.notes||'');
       setDay(foundDay);
       setTaskMap(tasks);
       setIsDayCompleted(dayProg?.state === 'completed');
@@ -70,6 +72,8 @@ export default function LearnDayPage({ params }: PageProps) {
   }
 
   const module = MODULES.find(item => day.tasks.some(task => task.module_id === item.id));
+  const resumeTask=day.tasks.find(task=>task.required&&taskMap[task.id]?.status!=='completed');
+  const hasWork=notes.length>0||Object.values(taskMap).some(task=>task.status==='completed'||task.evidence_text);
   const isPreview = day.sequence_index > activeSequence && !isDayCompleted;
 
   // Previous and next learning days
@@ -104,6 +108,7 @@ export default function LearnDayPage({ params }: PageProps) {
             <p className={styles.goalText}>{day.goal}</p>
           </div>
 
+          {hasWork&&!isDayCompleted&&<section className={styles.resume}><h2>Pick up where you left off</h2><p>Your saved notes and checked activities are here.</p><a href={resumeTask?`#task-row-${resumeTask.id}`:'#finish-day-button'}>{resumeTask?`Resume: ${resumeTask.title}`:'Finish this lesson'} →</a></section>}
           <StudyGuide day={day} minutes={minutes} />
 
           {isPreview && <div className={styles.previewNotice} role="note"><strong>You’re previewing a future lesson.</strong><p>You can read ahead. Finish your current lesson before completing this one.</p><Link href="/app/today">Return to your current lesson →</Link></div>}
@@ -122,6 +127,7 @@ export default function LearnDayPage({ params }: PageProps) {
         </div>
 
         <div className={styles.sideColumn}>
+          <LessonNotes key={day.id} dayId={day.id} initialNotes={notes}/>
           <div className={styles.sideCard}>
             <div className={styles.sideHeading}>Make this fit your day</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', marginBottom: '12px' }}>
@@ -179,7 +185,7 @@ export default function LearnDayPage({ params }: PageProps) {
           </div>
         </div>
       </div>
-      <details className={styles.optionalTools}><summary>Optional study tools · focus timer & quick recall</summary><LearningStudio key={day.id} day={day} /></details>
+
     </AppShell>
   );
 }
