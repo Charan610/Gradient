@@ -12,6 +12,12 @@
       "sourceType": "github",
       "skillPath": "skills/landing-page-design/SKILL.md",
       "computedHash": "e0cf363a00650a18797c3cfc086b7e32cdff56b4cb34d72978d7b60aa8ca0172"
+    },
+    "threejs": {
+      "source": "oakoss/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/threejs/SKILL.md",
+      "computedHash": "c9c3440a37bbe4b9692c625da68b09e270bacf9f4293fea92bf54f40a960de3c"
     }
   }
 }

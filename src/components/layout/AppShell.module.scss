@@ -4,7 +4,9 @@
 .shellContainer {
   display: flex;
   min-height: 100vh;
-  background-color: var(--canvas);
+  background-color: transparent;
+  position: relative;
+  z-index: 1;
 }
 
 .mainWrapper {
