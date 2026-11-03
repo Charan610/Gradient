@@ -1,5 +1,5 @@
 'use client';
-import {createContext,useContext,useEffect,useState} from 'react';
+import {createContext,useContext,useEffect,useRef,useState} from 'react';
 import {usePathname} from 'next/navigation';
 import type {StudyAccount} from '@/lib/account/validation';
 import {initializeWorkspace,workspaceStorageKey} from '@/lib/account/workspace';
@@ -20,6 +20,9 @@ export function AccountProvider({children}:{children:React.ReactNode}){
  const pathname=usePathname();
  const [recovery,setRecovery]=useState<RecoveryIdentity|null>(null);
  const [state,setState]=useState<AccountState>({loading:true,configured:false,account:null,localReady:false,error:''});
+ const [isExiting,setIsExiting]=useState(false);
+ const [loaderVisible,setLoaderVisible]=useState(true);
+ const mountTimeRef=useRef<number>(Date.now());
 
  useEffect(()=>{
   let cancelled=false;
@@ -45,16 +48,41 @@ export function AccountProvider({children}:{children:React.ReactNode}){
    }catch{if(!cancelled){try{setRecovery(verified??readRecoveryIdentity(sessionStorage))}catch{}setState(previous=>({...previous,loading:false,error:accountChecked?'Your account check finished, but browser storage could not open your saved work. Keep a copy below if available, check browser storage, then try again.':'We couldn’t check your sign-in. Your saved work has not been reset. Try again when the connection is ready.'}));}}finally{window.clearTimeout(timeout);}
   })();return()=>{cancelled=true;window.clearTimeout(timeout);controller.abort()};
  },[]);
+
+ useEffect(()=>{
+  if(!state.loading){
+   const needsSetup=!state.account&&(!state.localReady||state.configured);
+   if(state.error||needsSetup){
+    setLoaderVisible(false);
+   }else{
+    const elapsed=Date.now()-mountTimeRef.current;
+    const remainingWait=Math.max(0,550-elapsed);
+    const timer=window.setTimeout(()=>setIsExiting(true),remainingWait);
+    return ()=>window.clearTimeout(timer);
+   }
+  }
+ },[state.loading,state.error,state.account,state.localReady,state.configured]);
+
  const workspace=pathname.startsWith('/app/');
  const needsSetup=!state.account&&(!state.localReady||state.configured);
 
  return <Context.Provider value={state}>
-  {workspace&&(state.loading||state.error||needsSetup)?(
-    state.loading?<BrandLoader message="Opening your workspace…" fullscreen/>:(
-      <main className="workspaceEntry">
-        {state.error?<section className="workspaceEntryCard"><h1>Let’s reconnect.</h1><p role="alert">{state.error}</p><button className="buttonPrimary" onClick={()=>window.location.reload()}>Try again</button>{recovery&&<RecoveryExport identity={recovery}/>}</section>:<AccountForm/>}
-      </main>
-    )
-  ):children}
+  {workspace&&(state.error||needsSetup)&&!loaderVisible?(
+   <main className="workspaceEntry">
+    {state.error?<section className="workspaceEntryCard"><h1>Let’s reconnect.</h1><p role="alert">{state.error}</p><button className="buttonPrimary" onClick={()=>window.location.reload()}>Try again</button>{recovery&&<RecoveryExport identity={recovery}/>}</section>:<AccountForm/>}
+   </main>
+  ):(
+   <>
+    {(!workspace||!state.loading||isExiting)&&children}
+    {workspace&&loaderVisible&&(
+     <BrandLoader
+      message="Opening your workspace…"
+      fullscreen
+      exiting={isExiting}
+      onExited={()=>setLoaderVisible(false)}
+     />
+    )}
+   </>
+  )}
  </Context.Provider>;
 }
