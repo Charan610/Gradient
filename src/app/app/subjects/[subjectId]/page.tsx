@@ -1,5 +1,5 @@
 'use client';
-import { use, useState } from 'react';
+import { use } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, ArrowRight, ArrowUpRight, Search, Check, Play, BookOpen } from 'lucide-react';
 import { StudyGuide } from '@/components/learn/StudyGuide';
@@ -9,16 +9,16 @@ import { SUBJECTS } from '@/lib/db/curriculum-data';
 import { filterLessons, getLessonState, LessonFilter } from '@/lib/db/learning-library';
 import { courseLessons, guidedCourseFor, lessonPosition, GUIDED_COURSES } from '@/lib/db/guided-courses';
 import { CourseInterest } from '@/components/courses/CourseInterest';
-import { useStudyLibrary } from '@/components/courses/useStudyLibrary';
+import { useLibraryFilters, useStudyLibrary } from '@/components/courses/useStudyLibrary';
 import styles from '@/components/courses/Courses.module.scss';
 
+const LESSON_FILTERS = ['all', 'remaining', 'completed'] as const;
 export default function SubjectDetailPage({ params }: { params: Promise<{ subjectId: string }> }) {
   const { subjectId } = use(params);
   const subject = SUBJECTS.find(item => item.id.toLowerCase() === subjectId.toLowerCase() || item.slug === subjectId.toLowerCase());
   const course = COURSE_GUIDES.find(item => item.id === subject?.id);
   const { loading, error, completedIds, activeSequence } = useStudyLibrary();
-  const [query, setQuery] = useState('');
-  const [filter, setFilter] = useState<LessonFilter>('all');
+  const { query, setQuery, filter, setFilter } = useLibraryFilters(LESSON_FILTERS);
   if (!course) return <AppShell><div className={styles.empty}><h1>Course not found</h1><p>This course is not in your learning library.</p><Link className="buttonSecondary" href="/app/subjects">Browse courses</Link></div></AppShell>;
   const guided = GUIDED_COURSES.some(item => item.id === course.id);
   const courseDays = courseLessons(course.id);

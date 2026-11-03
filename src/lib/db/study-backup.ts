@@ -57,7 +57,35 @@ export function parseStudyBackup(source: string): Record<string, string> {
       : /^tasks_P\d+-D\d+$/.test(suffix) ? z.record(task)
       : /^day_P\d+-D\d+$/.test(suffix) ? day
       : /^gate_P\d+$/.test(suffix) ? gate : null;
-    if (!schema || !schema.safeParse(JSON.parse(raw)).success) throw new Error('Backup contains an unsupported or invalid study record.');
+    const parsed = schema?.safeParse(JSON.parse(raw));
+    if (!parsed?.success) throw new Error('Backup contains an unsupported or invalid study record.');
+    // Keep historical IDs and raw payloads, but bind records to their storage identity.
+    // Curriculum membership is deliberately not required: older exports can contain
+    // lessons and task IDs that are no longer in the current curriculum.
+    const value = JSON.parse(raw);
+    if (suffix.startsWith('day_') && value.learning_day_id !== suffix.slice(4)) {
+      throw new Error('Backup day record does not match its lesson key.');
+    }
+    if (suffix.startsWith('tasks_')) {
+      const lessonId = suffix.slice(6);
+      for (const [taskId, record] of Object.entries(value)) {
+        if (taskId !== (record as { day_task_id: string }).day_task_id || !taskId.startsWith(`${lessonId}-`)) {
+          throw new Error('Backup task record does not match its task or lesson key.');
+        }
+      }
+    }
+    if (suffix.startsWith('gate_') && value.phase_id !== suffix.slice(5)) {
+      throw new Error('Backup gate record does not match its phase key.');
+    }
+    if (suffix === 'reviews') {
+      const ids = new Set<string>();
+      for (const item of value as z.infer<typeof review>[]) {
+        if (!item.id.trim() || !item.module_id.trim() || ids.has(item.id)) {
+          throw new Error('Backup review identities must be nonempty and unique.');
+        }
+        ids.add(item.id);
+      }
+    }
     records[key] = raw;
   }
   // A fresh workspace export may only have the top-level default profile.

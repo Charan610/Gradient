@@ -1,5 +1,4 @@
 'use client';
-import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowUpRight, ArrowRight, Search, BookOpen, CheckCircle2 } from 'lucide-react';
 import { ReactiveSurface } from '@/components/ui/ReactiveSurface';
@@ -8,12 +7,12 @@ import { COURSE_GUIDES } from '@/lib/db/course-guides';
 import { LEARNING_DAYS } from '@/lib/db/curriculum-data';
 import { courseLessons, guidedCourseFor, lessonPosition, GUIDED_COURSES } from '@/lib/db/guided-courses';
 import { CourseInterest } from '@/components/courses/CourseInterest';
-import { useStudyLibrary } from '@/components/courses/useStudyLibrary';
+import { useLibraryFilters, useStudyLibrary } from '@/components/courses/useStudyLibrary';
 import styles from '@/components/courses/Courses.module.scss';
 
+const COURSE_FILTERS = ['all', 'guided', 'outlines'] as const;
 export default function SubjectsPage() {
-  const [query, setQuery] = useState('');
-  const [filter, setFilter] = useState('all');
+  const { query, setQuery, filter, setFilter } = useLibraryFilters(COURSE_FILTERS);
   const { loading, error, completedIds, activeSequence } = useStudyLibrary();
   const active = !loading && !error ? LEARNING_DAYS.find(day => day.sequence_index === activeSequence) : undefined;
   const activeCourse = active ? guidedCourseFor(active) : undefined;

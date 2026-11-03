@@ -117,7 +117,10 @@ export class ProgressRepository {
       if (data && !error) return data as UserProfile;
     }
 
-    const current = await this.getProfile(userId);
+    const fallback = await this.getProfile(userId);
+    // Another caller may have saved while getProfile yielded. Merge at the write boundary.
+    const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(this.getStorageKey(userId, 'profile')) : null;
+    const current = raw ? JSON.parse(raw) as UserProfile : fallback;
     const updated = { ...current, ...updates, updated_at: new Date().toISOString() };
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem(this.getStorageKey(userId, 'profile'), JSON.stringify(updated));
@@ -280,7 +283,7 @@ export class ProgressRepository {
       return { success: false, error: 'invalid_day' };
     }
 
-    const profile = await this.getProfile(userId);
+    let profile = await this.getProfile(userId);
     const previous = await this.getDayProgress(userId, dayId);
     if (previous?.state !== 'completed' && day.sequence_index !== profile.active_day_index) {
       return { success: false, error: 'out_of_sequence' };
@@ -309,6 +312,13 @@ export class ProgressRepository {
       }
     }
 
+    // Preserve preferences/recall edits saved during asynchronous task validation.
+    if(typeof localStorage!=='undefined'){
+      const raw=localStorage.getItem(this.getStorageKey(userId,'profile'));
+      if(raw)profile=JSON.parse(raw) as UserProfile;
+    }
+    if(previous?.state!=='completed'&&day.sequence_index!==profile.active_day_index)return {success:false,error:'out_of_sequence'};
+    if(previous?.state!=='completed'&&profile.preferred_mode==='maintenance')return {success:false,error:'maintenance_mode'};
     const nextSeq = Math.max(profile.active_day_index, day.sequence_index + 1);
     const step=recallStep(profile);
     const nextRecallStep=previous?.state==='completed'?Math.max(step,nextSeq):step+1;
