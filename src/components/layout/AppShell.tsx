@@ -11,6 +11,7 @@ import { ProgressRepository } from '@/lib/db/progress-repository';
 import { LEARNING_DAYS } from '@/lib/db/curriculum-data';
 import { UserProfile } from '@/lib/db/types';
 import styles from './AppShell.module.scss';
+import {ScrollEffects} from '@/components/motion/ScrollEffects';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const { account } = useAccount();
@@ -42,6 +43,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           semester={profile?.academic_semester}
         />
         <main tabIndex={-1} id="workspace-content" className={styles.contentContainer}>
+          <ScrollEffects targetId="workspace-content"/>
           <div className={styles.workspaceStatus}>
             <span>
               <HardDrive size={13} aria-hidden="true" />
