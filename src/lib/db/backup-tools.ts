@@ -1,9 +1,45 @@
-import {readStudyRestoreBefore} from './restore-recovery';
+import {readStudyRestoreBefore,recoverStudyRestore,studyRestoreJournalKey} from './restore-recovery';
 import {parseStudyBackup} from './study-backup';
 import {workspaceStorageKey} from '@/lib/account/workspace';
+import {withStudyLock} from './study-lock';
 
 export type RecoveryIdentity={id:string|null;username:string};
 export const RECOVERY_SESSION_KEY='gradient_verified_workspace';
+function recoveryScope(identity:RecoveryIdentity):string {
+ if(identity.id!==null&&!/^[a-zA-Z0-9_-]{1,128}$/.test(identity.id))throw Error('Invalid recovery identity.');
+ return identity.id?`gradient_workspace_${identity.id}_`:'';
+}
+/** Browser boundary: use the verified identity's lock, without changing accounts.
+ * Read the undo image directly rather than running destructive recovery.
+ */
+export async function exportRecoverySnapshotSafely(storage:Storage,identity:RecoveryIdentity):Promise<{source:string;journal:string|null}>{
+ const scope=recoveryScope(identity);
+ return withStudyLock(`${scope}foundation_career_os_local_user_profile`,()=>({source:exportRecoveryBackup(storage,identity),journal:storage.getItem(studyRestoreJournalKey(scope))}),true);
+}
+export async function exportRecoveryBackupSafely(storage:Storage,identity:RecoveryIdentity):Promise<string>{
+ return (await exportRecoverySnapshotSafely(storage,identity)).source;
+}
+/** Call only after the server confirms accounts are unconfigured. This validates
+ * legacy local records without discovering or selecting any account workspace.
+ */
+export async function readLocalRecoveryIdentity(storage:Storage):Promise<RecoveryIdentity|null>{
+ try{
+  const source=await exportRecoveryBackupSafely(storage,{id:null,username:'Local learner'});
+  return {id:null,username:JSON.parse(source).profile.alias};
+ }catch{return null;}
+}
+/** Explicit retry after offering a download, never an ordinary read-side rollback.
+ * A changed/finished journal requires a fresh account check, not replay of old work.
+ */
+export async function recoverDownloadedStudyBackup(storage:Storage,identity:RecoveryIdentity,journal:string):Promise<boolean>{
+ const scope=recoveryScope(identity);
+ return withStudyLock(`${scope}foundation_career_os_local_user_profile`,()=>{
+  if(workspaceStorageKey('')!==scope)throw Error('Workspace changed before recovery.');
+  if(storage.getItem(studyRestoreJournalKey(scope))!==journal)return false;
+  recoverStudyRestore(storage,scope);
+  return true;
+ },true);
+}
 export function readRecoveryIdentity(storage:Storage):RecoveryIdentity|null {
  try {const value=JSON.parse(storage.getItem(RECOVERY_SESSION_KEY)||'null');return value&&typeof value.username==='string'&&(value.id===null||typeof value.id==='string'&&/^[a-zA-Z0-9_-]{1,128}$/.test(value.id))?value:null;}catch{return null;}
 }

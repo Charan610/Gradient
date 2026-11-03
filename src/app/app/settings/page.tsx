@@ -8,6 +8,7 @@ import { ProgressRepository } from '@/lib/db/progress-repository';
 import { UserProfile } from '@/lib/db/types';
 import {BackupPanel} from '@/components/backup/BackupPanel';
 import { useTheme } from '@/components/context/ThemeContext';
+import {buildFeedbackUrl,FEEDBACK_LINK_LABEL,FEEDBACK_REVIEW_NOTICE} from '@/lib/support/feedback';
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
@@ -203,6 +204,10 @@ export default function SettingsPage() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <BackupPanel/>
+          <div>
+            <a className="buttonTertiary" href={buildFeedbackUrl('/app/settings')} target="_blank" rel="noopener noreferrer">{FEEDBACK_LINK_LABEL}</a>
+            <p style={{fontSize:'12px',color:'var(--ink-secondary)',lineHeight:1.5}}>{FEEDBACK_REVIEW_NOTICE}</p>
+          </div>
 
           <div style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--hairline)', borderRadius: '14px', padding: '24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--danger)', marginBottom: '8px' }}>

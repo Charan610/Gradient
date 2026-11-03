@@ -13,8 +13,8 @@ export async function withStudyLock<T>(profileKey:string,operation:()=>T|Promise
  const name=studyLockName(profileKey);
  if(typeof navigator!=='undefined'&&navigator.locks?.request){
   return await navigator.locks.request(name,{mode:'exclusive'},async()=>{
-   // Let queued storage notifications update this document's storage view after
-   // a cross-tab hand-off, and flush our notifications before releasing the lock.
+   // Yield for queued storage notifications. This is not a storage-coherence
+   // guarantee; ordinary readers must never replay a restore undo image.
    await storageTask();
    try{return await operation();}
    finally{await storageTask();}

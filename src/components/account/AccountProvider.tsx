@@ -6,7 +6,7 @@ import {initializeWorkspace,workspaceStorageKey} from '@/lib/account/workspace';
 import {ProgressRepository} from '@/lib/db/progress-repository';
 import {AccountForm} from './AccountForm';
 import {RecoveryExport} from './RecoveryExport';
-import {readRecoveryIdentity,RECOVERY_SESSION_KEY,RecoveryIdentity} from '@/lib/db/backup-tools';
+import {readRecoveryIdentity,RECOVERY_SESSION_KEY,RecoveryIdentity,recoverDownloadedStudyBackup,readLocalRecoveryIdentity} from '@/lib/db/backup-tools';
 import {BrandLoader} from '@/components/ui/BrandLoader';
 
 type AccountState={loading:boolean;configured:boolean;account:StudyAccount|null;localReady:boolean;error:string};
@@ -19,6 +19,7 @@ export async function accountRequest(action:string,body:Record<string,unknown>={
 export function AccountProvider({children}:{children:React.ReactNode}){
  const pathname=usePathname();
  const [recovery,setRecovery]=useState<RecoveryIdentity|null>(null);
+ const [recoveryJournal,setRecoveryJournal]=useState<string|null>(null);
  const [state,setState]=useState<AccountState>({loading:true,configured:false,account:null,localReady:false,error:''});
  const [isExiting,setIsExiting]=useState(false);
  const [loaderVisible,setLoaderVisible]=useState(true);
@@ -37,7 +38,7 @@ export function AccountProvider({children}:{children:React.ReactNode}){
     accountChecked=true;
     let previousIdentity:RecoveryIdentity|null=null;
     try{previousIdentity=readRecoveryIdentity(sessionStorage)}catch{}
-    verified=data.account?{id:data.account.id,username:data.account.username}:!data.configured&&previousIdentity?.id===null?previousIdentity:null;
+    verified=data.account?{id:data.account.id,username:data.account.username}:!data.configured?(previousIdentity?.id===null?previousIdentity:await readLocalRecoveryIdentity(localStorage)):null;
     try{if(verified)sessionStorage.setItem(RECOVERY_SESSION_KEY,JSON.stringify(verified));else sessionStorage.removeItem(RECOVERY_SESSION_KEY)}catch{}
     initializeWorkspace(data.account?.id||null);
     if(data.account&&!localStorage.getItem(workspaceStorageKey('foundation_career_os_local_user_profile'))){await ProgressRepository.updateProfile('local_user',{alias:data.account.username,academic_semester:data.account.semester,preferred_daily_minutes:data.account.minutes});}
@@ -65,11 +66,17 @@ export function AccountProvider({children}:{children:React.ReactNode}){
 
  const workspace=pathname.startsWith('/app/');
  const needsSetup=!state.account&&(!state.localReady||state.configured);
+ const retry=async()=>{
+  try{
+   if(recovery&&recoveryJournal)await recoverDownloadedStudyBackup(localStorage,recovery,recoveryJournal);
+   window.location.reload();
+  }catch{setState(previous=>({...previous,error:'Recovery could not finish. Keep your downloaded backup, check browser storage, then try again. The recovery copy has not been discarded.'}));}
+ };
 
  return <Context.Provider value={state}>
   {workspace&&(state.error||needsSetup)&&!loaderVisible?(
    <main className="workspaceEntry">
-    {state.error?<section className="workspaceEntryCard"><h1>Let’s reconnect.</h1><p role="alert">{state.error}</p><button className="buttonPrimary" onClick={()=>window.location.reload()}>Try again</button>{recovery&&<RecoveryExport identity={recovery}/>}</section>:<AccountForm/>}
+    {state.error?<section className="workspaceEntryCard"><h1>Let’s reconnect.</h1><p role="alert">{state.error}</p><button className="buttonPrimary" onClick={()=>{void retry()}}>Try again</button>{recovery&&<RecoveryExport identity={recovery} onRecoveryReady={setRecoveryJournal}/>}</section>:<AccountForm/>}
    </main>
   ):(
    <>

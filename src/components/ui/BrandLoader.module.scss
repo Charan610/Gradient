@@ -122,9 +122,17 @@
 
 @media (prefers-reduced-motion: reduce) {
   .exiting .backdrop {
-    animation: netflixBackdropFade 200ms ease-out forwards;
+    animation: none;
+    opacity: 0;
+    visibility: hidden;
   }
   .message {
     transition: none;
+  }
+  .messageExiting {
+    transform: none;
+  }
+  .dot {
+    animation: none;
   }
 }

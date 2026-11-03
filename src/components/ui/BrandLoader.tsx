@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import styles from './BrandLoader.module.scss';
 import clsx from 'clsx';
+import { createLoaderExit, createMotionLoop } from '@/lib/motion/animation-lifecycle';
 
 interface BrandLoaderProps {
   message?: string;
@@ -64,6 +65,8 @@ export function BrandLoader({
   const [webglSupported, setWebglSupported] = useState(true);
   const onExitedRef = useRef(onExited);
   const exitingRef = useRef(exiting);
+  const finishExitRef = useRef<(() => void) | null>(null);
+  const exitCompletedRef = useRef(false);
 
   useEffect(() => {
     onExitedRef.current = onExited;
@@ -74,12 +77,17 @@ export function BrandLoader({
   }, [exiting]);
 
   useEffect(() => {
-    if (exiting) {
-      const timer = window.setTimeout(() => {
-        onExitedRef.current?.();
-      }, 910);
-      return () => window.clearTimeout(timer);
-    }
+    exitCompletedRef.current = false;
+    if (!exiting) return;
+    const exit = createLoaderExit(() => {
+      exitCompletedRef.current = true;
+      onExitedRef.current?.();
+    });
+    finishExitRef.current = exit.finish;
+    return () => {
+      finishExitRef.current = null;
+      exit.dispose();
+    };
   }, [exiting]);
 
   useEffect(() => {
@@ -195,16 +203,31 @@ export function BrandLoader({
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
+      motion.invalidate();
     };
     window.addEventListener('resize', handleResize);
 
     // Animation Loop
-    let animId: number;
     const startTime = performance.now();
     let exitStartTime: number | null = null;
     const EXIT_DURATION = 820; // ms
 
-    const animate = (now: number) => {
+    const animate = (now: number, reduced: boolean) => {
+      if (exitCompletedRef.current) return false;
+      if (reduced) {
+        // Keep the same geometry and framing, without wave, depth motion or exit zoom.
+        barsGroup.scale.set(0.5, 0.5, 0.5);
+        barsGroup.position.set(0, 0.12, 0);
+        barsGroup.rotation.y = 0;
+        bar1.position.x = posX1;
+        bar3.position.x = posX3;
+        bar1.scale.y = bar2.scale.y = bar3.scale.y = 1;
+        material.emissiveIntensity = isDark ? 0.4 : 0.15;
+        material.opacity = 1;
+        canvas.style.opacity = '1';
+        renderer.render(scene, camera);
+        return;
+      }
       const isExitingNow = exitingRef.current;
       const elapsed = (now - startTime) / 1000;
 
@@ -270,19 +293,27 @@ export function BrandLoader({
         }
 
         if (p >= 1) {
-          onExitedRef.current?.();
-          return;
+          finishExitRef.current?.();
+          return false;
         }
       }
 
       renderer.render(scene, camera);
-      animId = requestAnimationFrame(animate);
     };
 
-    animId = requestAnimationFrame(animate);
+    const motion = createMotionLoop(animate);
+    const onContextLost = (event: Event) => {
+      event.preventDefault();
+      motion.setAvailable(false);
+    };
+    const onContextRestored = () => motion.setAvailable(true);
+    canvas.addEventListener('webglcontextlost', onContextLost);
+    canvas.addEventListener('webglcontextrestored', onContextRestored);
 
     return () => {
-      cancelAnimationFrame(animId);
+      motion.dispose();
+      canvas.removeEventListener('webglcontextlost', onContextLost);
+      canvas.removeEventListener('webglcontextrestored', onContextRestored);
       window.removeEventListener('resize', handleResize);
       geom1.dispose();
       geom2.dispose();

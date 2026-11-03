@@ -3,6 +3,7 @@
 import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import styles from './Workspace3DBackground.module.scss';
+import { createMotionLoop } from '@/lib/motion/animation-lifecycle';
 
 interface FloatingObject {
   mesh: THREE.Mesh;
@@ -139,9 +140,7 @@ export function Workspace3DBackground() {
     const canvas = canvasRef.current;
     if (!container || !canvas) return;
 
-    // Check prefers-reduced-motion
     const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    let prefersReducedMotion = reducedMotionQuery.matches;
 
     // Detect current theme from HTML element
     const getTheme = (): 'light' | 'dark' => {
@@ -489,7 +488,7 @@ export function Workspace3DBackground() {
     let targetMouseY = 0;
 
     const onPointerMove = (e: PointerEvent) => {
-      if (prefersReducedMotion) return;
+      if (reducedMotionQuery.matches) return;
       targetMouseX = (e.clientX / window.innerWidth) * 2 - 1;
       targetMouseY = (e.clientY / window.innerHeight) * 2 - 1;
     };
@@ -504,6 +503,7 @@ export function Workspace3DBackground() {
       updateObjectAnchors();
       renderer?.setSize(w, h, false);
       renderer?.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.0));
+      motion.invalidate();
     };
 
     window.addEventListener('resize', onResize);
@@ -514,6 +514,7 @@ export function Workspace3DBackground() {
       if (nextTheme !== currentTheme) {
         currentTheme = nextTheme;
         applyThemeColors(currentTheme);
+        motion.invalidate();
       }
     });
 
@@ -524,11 +525,11 @@ export function Workspace3DBackground() {
 
     // 9. High-Fidelity 60 FPS Animation Loop
     const clock = new THREE.Clock();
-    let animationFrameId = 0;
-    let isRunning = true;
-
-    const animate = () => {
-      if (!isRunning) return;
+    const animate = (_now: number, reduced: boolean) => {
+      if (reduced) {
+        renderer?.render(scene, camera);
+        return;
+      }
 
       const delta = Math.min(clock.getDelta(), 0.05); // capped physics step
       const elapsed = clock.getElapsedTime();
@@ -563,60 +564,20 @@ export function Workspace3DBackground() {
       }
 
       renderer?.render(scene, camera);
-      animationFrameId = requestAnimationFrame(animate);
     };
 
-    if (prefersReducedMotion) {
-      renderer.render(scene, camera);
-    } else {
-      animationFrameId = requestAnimationFrame(animate);
-    }
-
-    const onMotionChange = (e: MediaQueryListEvent) => {
-      prefersReducedMotion = e.matches;
-      if (prefersReducedMotion) {
-        cancelAnimationFrame(animationFrameId);
-        renderer?.render(scene, camera);
-      } else {
-        clock.getDelta(); // flush delta
-        animationFrameId = requestAnimationFrame(animate);
-      }
-    };
-
-    reducedMotionQuery.addEventListener('change', onMotionChange);
-
-    // Pause animation when page is hidden (saving power & GPU cycles)
-    const onVisibilityChange = () => {
-      if (document.hidden) {
-        isRunning = false;
-        cancelAnimationFrame(animationFrameId);
-      } else {
-        if (!prefersReducedMotion && !isRunning) {
-          isRunning = true;
-          clock.getDelta(); // flush delta to avoid sudden leap
-          animationFrameId = requestAnimationFrame(animate);
-        }
-      }
-    };
-
-    document.addEventListener('visibilitychange', onVisibilityChange);
+    const motion = createMotionLoop(animate);
 
     // 10. WebGL Context Recovery
     const onContextLost = (event: Event) => {
       event.preventDefault();
-      cancelAnimationFrame(animationFrameId);
-      isRunning = false;
+      motion.setAvailable(false);
     };
 
     const onContextRestored = () => {
       applyThemeColors(getTheme());
-      if (!prefersReducedMotion) {
-        isRunning = true;
-        clock.getDelta();
-        animationFrameId = requestAnimationFrame(animate);
-      } else {
-        renderer?.render(scene, camera);
-      }
+      clock.getDelta();
+      motion.setAvailable(true);
     };
 
     canvas.addEventListener('webglcontextlost', onContextLost, false);
@@ -624,12 +585,9 @@ export function Workspace3DBackground() {
 
     // 11. Cleanup
     return () => {
-      isRunning = false;
-      cancelAnimationFrame(animationFrameId);
+      motion.dispose();
       window.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('resize', onResize);
-      reducedMotionQuery.removeEventListener('change', onMotionChange);
-      document.removeEventListener('visibilitychange', onVisibilityChange);
       observer.disconnect();
 
       canvas.removeEventListener('webglcontextlost', onContextLost);

@@ -1,5 +1,5 @@
 import {withStudyLock} from './study-lock';
-import {recoverStudyRestore, studyRestoreJournalKey} from './restore-recovery';
+import {assertNoPendingStudyRestore, studyRestoreJournalKey} from './restore-recovery';
 import {lessonDraftRevision,lessonDraftRevisionKey,newLessonDraftRevision,clearLessonDrafts} from './lesson-drafts';
 // ==============================================================================
 // PROGRESS REPOSITORY: DUAL SUPABASE / LOCAL PERSISTENCE LAYER
@@ -15,7 +15,7 @@ import {
   GateAttempt,
   TaskProgressStatus
 } from './types';
-import {COURSE_GUIDES} from './course-guides';
+import {COURSE_INDEX} from './course-index';
 import { STUDY_GUIDANCE } from './study-guidance';
 import { LEARNING_DAYS } from './curriculum-data';
 import {workspaceStorageKey,portableStorageKey} from '@/lib/account/workspace';
@@ -42,7 +42,7 @@ export class ProgressRepository {
   /** Finish an interrupted local commit before exposing its profile or completion. */
   private static recoverCompletion(userId:string) {
     if(typeof localStorage==='undefined')return;
-    if(userId==='local_user')recoverStudyRestore(localStorage);
+    if(userId==='local_user')assertNoPendingStudyRestore(localStorage);
     const journalKey=this.getStorageKey(userId,'completion_journal');
     const raw=localStorage.getItem(journalKey);
     if(!raw)return;
@@ -137,7 +137,7 @@ export class ProgressRepository {
   private static async setCourseInterestUnlocked(userId:string='local_user',courseId:string,interested:boolean):Promise<UserProfile> {
     const workspace = this.getStorageKey(userId, 'profile');
     const revision = userId==='local_user'?lessonDraftRevision():null;
-    if(!COURSE_GUIDES.some(course=>course.id===courseId))throw new Error('Unknown course.');
+    if(!COURSE_INDEX.some(course=>course.id===courseId))throw new Error('Unknown course.');
     const fallback=await this.getProfileUnlocked(userId);
     if (workspace !== this.getStorageKey(userId, 'profile') || userId==='local_user'&&(revision===null||revision!==lessonDraftRevision())) throw new Error('Workspace changed before saving.');
     if(typeof localStorage==='undefined')throw new Error('Browser storage is unavailable.');
@@ -654,6 +654,7 @@ export class ProgressRepository {
     const revision=userId==='local_user'?lessonDraftRevision():null;
     return withStudyLock(profileKey,()=>{
       if(profileKey!==this.getStorageKey(userId,'profile')||writing&&userId==='local_user'&&(revision===null||revision!==lessonDraftRevision()))throw new Error('Workspace changed before the operation could run.');
+      if(userId==='local_user'&&typeof localStorage!=='undefined')assertNoPendingStudyRestore(localStorage);
       return operation();
     });
   }

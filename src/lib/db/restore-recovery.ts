@@ -8,6 +8,13 @@ function restoreScope(scope?: string): string {
 }
 export const studyRestoreJournalKey = (scope?: string) => `${restoreScope(scope)}gradient_restore_journal`;
 
+/** Ordinary reads cannot tell an interrupted restore from a stale cross-tab view.
+ * Never replay an undo image from those paths: keep both copies for recovery.
+ */
+export function assertNoPendingStudyRestore(storage:Storage,scope?:string):void {
+  if(storage.getItem(studyRestoreJournalKey(scope))!==null)throw Error('A study restore needs recovery. Download your saved study backup before retrying; existing records have not been changed.');
+}
+
 function allowedKey(key: string, scope: string): boolean {
   if (!key.startsWith(scope)) return false;
   const portable = key.slice(scope.length);

@@ -1,5 +1,7 @@
 # Gradient implementation feedback
 
+Historical record of the original six-fix pass. See [the follow-up delivery report](./GRADIENT_FOLLOWUP_DELIVERY.md) for the current local implementation, verification counts, and activation limits.
+
 Reviewed: gradient_audit.md (138 lines), gradient_research.md (46 lines), and gradient_improvements.md (755 lines). The latest instruction, preserving the UI exactly, overrides their suggested redesigns and new widgets. Their code was treated as reference, not replacement code.
 
 ## Architecture and findings
