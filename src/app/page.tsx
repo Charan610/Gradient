@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import {BrandMark} from '@/components/ui/BrandMark';
 import {FirstProgramDemo} from '@/components/learn/FirstProgramDemo';
+import {HeroDepth} from '@/components/marketing/HeroDepth';
 import {MarketingNav} from '@/components/marketing/MarketingNav';
 import styles from './Home.module.scss';
 
@@ -19,6 +20,7 @@ export default function HomePage() {
     <MarketingNav/>
     <main id="main" tabIndex={-1}>
       <section className={styles.hero} aria-labelledby="hero-heading">
+        <HeroDepth/>
         <div className={styles.heroCopy}>
           <span className={styles.eyebrow}>C++ first. A stronger foundation next.</span>
           <h1 id="hero-heading" className={styles['heading-1']}>Learn C++.<br/>Understand the code<br/>you write.</h1>

@@ -87,3 +87,6 @@
 // The public hero uses a dark surface in either workspace theme.
 .heroPreview { --surface:#1f1f1f; --surface-soft:#272727; --ink:#f4f1ec; --ink-secondary:#d4cebf; --muted:#b5b2ad; --hairline:#48433d; --hairline-subtle:#313131; --accent:#e2a184; --accent-soft:#3a2f28; --accent-hover:#f4c5b1; --sage:#b4c4a0; color:var(--ink); }
 .heroPreview { --surface-hover:#313131; --canvas:#181818; }
+
+.hero { position:relative; isolation:isolate; }
+.heroCopy,.heroPreview { position:relative; z-index:1; }

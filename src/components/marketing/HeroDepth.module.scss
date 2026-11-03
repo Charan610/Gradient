@@ -1,0 +1,10 @@
+.scene { position:absolute; inset:-48px -32px; z-index:0; overflow:hidden; pointer-events:none; perspective:1000px; contain:layout paint; }
+.card { position:absolute; display:flex; flex-direction:column; width:240px; height:176px; padding:16px; border:1px solid #e2a18440; border-radius:16px; background:#1f1f1f; color:#e2a184; opacity:.5; transform-style:preserve-3d; backface-visibility:hidden; }
+.card0 { left:53%; top:3%; transform:rotate(-12deg); }
+.card1 { right:0; top:35%; transform:rotate(10deg); }
+.card2 { right:9%; bottom:3%; transform:rotate(-6deg); }
+.label { display:flex; gap:4px; align-items:center; font:500 12px/16px 'Manrope',sans-serif; letter-spacing:.04em; color:#b5b2ad; i { width:4px; height:4px; background:#e2a184; border-radius:50%; &:first-of-type { margin-left:auto; } } }
+.symbol { font:500 36px/40px monospace; margin:12px 0 8px; }
+.code { display:flex; flex-direction:column; white-space:pre; font:400 12px/16px monospace; color:#b5b2ad; }
+@media(max-width:1023px), (hover:none), (pointer:coarse) { .scene { inset:48% -16px 0; opacity:.5; } .card { width:176px; height:144px; } .card0 { left:auto; right:0; top:0; } .card1 { display:none; } .card2 { right:4%; bottom:0; } .symbol { font-size:24px; line-height:32px; } }
+@media(prefers-reduced-motion:reduce) { .card { transform:none; } }
