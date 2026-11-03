@@ -3,20 +3,30 @@ import { AccountProvider } from '@/components/account/AccountProvider';
 import { ThemeProvider } from '@/components/context/ThemeContext';
 import '@/styles/globals.scss';
 
+// Required in production: set NEXT_PUBLIC_SITE_URL to the public canonical origin.
+// Local development falls back to localhost; never infer a production domain.
+const siteUrl = new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000');
+
 export const metadata: Metadata = {
-  title: 'Gradient — Your next small step',
-  description:
-    'Build your C++ foundations with 30 guided lessons, focused practice, and spaced recall. Self-paced learning with browser-local progress and JSON backups. Choose a username. Password optional.',
-  keywords: [
-    'Career Roadmap',
-    'SDE Preparation',
-    'DSA in C++',
-    'Backend Engineering',
-    'FastAPI',
-    'PostgreSQL',
-    'Interview Readiness',
-    'Spaced Repetition'
-  ]
+  metadataBase: siteUrl,
+  title: { default: 'Gradient — 50 guided C++ and DSA lessons', template: '%s | Gradient' },
+  description: 'Learn C++ and data structures through 50 guided lessons, small practice tasks, and spaced recall. Study at your pace with browser-local notes and JSON backups.',
+  applicationName: 'Gradient',
+  alternates: { canonical: './' },
+  keywords: ['C++ lessons', 'data structures and algorithms', 'guided practice', 'spaced recall'],
+  robots: { index: true, follow: true },
+  icons: { icon: [{ url: '/favicon.ico', sizes: '32x32' }, { url: '/icon.svg', type: 'image/svg+xml' }], apple: '/apple-icon.png' },
+  openGraph: {
+    type: 'website', siteName: 'Gradient', locale: 'en_US',
+    title: 'Gradient — 50 guided C++ and DSA lessons',
+    description: 'A calm place to learn C++, practise data structures, and return to what you learned.',
+    images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Gradient — 50 guided C++ and DSA lessons' }]
+  },
+  twitter: {
+    card: 'summary_large_image', title: 'Gradient — 50 guided C++ and DSA lessons',
+    description: 'Small practice tasks, spaced recall, and notes that stay in your browser.',
+    images: ['/twitter-image']
+  }
 };
 
 export const viewport: Viewport = {
@@ -26,7 +36,7 @@ export const viewport: Viewport = {
   maximumScale: 5,
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#FAF7F0' },
-    { media: '(prefers-color-scheme: dark)', color: '#1B1816' }
+    { media: '(prefers-color-scheme: dark)', color: '#181818' }
   ]
 };
 
@@ -37,6 +47,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" data-theme="light" suppressHydrationWarning>
+      <head>
+        <link rel="preload" href="/fonts/manrope-latin.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+      </head>
       <body>
         <ThemeProvider><AccountProvider>{children}</AccountProvider></ThemeProvider>
       </body>
