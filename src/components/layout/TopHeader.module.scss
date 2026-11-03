@@ -101,3 +101,8 @@
 .searchButton { min-height: 40px; background: var(--canvas); border-radius: 10px; }
 .searchButton { min-height:44px; min-width:44px; }
 .header { padding-left:max(16px,env(safe-area-inset-left)); padding-right:max(16px,env(safe-area-inset-right)); }
+
+.header { margin:12px 16px 0; border:1px solid var(--hairline); border-radius:16px; top:12px; background:var(--surface); }
+.phaseBadge { font-size:12px; line-height:16px; border-radius:8px; padding:8px 12px; }
+.searchButton { font-size:14px; line-height:20px; border-radius:8px; }
+@media(max-width:600px) { .header { margin:8px 8px 0; top:8px; padding:0 12px; } .phaseBadge { font-size:12px; padding:8px; } .mobileBrand { font-size:12px; } }

@@ -27,7 +27,7 @@
   justify-content: center;
   gap: 3px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   padding: 6px 12px;
   min-height: 44px;
@@ -47,3 +47,6 @@
 
 .mobileBar { background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(16px); }
 .tabItem { border-radius: 12px; transition: color 180ms ease, background-color 180ms ease; &.active { color: var(--accent); background: var(--accent-soft); } }
+
+.tabItem { font-size: 12px; line-height: 16px; padding: 6px 8px; }
+@media (prefers-reduced-motion: reduce) { .tabItem { transition: none; } }

@@ -4,6 +4,8 @@
 @use 'tokens' as *;
 @use 'mixins' as *;
 
+@font-face { font-family:'Manrope'; src:url('/fonts/manrope-latin.woff2') format('woff2'); font-style:normal; font-weight:400 700; font-display:swap; }
+
 :root,
 [data-theme='light'] {
   color-scheme: light;
@@ -11,7 +13,8 @@
   --hero-bg: #302722;
   --hero-text: #FFFCF5;
   --hero-muted: #D5D0C2;
-  --font-display: Iowan Old Style, Palatino Linotype, Book Antiqua, Georgia, serif;
+  --font-display: 'Manrope', system-ui, sans-serif;
+  --font-sans: 'Manrope', system-ui, sans-serif;
   --sage: #5E6B4F;
   --sage-soft: #EDF0E6;
   --terracotta: #C66C50;
@@ -40,10 +43,10 @@
   color-scheme: dark;
   --sage: #B4C4A0;
   --sage-soft: #30382A;
-  --canvas: #1B1816;
-  --surface: #26211E;
-  --surface-soft: #332B26;
-  --surface-hover: #40352E;
+  --canvas: #181818;
+  --surface: #1F1F1F;
+  --surface-soft: #272727;
+  --surface-hover: #313131;
   --ink: #F3F0E8;
   --ink-secondary: #D4CEBF;
   --muted: #B1A897;
@@ -84,7 +87,7 @@ body {
   font-family: $font-sans;
   line-height: 1.55;
   letter-spacing: -0.01em;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 // Accessible link styling
@@ -266,3 +269,26 @@ button:disabled { cursor:not-allowed; }
 ::view-transition-old(root),::view-transition-new(root) { animation-duration:180ms; }
 ::view-transition-group(root) { animation-duration:180ms; }
 @media(prefers-reduced-motion:reduce) { ::view-transition-old(root),::view-transition-new(root),::view-transition-group(root) { animation:none!important; } }
+
+// Shared named text styles from the installed design skill.
+.heading-1 { font:600 60px/60px var(--font-display); letter-spacing:-.04em; }
+.heading-2 { font:600 48px/48px var(--font-display); letter-spacing:-.04em; }
+.heading-3 { font:600 36px/40px var(--font-display); letter-spacing:-.03em; }
+.heading-4 { font:600 30px/36px var(--font-display); letter-spacing:-.03em; }
+.heading-5 { font:600 24px/32px var(--font-display); }
+.heading-6 { font:600 20px/28px var(--font-display); }
+.title-3 { font:500 16px/24px var(--font-display); }
+.body-3 { font:400 16px/24px var(--font-display); }
+.body-6 { font:400 14px/20px var(--font-display); }
+.button-md { font:600 16px/24px var(--font-display); }
+.caption-5 { font:400 12px/16px var(--font-display); }
+h1,h2,h3 { text-wrap:balance; }
+p,li { text-wrap:pretty; }
+em { font-style:normal; }
+:where(a,button,input,textarea,select,summary,[tabindex]):focus-visible { outline:3px solid var(--accent); outline-offset:4px; }
+button,a,input,summary { -webkit-tap-highlight-color:transparent; }
+.buttonPrimary,.buttonSecondary { min-height:44px; padding:8px 12px; font-size:14px; line-height:20px; border-radius:8px; box-shadow:none; }
+.buttonTertiary { min-height:44px; font-size:14px; line-height:20px; }
+.buttonPrimary:active,.buttonSecondary:active { transform:scale(.98); }
+pre { max-width:100%; overflow-x:auto; }
+@media(max-width:600px) { .heading-1 { font-size:36px; line-height:40px; } .heading-2 { font-size:30px; line-height:36px; } }

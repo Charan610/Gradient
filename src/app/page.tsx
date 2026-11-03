@@ -1,22 +1,63 @@
 import Link from 'next/link';
-import {ArrowRight,ArrowUpRight,BookOpen,RotateCcw,FolderHeart} from 'lucide-react';
 import {BrandMark} from '@/components/ui/BrandMark';
 import {FirstProgramDemo} from '@/components/learn/FirstProgramDemo';
+import {MarketingNav} from '@/components/marketing/MarketingNav';
 import styles from './Home.module.scss';
-export default function HomePage(){return <div className={styles.home}>
-<a className={styles.skip} href="#main">Skip to content</a>
-<header className={styles.nav}><Link href="/" className={styles.brand}><BrandMark/>Gradient</Link><nav aria-label="Main navigation"><a href="#how-it-works">The approach</a><a href="#curriculum">What you’ll learn</a><a href="#questions">Questions</a></nav><Link href="/app/today" className={styles.signin}>Open workspace <ArrowUpRight size={14}/></Link></header>
-<main id="main">
-<section className={styles.hero}><div className={styles.heroCopy}><span className={styles.eyebrow}>A LITTLE PRACTICE. A NEW POSSIBILITY.</span><h1>Great things<br/>start with<br/><em>small steps.</em></h1><p>A thoughtful space to learn to code. Find your next lesson, put an idea into practice, and build the confidence to keep going.</p><div className={styles.actions}><Link href="/sign-up" className="buttonPrimary">Start learning <ArrowRight size={16}/></Link><a href="#curriculum" className={styles.textLink}>Explore the path</a></div><span className={styles.caption}>30 guided C++ + 20 guided DSA lessons · Your pace, always</span><Link href="/setup/cpp" className={styles.textLink}>Set up C++ for your first lesson <ArrowUpRight size={14}/></Link></div><div className={styles.heroPreview}><div className={styles.previewNote}><span>01 / YOUR FIRST SMALL WIN</span><span>Give it a try ↓</span></div><FirstProgramDemo/><div className={styles.marginNote}><span aria-hidden="true">✳</span> You don’t have to know everything.<br/>Just begin with one idea.</div></div></section>
-<section id="how-it-works" className={styles.section}><div className={styles.sectionHeading}><span className={styles.eyebrow}>A RHYTHM YOU CAN RETURN TO</span><h2>Less figuring out what’s next.<br/><em>More finding your feet.</em></h2><p>A simple structure, with room to learn your way.</p></div><div className={styles.features}>{[{icon:BookOpen,n:'01',title:'Understand one idea.',text:'Start with a focused lesson, a useful resource, and a question worth thinking about.'},{icon:FolderHeart,n:'02',title:'Make something with it.',text:'Try the exercise. Test your work yourself. Keep your code links and notes beside the lesson.'},{icon:RotateCcw,n:'03',title:'Come back to what matters.',text:'Recall prompts return as you advance through learning steps. When you’re ready, choose the next recall set yourself.'}].map(({icon:Icon,n,title,text})=><article key={n}><div><Icon size={22}/><span>{n}</span></div><h3>{title}</h3><p>{text}</p></article>)}</div></section>
-<section id="curriculum" className={`${styles.section} ${styles.curriculum}`}><div><span className={styles.eyebrow}>YOUR LEARNING SHELF</span><h2>A foundation first.<br/><em>Possibilities after.</em></h2><p>Begin with C++. When you’re ready, explore the ideas behind useful software. Every path tells you what’s included.</p><Link href="/explore" className={styles.textLink}>See the full roadmap <ArrowUpRight size={15}/></Link></div><div className={styles.shelf}><Link href="/app/subjects/cpp" className={styles.foundation}><span className={styles.book} aria-hidden="true">C<span>++</span></span><div><span className={styles.eyebrow}>START HERE · GUIDED COURSE</span><h3>C++ Foundations</h3><p>30 lessons. From hello, world to a program you can explain.</p><span className={styles.textLink}>Look inside <ArrowRight size={15}/></span></div></Link>{[['DSA','Data structures & algorithms'],['DB','SQL & databases'],['CS','Computer science'],['BE','Backend engineering'],['AI','AI foundations']].map(([id,title])=><Link className={styles.shelfRow} href={`/app/subjects/${id.toLowerCase()}`} key={id}><span>{title}</span><small>{id==='DSA'?'20 guided lessons':'Study outline'}</small><ArrowUpRight size={14}/></Link>)}</div></section>
-<section className={styles.ownership}><span className={styles.eyebrow}>A WORKSPACE, NOT A RACE</span><h2>Life happens.<br/><em>Your place stays.</em></h2><p>No missed-day penalties. No streak to rescue. Learning days move forward when you complete them. Your notes and progress stay in this browser; export a backup to take them with you.</p><Link href="/sign-up" className="buttonPrimary">Find your starting point <ArrowRight size={16}/></Link></section>
-<section id="questions" className={styles.section}><div className={styles.sectionHeading}><span className={styles.eyebrow}>BEFORE YOU BEGIN</span><h2>A few good questions.</h2></div><div className={styles.faq}>{[
-['Do I need to know how to code?','No. The guided C++ foundation starts with your first program. You’ll need a computer and a C++ compiler for the exercises; the first lesson helps you get set up.'],
-['What is guided, and what is an outline?','C++ Foundations has 30 guided lessons, followed by 20 introductory DSA lessons in C++, with exercises, self-checks, and recall. All other courses, including SQL and Python, remain study outlines. The DSA course covers an introduction, not the entire Phase 2 outline.'],
-['Does Gradient run or grade my code?','No. Compile and test your work in your own development environment, then compare it with the lesson criteria. The interactive example above is a prediction exercise.'],
-['How do accounts and progress work?','Choose a username. When account services are available, you can add an optional password for signing in on another browser. Study progress is stored locally. Use Settings to export or restore a JSON backup; automatic cloud sync is not available.'],
-['What if I need a few sessions for one lesson?','Take them. Your lesson stays in place until you finish its required activities. Your session budget helps you plan; it is not a deadline.']
-].map(([q,a])=><details key={q}><summary>{q}<span aria-hidden="true">+</span></summary><p>{a}</p></details>)}</div></section>
-<section className={styles.closing}><BrandMark/><h2>Your next chapter<br/>starts with <em>one line.</em></h2><Link href="/sign-up" className="buttonPrimary">Start learning <ArrowRight size={16}/></Link></section>
-</main><footer className={styles.footer}><Link href="/" className={styles.brand}><BrandMark/>Gradient</Link><p>Room to learn. Space to grow.</p><div><Link href="/explore">Roadmap</Link><Link href="/privacy">Privacy</Link><Link href="/sign-in">Sign in</Link></div></footer></div>}
+
+const questions = [
+  ['Can I start without coding experience?', 'Yes. C++ Foundations begins with your first program. You’ll need a computer and a C++ compiler for the exercises. The first lesson helps you get set up.'],
+  ['What is included in the guided curriculum?', 'There are 30 guided C++ lessons and 20 introductory DSA lessons in C++. They include exercises, self checks, and recall prompts. Other subjects are study outlines, and the introductory DSA course does not cover the entire Phase 2 outline.'],
+  ['Does Gradient run or grade my code?', 'No. Compile and test your code in your own development environment, then compare your work with the lesson criteria. The example on this page is a prediction exercise.'],
+  ['How do recall prompts work?', 'Recall prompts return as you advance through learning steps. When you’re ready, choose the next recall set yourself. The aim is to revisit ideas, not race a calendar.'],
+  ['Where is my progress saved?', 'Your study progress and notes stay in this browser. Export a JSON backup in Settings to move or restore them. Automatic cloud sync is not available. A username identifies your workspace; optional password sign in depends on account services being available.'],
+  ['What if a lesson takes more than one session?', 'Keep going at your own pace. Learning days advance when you complete their required activities. Your session budget helps you plan; it is not a deadline.'],
+];
+
+export default function HomePage() {
+  return <div className={styles.home}>
+    <a className={styles.skip} href="#main">Skip to content</a>
+    <MarketingNav/>
+    <main id="main" tabIndex={-1}>
+      <section className={styles.hero} aria-labelledby="hero-heading">
+        <div className={styles.heroCopy}>
+          <span className={styles.eyebrow}>C++ first. A stronger foundation next.</span>
+          <h1 id="hero-heading" className={styles['heading-1']}>Learn C++.<br/>Understand the code<br/>you write.</h1>
+          <p className={styles['body-3']}>Go from your first program to data structures and algorithms. One focused lesson, one exercise, one idea you can explain.</p>
+          <Link href="/sign-up" className={styles.primary}>Start learning <span aria-hidden="true">↗</span></Link>
+          <p className={styles.heroNote}>Begin with the basics. Move at your pace.</p>
+          <div className={styles.proof} aria-label="Guided curriculum"><div><strong>30</strong><span>guided C++ lessons</span></div><div><strong>20</strong><span>guided DSA lessons</span></div></div>
+        </div>
+        <div className={styles.heroPreview}>
+          <div className={styles.previewNote}><span className={styles.eyebrow}>A first idea, in practice</span><span>01 / 50</span></div>
+          <FirstProgramDemo/>
+          <p className={styles.demoCaption}><span aria-hidden="true">↳</span> Read the code. Predict the output. See why.</p>
+        </div>
+      </section>
+
+      <section id="curriculum" className={styles.section} aria-labelledby="curriculum-heading">
+        <div className={styles.sectionHeading}><div><span className={styles.eyebrow}>The learning path</span><h2 id="curriculum-heading" className={styles['heading-2']}>Build from the basics.</h2></div><p>Two guided courses. A clear place to begin.<br/>More subjects to explore when you’re ready.</p></div>
+        <div className={styles.courses}>
+          <Link href="/app/subjects/cpp" className={styles.course}><div className={styles.courseTop}><span className={styles.eyebrow}>01 / Start here</span><span aria-hidden="true">↗</span></div><span className={styles.courseSymbol} aria-hidden="true">C++</span><h3 className={styles['heading-4']}>C++ Foundations</h3><p>Start with hello, world. Learn the language through programs you can test and explain.</p><span className={styles.courseMeta}>30 guided lessons <span>View course <span aria-hidden="true">↗</span></span></span></Link>
+          <Link href="/app/subjects/dsa" className={styles.course}><div className={styles.courseTop}><span className={styles.eyebrow}>02 / Keep building</span><span aria-hidden="true">↗</span></div><span className={`${styles.courseSymbol} ${styles.dsaSymbol}`} aria-hidden="true">[ → ]</span><h3 className={styles['heading-4']}>Data structures &amp; algorithms</h3><p>Put C++ to work. Explore introductory DSA through exercises and recall.</p><span className={styles.courseMeta}>20 guided lessons <span>View course <span aria-hidden="true">↗</span></span></span></Link>
+        </div>
+        <div className={styles.roadmap}><p><span>Beyond the guided courses</span> SQL, computer science, backend engineering, and AI study outlines.</p><Link href="/explore">Explore the roadmap <span aria-hidden="true">↗</span></Link></div>
+      </section>
+
+      <section id="how-it-works" className={styles.section} aria-labelledby="approach-heading">
+        <div className={styles.sectionHeading}><div><span className={styles.eyebrow}>A rhythm for learning</span><h2 id="approach-heading" className={styles['heading-2']}>Read it. Try it. Recall it.</h2></div><p>Each learning step gives an idea somewhere to go, from understanding to practice.</p></div>
+        <div className={styles.steps}>{[
+          ['01', 'Understand one idea', 'Read a focused lesson and work through the example. Start with a question you can answer.'],
+          ['02', 'Put it into practice', 'Write and test code in your own environment. Keep your code links and notes beside the lesson.'],
+          ['03', 'Bring it back to mind', 'Return to recall prompts as you advance through learning steps. Choose the next recall set when you’re ready.'],
+        ].map(([number, title, text]) => <article key={number}><span className={styles.stepNumber}>{number}</span><h3 className={styles['heading-6']}>{title}</h3><p>{text}</p></article>)}</div>
+      </section>
+
+      <section className={styles.statement} aria-labelledby="statement-heading"><span className={styles.eyebrow}>Progress without the pressure</span><h2 id="statement-heading" className={styles['heading-2']}>A little more understanding.<br/><span>A foundation you can build on.</span></h2><p>No streak to rescue. No missed day penalties. Finish a learning step, then move forward. Your notes and progress stay in this browser, with backup export in Settings.</p></section>
+
+      <section id="questions" className={`${styles.section} ${styles.faqSection}`} aria-labelledby="faq-heading"><div><span className={styles.eyebrow}>Before you begin</span><h2 id="faq-heading" className={styles['heading-2']}>Good questions.<br/>Clear answers.</h2><Link href="/setup/cpp" className={styles.textLink}>Set up C++ <span aria-hidden="true">↗</span></Link></div><div className={styles.faq}>{questions.map(([question, answer]) => <details key={question}><summary>{question}<span aria-hidden="true">+</span></summary><p>{answer}</p></details>)}</div></section>
+
+      <section className={styles.closing} aria-labelledby="closing-heading"><span className={styles.eyebrow}>Your first learning step</span><h2 id="closing-heading" className={styles['heading-2']}>Start with one program.<br/>Give yourself room to grow.</h2><Link href="/sign-up" className={styles.primary}>Start learning <span aria-hidden="true">↗</span></Link></section>
+    </main>
+    <footer className={styles.footer}><Link href="/" className={styles.brand}><BrandMark/>Gradient</Link><p>One idea. Then the next.</p><nav aria-label="Footer navigation"><Link href="/explore">Roadmap</Link><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><Link href="/sign-in">Sign in</Link></nav></footer>
+  </div>;
+}

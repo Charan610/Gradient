@@ -109,3 +109,8 @@
 .buttonRow { flex-wrap:wrap; } .card { padding:28px; border-radius:18px; } .prompt { font-size:18px; line-height:1.6; margin:18px 0; } .answerBlock { line-height:1.8; animation:panel-reveal 180ms ease; }
 
 .previewNote { font-size:12px; line-height:20px; color:var(--muted); padding:8px 0; }
+
+.title { font-size:36px; line-height:40px; font-weight:600; }
+.subtitle { font-size:16px; line-height:24px; }
+.tabBtn { font-size:14px; line-height:20px; padding:8px 12px; }
+@media(max-width:600px) { .title { font-size:30px; line-height:36px; } }

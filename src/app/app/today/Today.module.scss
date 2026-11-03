@@ -31,3 +31,16 @@
 @media(max-width:560px) { .heading { margin:0 0 24px; } .focusCard { padding:20px 20px 0; border-radius:15px; } .focusLayout { grid-template-columns:1fr; padding:24px 0; } .lessonArt { display:none; } .progressLine { flex-wrap:wrap; gap:10px; progress { flex:1; width:60px; } >div { width:100%; } } .lessonNumber { font-size:9px; } .taskCount { font-size:12px; } .stepIcon { display:none; } .nextTask p { font-size:12px; } }
 
 .recallPreview { margin:24px 0; padding:24px; border:1px solid var(--hairline); border-radius:16px; background:var(--sage-soft); display:grid; gap:16px; grid-template-columns:minmax(0,1fr) minmax(0,1.1fr); h2 { font-size:20px; line-height:28px; font-weight:550; } p { color:var(--ink-secondary); font-size:14px; line-height:24px; margin-top:8px; } ul { list-style:none; align-self:center; } li { font-size:14px; line-height:24px; padding:12px 0; border-bottom:1px solid var(--hairline); } a { min-height:44px; color:var(--accent); display:inline-flex; align-items:center; gap:8px; font-size:14px; justify-self:start; } .eyebrow { margin-bottom:8px; } } @media(max-width:700px) { .recallPreview { grid-template-columns:1fr; } }
+
+// A quieter, scale-based workspace surface.
+.heading { margin:8px 0 32px; h1 { font-size:36px; line-height:40px; font-weight:600; } > p { font-size:16px; line-height:24px; } }
+.eyebrow,.tag,.lessonNumber,.overline,.pacing,.taskCount small,.footnote { font-size:12px; line-height:16px; }
+.focusCard { border-radius:16px; padding:32px 32px 0; box-shadow:none; h2 { font-size:30px; line-height:36px; font-weight:600; } p { font-size:16px; line-height:24px; } }
+.focusLayout { padding:32px 0; }
+.lessonArt { transform:none; box-shadow:none; gap:16px; >span { font-size:12px; line-height:16px; letter-spacing:0; } strong { font-size:60px; line-height:60px; } }
+.nextTask { padding:24px 0; gap:16px; strong,p { font-size:14px; line-height:20px; } }
+.progressLine { padding:24px 0; strong,span,a { font-size:12px; line-height:16px; } }
+.sectionTitle { h2 { font-size:18px; line-height:28px; } >span { font-size:12px; line-height:16px; letter-spacing:0; } }
+.rhythm li { h3,p { font-size:14px; line-height:20px; } padding:16px 0; gap:16px; }
+.sideNote { border-radius:16px; h2 { font-size:18px; line-height:28px; } p,a { font-size:14px; line-height:20px; } }
+@media(max-width:600px) { .heading h1 { font-size:30px; line-height:36px; } .focusCard { padding:24px 24px 0; } .focusCard h2 { font-size:24px; line-height:32px; } .nextTask p { font-size:14px; line-height:20px; } }

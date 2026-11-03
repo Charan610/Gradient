@@ -29,7 +29,7 @@ export function MobileTabBar() {
             aria-current={isActive ? 'page' : undefined}
             className={clsx(styles.tabItem, isActive && styles.active)}
           >
-            <Icon className={styles.tabIcon} strokeWidth={1.7} />
+            <Icon className={styles.tabIcon} aria-hidden="true" strokeWidth={1.7} />
             <span>{tab.label}</span>
           </Link>
         );

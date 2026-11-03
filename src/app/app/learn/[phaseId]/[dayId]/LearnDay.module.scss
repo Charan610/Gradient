@@ -131,3 +131,10 @@
 .learnLayout [id^="task-row-"] { scroll-margin-top:100px; }
 
 .lessonNavigation { display:flex; flex-wrap:wrap; gap:8px; a { min-width:0; white-space:normal; overflow-wrap:anywhere; } @media(max-width:600px) { flex-direction:column; } }
+
+.dayTitle { font-size:36px; line-height:40px; font-weight:600; }
+.goalCard { padding:24px; border:1px solid var(--hairline); border-radius:16px; }
+.goalText { font-size:16px; line-height:24px; }
+.sideHeading { font-family:inherit; font-size:14px; line-height:20px; text-transform:none; letter-spacing:0; }
+.sideCard { padding:24px; }
+@media(max-width:600px) { .dayTitle { font-size:30px; line-height:36px; } }

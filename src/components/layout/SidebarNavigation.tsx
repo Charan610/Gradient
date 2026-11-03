@@ -42,7 +42,7 @@ export function SidebarNavigation({
         </div>
       </Link>
 
-      <div className={styles.navSection}>
+      <nav className={styles.navSection} aria-label="Your workspace">
         <div className={styles.sectionLabel}>Your workspace</div>
         <ul className={styles.navList}>
           {primaryNav.map(item => {
@@ -56,14 +56,14 @@ export function SidebarNavigation({
                   aria-current={isActive ? 'page' : undefined}
                   className={clsx(styles.navItem, isActive && styles.active)}
                 >
-                  <Icon className={styles.navIcon} strokeWidth={1.7} />
+                  <Icon className={styles.navIcon} aria-hidden="true" strokeWidth={1.7} />
                   <span>{item.label}</span>
                 </Link>
               </li>
             );
           })}
         </ul>
-      </div>
+      </nav>
 
       <div className={styles.sidebarFooter}>
         <div className={styles.userCard}>
@@ -73,19 +73,21 @@ export function SidebarNavigation({
           </div>
           <button
             onClick={toggleTheme}
-            className="buttonTertiary"
+            type="button"
+            className={`buttonTertiary ${styles.themeToggle}`}
             title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}
-            aria-label="Toggle theme"
+            aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
           >
-            {theme === 'light' ? <Moon size={15} /> : <Sun size={15} />}
+            {theme === 'light' ? <Moon size={15} aria-hidden="true" /> : <Sun size={15} aria-hidden="true" />}
           </button>
         </div>
 
         <Link
           href="/app/settings"
+          aria-current={workspaceGroup(pathname) === 'profile' ? 'page' : undefined}
           className={clsx(styles.navItem, pathname === '/app/settings' && styles.active)}
         >
-          <Settings className={styles.navIcon} strokeWidth={1.7} />
+          <Settings className={styles.navIcon} aria-hidden="true" strokeWidth={1.7} />
           <span>Profile & settings</span>
         </Link>
       </div>

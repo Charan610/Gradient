@@ -5,3 +5,10 @@
 .card { background:var(--surface); border:1px solid var(--hairline); border-radius:14px; padding:24px; > svg { color:var(--accent); } > span { font-size:11px; color:var(--muted); display:block; margin:10px 0; } h2 { font-size:17px; font-weight:550; margin:12px 0 8px; } > strong { font-size:32px; font-weight:550; letter-spacing:-.04em; } p { font-size:13px; line-height:1.7; color:var(--ink-secondary); margin:8px 0 16px; } a { min-height:44px; display:inline-flex; align-items:center; gap:8px; font-size:13px; font-weight:550; color:var(--accent); } }
 .list { list-style:none; margin-top:16px; li { padding:14px 0; border-top:1px solid var(--hairline); } a { display:flex; align-items:center; justify-content:space-between; min-height:44px; gap:12px; font-size:14px; } span { font-size:11px; color:var(--muted); } }
 .note { color:var(--muted); font-size:12px; line-height:1.7; margin-top:16px; }
+
+.heading { margin:8px 0 32px; h1 { font-size:36px; line-height:40px; font-weight:600; } >span { font-size:12px; line-height:16px; } }
+.feature { padding:32px; h2 { font-size:24px; line-height:32px; font-weight:600; } }
+.grid { gap:24px; margin-bottom:32px; }
+.card { border-radius:16px; >span { font-size:12px; line-height:16px; } h2 { font-size:18px; line-height:28px; } >strong { font-size:30px; line-height:36px; font-weight:600; } p,a { font-size:14px; line-height:20px; } }
+.list span { font-size:12px; line-height:16px; }
+@media(max-width:600px) { .heading h1 { font-size:30px; line-height:36px; } .feature { padding:24px; } }

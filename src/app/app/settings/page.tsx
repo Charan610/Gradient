@@ -44,7 +44,7 @@ export default function SettingsPage() {
         preferred_mode: mode
       });
       setProfile(updated);
-      setSavedFeedback('Preferences successfully saved.');
+      setSavedFeedback('Preferences saved on this device.');
     } catch {
       setError('Preferences could not be saved. Check browser storage and try again.');
     } finally { setBusy(false); }
@@ -63,11 +63,11 @@ export default function SettingsPage() {
     <AppShell>
       <AccountSettings/>
       <div style={{ marginBottom: '28px' }}>
-        <h1 style={{ fontSize: '26px', fontWeight: 600, color: 'var(--ink)', marginBottom: '8px' }}>
+        <h1 style={{ fontSize: '30px', fontWeight: 600, color: 'var(--ink)', marginBottom: '8px' }}>
           Settings & study backups
         </h1>
-        <p style={{ fontSize: '15px', color: 'var(--ink-secondary)', maxWidth: '72ch', lineHeight: 1.55 }}>
-          Adjust your daily learning allocation, toggle exam maintenance mode, or export your saved study records.
+        <p style={{ fontSize: '16px', color: 'var(--ink-secondary)', maxWidth: '72ch', lineHeight: 1.55 }}>
+          Choose a session budget, pause new lessons when you need to, and keep a copy of your progress.
         </p>
       </div>
 

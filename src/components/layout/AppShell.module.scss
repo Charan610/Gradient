@@ -46,3 +46,6 @@
 .workspaceStatus { font-family:monospace; font-size:10px; letter-spacing:.02em; }
 
 .skipLink { position:fixed; left:16px; top:8px; z-index:100; padding:12px 18px; background:var(--surface); border:2px solid var(--accent); border-radius:8px; transform:translateY(-160%); &:focus { transform:translateY(0); } }
+.contentContainer { animation:none; padding-top:32px; }
+.workspaceStatus { font-family:inherit; font-size:12px; line-height:16px; letter-spacing:0; >span,a { min-height:44px; } }
+@media(max-width:600px) { .workspaceStatus >span { font-size:12px; } .contentContainer { padding-top:16px; } }
