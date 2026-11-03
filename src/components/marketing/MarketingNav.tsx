@@ -39,7 +39,7 @@ export function MarketingNav() {
     <Link href="/" aria-label="Gradient home" aria-current="page" className={styles.brand}><BrandMark/>Gradient</Link>
     <nav className={styles.desktopNav} aria-label="Main navigation">{links.map(([href, label]) => <a key={href} href={href}>{label}</a>)}</nav>
     <Link href="/sign-in" className={styles.signin}>Sign in <span aria-hidden="true">↗</span></Link>
-    <button ref={toggle} className={styles.menuToggle} aria-expanded={open} aria-controls="mobile-navigation" aria-label={open ? 'Close navigation' : 'Open navigation'} onClick={() => setOpen(!open)} data-open={open}><span/><span/></button>
+    <button ref={toggle} className={styles.menuToggle} aria-expanded={open} aria-controls="mobile-navigation" aria-label={open ? 'Close navigation' : 'Open navigation'} onClick={() => setOpen(!open)} data-open={open}><span/><span/><span/></button>
     {open && <nav ref={panel} id="mobile-navigation" aria-label="Mobile navigation" className={styles.mobileNav}>{links.map(([href, label]) => <a key={href} href={href} onClick={close}>{label}<span aria-hidden="true">↗</span></a>)}<Link href="/sign-in" onClick={close}>Sign in<span aria-hidden="true">↗</span></Link></nav>}
   </header>;
 }
