@@ -1,5 +1,5 @@
 'use client';
-import {useCallback,useEffect,useRef,useState} from 'react';
+import {useCallback,useEffect,useLayoutEffect,useRef,useState} from 'react';
 import {ProgressRepository} from '@/lib/db/progress-repository';
 import {lessonDraftRevision} from '@/lib/db/lesson-drafts';
 import {workspaceStorageKey} from '@/lib/account/workspace';
@@ -16,7 +16,7 @@ export function LessonNotes({dayId,initialNotes}:{dayId:string;initialNotes:stri
  const save=useCallback((text=latest.current)=>{
   pendingCount.current++;
   const request=pending.current.then(async()=>{
-   if(revision===null||revision!==lessonDraftRevision()){if(mounted.current)setStatus('error');return;}
+   if(revision===null||workspaceStorageKey(`gradient_lesson_draft_${dayId}_${revision}`)!==draftKey||revision!==lessonDraftRevision()){if(mounted.current)setStatus('error');return;}
    if(text===saved.current){
     if(latest.current===text){try{sessionStorage.removeItem(draftKey)}catch{}if(mounted.current)setStatus('saved');}
     return;
@@ -25,7 +25,7 @@ export function LessonNotes({dayId,initialNotes}:{dayId:string;initialNotes:stri
    try{
     await ProgressRepository.updateDayNotes('local_user',dayId,text);
     // A restore may invalidate this editor while its write is completing.
-    if(revision!==lessonDraftRevision()){if(mounted.current)setStatus('error');return;}
+    if(workspaceStorageKey(`gradient_lesson_draft_${dayId}_${revision}`)!==draftKey||revision!==lessonDraftRevision()){if(mounted.current)setStatus('error');return;}
     saved.current=text;
     if(latest.current===text){try{sessionStorage.removeItem(draftKey)}catch{}if(mounted.current){setStatus('saved');setRecovered(false)}}
     else {try{sessionStorage.setItem(draftKey,latest.current)}catch{}}
@@ -41,7 +41,7 @@ export function LessonNotes({dayId,initialNotes}:{dayId:string;initialNotes:stri
  // The keyed lesson component owns its draft for this mount.
  // eslint-disable-next-line react-hooks/exhaustive-deps
  },[dayId,draftKey,save]);
- useEffect(()=>{if(!pendingCount.current&&latest.current===saved.current)return;try{sessionStorage.setItem(draftKey,latest.current)}catch{}const timer=window.setTimeout(()=>{void save()},900);return()=>window.clearTimeout(timer)},[value,save,draftKey]);
+ useLayoutEffect(()=>{if(!pendingCount.current&&latest.current===saved.current)return;try{sessionStorage.setItem(draftKey,latest.current)}catch{}const timer=window.setTimeout(()=>{void save()},900);return()=>window.clearTimeout(timer)},[value,save,draftKey]);
  useEffect(()=>{const guard=(event:BeforeUnloadEvent)=>{if(pendingCount.current||latest.current!==saved.current){event.preventDefault();event.returnValue=''}};window.addEventListener('beforeunload',guard);return()=>window.removeEventListener('beforeunload',guard)},[]);
  return <section className={styles.card} aria-labelledby={`notes-title-${dayId}`}><h2 id={`notes-title-${dayId}`}>Your lesson notes</h2><label htmlFor={`notes-${dayId}`}>Keep an explanation, a code link, or a question.</label><textarea id={`notes-${dayId}`} rows={7} value={value} aria-describedby={`notes-status-${dayId}`} placeholder="What made sense? What would you try next?" onChange={event=>{const text=event.target.value;latest.current=text;setValue(text);setStatus(text===saved.current?'saved':'editing');try{if(text===saved.current)sessionStorage.removeItem(draftKey);else sessionStorage.setItem(draftKey,text)}catch{}}} onBlur={()=>{void save()}}/><div className={styles.footer}><button type="button" className="buttonSecondary" disabled={status==='saving'||value===saved.current} onClick={()=>{void save()}}>{status==='saving'?'Saving…':'Save notes'}</button><span id={`notes-status-${dayId}`} role={status==='error'?'alert':'status'}>{status==='error'?'Notes could not be saved. Your text is still here; keep a copy and retry.':status==='saving'?'Saving on this device…':recovered?'Recovered a draft from this tab.':status==='editing'?'Changes waiting to save.':value?'Saved on this device.':'Notes save on this device as you write.'}</span></div><p>Saved notes are included in your study backup. Unsaved tab drafts are not.</p></section>;
 }

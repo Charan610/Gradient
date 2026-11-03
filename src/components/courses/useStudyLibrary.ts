@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { usePathname } from 'next/navigation';
-import { portableStorageKey } from '@/lib/account/workspace';
+import { isWorkspaceStorageEventKey } from '@/lib/account/workspace';
 import { LEARNING_DAYS } from '@/lib/db/curriculum-data';
 import { ProgressRepository } from '@/lib/db/progress-repository';
 import { createStaleResource } from '@/lib/db/stale-resource';
@@ -20,7 +20,7 @@ export function useStudyLibrary() {
   const state = useSyncExternalStore(library.subscribe, library.getSnapshot, library.getServerSnapshot);
   useEffect(() => {
     const refresh = () => { void library.refresh(); };
-    const onStorage = (event: StorageEvent) => { if (event.key === null || portableStorageKey(event.key)?.startsWith('foundation_')) refresh(); };
+    const onStorage = (event: StorageEvent) => { if (isWorkspaceStorageEventKey(event.key)) refresh(); };
     const onVisibility = () => { if (document.visibilityState === 'visible') refresh(); };
     refresh();
     window.addEventListener('focus', refresh);

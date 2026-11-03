@@ -1,4 +1,6 @@
-import {lessonDraftRevisionKey,newLessonDraftRevision,clearLessonDrafts} from './lesson-drafts';
+import {withStudyLock} from './study-lock';
+import {recoverStudyRestore, studyRestoreJournalKey} from './restore-recovery';
+import {lessonDraftRevision,lessonDraftRevisionKey,newLessonDraftRevision,clearLessonDrafts} from './lesson-drafts';
 // ==============================================================================
 // PROGRESS REPOSITORY: DUAL SUPABASE / LOCAL PERSISTENCE LAYER
 // Authoritative Server & Client State Engine
@@ -40,6 +42,7 @@ export class ProgressRepository {
   /** Finish an interrupted local commit before exposing its profile or completion. */
   private static recoverCompletion(userId:string) {
     if(typeof localStorage==='undefined')return;
+    if(userId==='local_user')recoverStudyRestore(localStorage);
     const journalKey=this.getStorageKey(userId,'completion_journal');
     const raw=localStorage.getItem(journalKey);
     if(!raw)return;
@@ -60,7 +63,7 @@ export class ProgressRepository {
   // ----------------------------------------------------------------------------
   // 1. Profile Management
   // ----------------------------------------------------------------------------
-  static async getProfile(userId: string = 'local_user'): Promise<UserProfile> {
+  private static async getProfileUnlocked(userId: string = 'local_user'): Promise<UserProfile> {
     this.recoverCompletion(userId);
     const supabase = userId === 'local_user' ? null : createClient();
     if (supabase) {
@@ -75,12 +78,10 @@ export class ProgressRepository {
     // Local persistence fallback
     if (typeof localStorage !== 'undefined') {
       const stored = localStorage.getItem(this.getStorageKey(userId, 'profile'));
-      if (stored) {
-        try {
-          return JSON.parse(stored) as UserProfile;
-        } catch {
-          // ignore parsing error
-        }
+      if (stored !== null) {
+        const parsed = JSON.parse(stored) as UserProfile;
+        if (!parsed || Array.isArray(parsed) || parsed.user_id !== userId || !Number.isInteger(parsed.active_day_index) || parsed.active_day_index < 1) throw new Error('Saved profile is invalid. Keep a recovery copy before changing it.');
+        return parsed;
       }
     }
 
@@ -105,7 +106,9 @@ export class ProgressRepository {
     return defaultProfile;
   }
 
-  static async updateProfile(userId: string = 'local_user', updates: Partial<UserProfile>): Promise<UserProfile> {
+  private static async updateProfileUnlocked(userId: string = 'local_user', updates: Partial<UserProfile>): Promise<UserProfile> {
+    const workspace = this.getStorageKey(userId, 'profile');
+    const revision = userId==='local_user'?lessonDraftRevision():null;
     const supabase = userId === 'local_user' ? null : createClient();
     if (supabase) {
       const { data, error } = await supabase
@@ -117,8 +120,10 @@ export class ProgressRepository {
       if (data && !error) return data as UserProfile;
     }
 
-    const fallback = await this.getProfile(userId);
+    const fallback = await this.getProfileUnlocked(userId);
+    if (workspace !== this.getStorageKey(userId, 'profile') || userId==='local_user'&&(revision===null||revision!==lessonDraftRevision())) throw new Error('Workspace changed before saving.');
     // Another caller may have saved while getProfile yielded. Merge at the write boundary.
+    this.recoverCompletion(userId);
     const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(this.getStorageKey(userId, 'profile')) : null;
     const current = raw ? JSON.parse(raw) as UserProfile : fallback;
     const updated = { ...current, ...updates, updated_at: new Date().toISOString() };
@@ -129,9 +134,12 @@ export class ProgressRepository {
     return updated;
   }
 
-  static async setCourseInterest(userId:string='local_user',courseId:string,interested:boolean):Promise<UserProfile> {
+  private static async setCourseInterestUnlocked(userId:string='local_user',courseId:string,interested:boolean):Promise<UserProfile> {
+    const workspace = this.getStorageKey(userId, 'profile');
+    const revision = userId==='local_user'?lessonDraftRevision():null;
     if(!COURSE_GUIDES.some(course=>course.id===courseId))throw new Error('Unknown course.');
-    const fallback=await this.getProfile(userId);
+    const fallback=await this.getProfileUnlocked(userId);
+    if (workspace !== this.getStorageKey(userId, 'profile') || userId==='local_user'&&(revision===null||revision!==lessonDraftRevision())) throw new Error('Workspace changed before saving.');
     if(typeof localStorage==='undefined')throw new Error('Browser storage is unavailable.');
     const key=this.getStorageKey(userId,'profile');
     const current=JSON.parse(localStorage.getItem(key)||'null') as UserProfile|null;
@@ -147,7 +155,8 @@ export class ProgressRepository {
   // ----------------------------------------------------------------------------
   // 2. Task & Day Progress
   // ----------------------------------------------------------------------------
-  static async getDayTaskProgresses(userId: string = 'local_user', dayId: string): Promise<Record<string, UserTaskProgress>> {
+  private static async getDayTaskProgressesUnlocked(userId: string = 'local_user', dayId: string): Promise<Record<string, UserTaskProgress>> {
+    this.recoverCompletion(userId);
     const supabase = userId === 'local_user' ? null : createClient();
     if (supabase) {
       const day = LEARNING_DAYS.find(d => d.id === dayId);
@@ -181,7 +190,7 @@ export class ProgressRepository {
     return {};
   }
 
-  static async updateTaskProgress(
+  private static async updateTaskProgressUnlocked(
     userId: string = 'local_user',
     dayId: string,
     taskId: string,
@@ -189,7 +198,10 @@ export class ProgressRepository {
     evidenceText?: string,
     evidenceUrl?: string
   ): Promise<UserTaskProgress> {
-    const existing = (await this.getDayTaskProgresses(userId, dayId))[taskId];
+    const workspace = this.getStorageKey(userId, 'profile');
+    const revision = userId==='local_user'?lessonDraftRevision():null;
+    const existing = (await this.getDayTaskProgressesUnlocked(userId, dayId))[taskId];
+    if (workspace !== this.getStorageKey(userId, 'profile') || userId==='local_user'&&(revision===null||revision!==lessonDraftRevision())) throw new Error('Workspace changed before saving.');
     const progress: UserTaskProgress = {
       user_id: userId,
       day_task_id: taskId,
@@ -205,6 +217,8 @@ export class ProgressRepository {
     }
 
     if (typeof localStorage !== 'undefined') {
+      if (workspace !== this.getStorageKey(userId, 'profile') || userId==='local_user'&&(revision===null||revision!==lessonDraftRevision())) throw new Error('Workspace changed before saving.');
+      this.recoverCompletion(userId);
       // Keep the local read/merge/write synchronous so overlapping saves cannot
       // replace a sibling task with an older snapshot.
       const stored = localStorage.getItem(this.getStorageKey(userId, `tasks_${dayId}`));
@@ -218,7 +232,7 @@ export class ProgressRepository {
     return progress;
   }
 
-  static async getDayProgress(userId: string = 'local_user', dayId: string): Promise<UserDayProgress | null> {
+  private static async getDayProgressUnlocked(userId: string = 'local_user', dayId: string): Promise<UserDayProgress | null> {
     this.recoverCompletion(userId);
     const supabase = userId === 'local_user' ? null : createClient();
     if (supabase) {
@@ -245,7 +259,7 @@ export class ProgressRepository {
   }
 
   /** Save a reflection without changing completion, task evidence, or the current lesson. */
-  static async updateDayNotes(userId:string='local_user',dayId:string,notes:string):Promise<UserDayProgress> {
+  private static async updateDayNotesUnlocked(userId:string='local_user',dayId:string,notes:string):Promise<UserDayProgress> {
     if(!LEARNING_DAYS.some(day=>day.id===dayId))throw new Error('Unknown lesson.');
     this.recoverCompletion(userId);
     if(typeof localStorage==='undefined')throw new Error('Browser storage is unavailable.');
@@ -264,10 +278,10 @@ export class ProgressRepository {
   // Stable local operation identity deduplicates double clicks and overlapping callers.
   // Persisted day completion remains the guard for later retries.
   static finishLearningDay(userId: string = 'local_user', dayId: string) {
-    const key = JSON.stringify([userId, dayId]);
+    const key = JSON.stringify([this.getStorageKey(userId, 'profile'), dayId]);
     const pending = this.completionRequests.get(key);
     if (pending) return pending;
-    const request = this.completeLearningDay(userId, dayId).finally(() => this.completionRequests.delete(key));
+    const request = this.runOperation(userId,()=>this.completeLearningDay(userId, dayId),true).finally(() => this.completionRequests.delete(key));
     this.completionRequests.set(key, request);
     return request;
   }
@@ -283,15 +297,17 @@ export class ProgressRepository {
       return { success: false, error: 'invalid_day' };
     }
 
-    let profile = await this.getProfile(userId);
-    const previous = await this.getDayProgress(userId, dayId);
+    const workspace = this.getStorageKey(userId, 'profile');
+    const revision = userId==='local_user'?lessonDraftRevision():null;
+    let profile = await this.getProfileUnlocked(userId);
+    const previous = await this.getDayProgressUnlocked(userId, dayId);
     if (previous?.state !== 'completed' && day.sequence_index !== profile.active_day_index) {
       return { success: false, error: 'out_of_sequence' };
     }
     if (previous?.state !== 'completed' && profile.preferred_mode === 'maintenance') {
       return { success: false, error: 'maintenance_mode' };
     }
-    const taskMap = await this.getDayTaskProgresses(userId, dayId);
+    const taskMap = await this.getDayTaskProgressesUnlocked(userId, dayId);
     const requiredTasks = day.tasks.filter(t => t.required);
     const incompleteTasks = requiredTasks.filter(t => taskMap[t.id]?.status !== 'completed');
 
@@ -312,6 +328,7 @@ export class ProgressRepository {
       }
     }
 
+    if (workspace !== this.getStorageKey(userId, 'profile') || userId==='local_user'&&(revision===null||revision!==lessonDraftRevision())) throw new Error('Workspace changed before completing the lesson.');
     // Preserve preferences/recall edits saved during asynchronous task validation.
     if(typeof localStorage!=='undefined'){
       const raw=localStorage.getItem(this.getStorageKey(userId,'profile'));
@@ -366,13 +383,14 @@ export class ProgressRepository {
     };
   }
 
-  static async scheduleReview(
+  private static async scheduleReviewUnlocked(
     userId: string,
     moduleId: string,
     prompt: string,
     answer: string,
     currentSeq: number
   ): Promise<void> {
+    this.recoverCompletion(userId);
     const review=this.initialReview(userId,moduleId,prompt,answer,currentSeq);
 
     const supabase = userId === 'local_user' ? null : createClient();
@@ -391,7 +409,8 @@ export class ProgressRepository {
     }
   }
 
-  static async getDueReviews(userId: string = 'local_user', activeDayIndex: number): Promise<ConceptReview[]> {
+  private static async getDueReviewsUnlocked(userId: string = 'local_user', activeDayIndex: number): Promise<ConceptReview[]> {
+    this.recoverCompletion(userId);
     this.recoverCompletion(userId);
     const supabase = userId === 'local_user' ? null : createClient();
     if (supabase) {
@@ -418,13 +437,13 @@ export class ProgressRepository {
     return [];
   }
 
-  static async recordReviewAttempt(
+  private static async recordReviewAttemptUnlocked(
     userId: string = 'local_user',
     reviewId: string,
     rating: 'needs_work' | 'stable'
   ): Promise<void> {
     const INTERVAL_STEPS = REVIEW_OFFSETS;
-    const profile = await this.getProfile(userId);
+    const profile = await this.getProfileUnlocked(userId);
 
     if (typeof localStorage !== 'undefined') {
       const key = this.getStorageKey(userId, 'reviews');
@@ -452,21 +471,22 @@ export class ProgressRepository {
   }
 
   /** Explicitly bring forward the next set; never changes lesson position or ratings. */
-  static async startNextRecallSession(userId:string='local_user') {
-    const profile=await this.getProfile(userId);
+  private static async startNextRecallSessionUnlocked(userId:string='local_user') {
+    const profile=await this.getProfileUnlocked(userId);
     const step=recallStep(profile);
-    const reviews=await this.getDueReviews(userId,Number.MAX_SAFE_INTEGER);
+    const reviews=await this.getDueReviewsUnlocked(userId,Number.MAX_SAFE_INTEGER);
     if(reviews.some(review=>review.next_due_day_index<=step))return {advanced:false,step};
     const next=Math.min(...reviews.map(review=>review.next_due_day_index));
     if(!Number.isFinite(next))return {advanced:false,step};
-    await this.updateProfile(userId,{recall_step:next});
+    await this.updateProfileUnlocked(userId,{recall_step:next});
     return {advanced:true,step:next};
   }
 
   // ----------------------------------------------------------------------------
   // 5. Job Application CRM Pipeline
   // ----------------------------------------------------------------------------
-  static async getApplications(userId: string = 'local_user'): Promise<JobApplication[]> {
+  private static async getApplicationsUnlocked(userId: string = 'local_user'): Promise<JobApplication[]> {
+    this.recoverCompletion(userId);
     const supabase = userId === 'local_user' ? null : createClient();
     if (supabase) {
       const { data, error } = await supabase
@@ -491,11 +511,11 @@ export class ProgressRepository {
     return [];
   }
 
-  static async saveApplication(
+  private static async saveApplicationUnlocked(
     userId: string = 'local_user',
     app: Omit<JobApplication, 'id' | 'user_id' | 'created_at' | 'updated_at'> & { id?: string }
   ): Promise<JobApplication> {
-    const existingList = await this.getApplications(userId);
+    const existingList = await this.getApplicationsUnlocked(userId);
     const id = app.id || `app_${Date.now()}`;
     const now = new Date().toISOString();
 
@@ -521,14 +541,14 @@ export class ProgressRepository {
     return fullApp;
   }
 
-  static async deleteApplication(userId: string = 'local_user', appId: string): Promise<void> {
+  private static async deleteApplicationUnlocked(userId: string = 'local_user', appId: string): Promise<void> {
     const supabase = userId === 'local_user' ? null : createClient();
     if (supabase) {
       await supabase.from('applications').delete().eq('id', appId).eq('user_id', userId);
     }
 
     if (typeof localStorage !== 'undefined') {
-      const existingList = await this.getApplications(userId);
+      const existingList = await this.getApplicationsUnlocked(userId);
       const filtered = existingList.filter(a => a.id !== appId);
       localStorage.setItem(this.getStorageKey(userId, 'applications'), JSON.stringify(filtered));
     }
@@ -537,7 +557,8 @@ export class ProgressRepository {
   // ----------------------------------------------------------------------------
   // 6. Phase Gates & Readiness Verification
   // ----------------------------------------------------------------------------
-  static async getGateAttempt(userId: string = 'local_user', phaseId: string): Promise<GateAttempt | null> {
+  private static async getGateAttemptUnlocked(userId: string = 'local_user', phaseId: string): Promise<GateAttempt | null> {
+    this.recoverCompletion(userId);
     if (typeof localStorage !== 'undefined') {
       const stored = localStorage.getItem(this.getStorageKey(userId, `gate_${phaseId}`));
       if (stored) {
@@ -551,13 +572,14 @@ export class ProgressRepository {
     return null;
   }
 
-  static async recordGateAttempt(
+  private static async recordGateAttemptUnlocked(
     userId: string = 'local_user',
     phaseId: string,
     scoreJson: Record<string, any>,
     passed: boolean,
     evidence: string
   ): Promise<GateAttempt> {
+    this.recoverCompletion(userId);
     const attempt: GateAttempt = {
       id: `gate_attempt_${Date.now()}`,
       user_id: userId,
@@ -583,9 +605,9 @@ export class ProgressRepository {
   // ----------------------------------------------------------------------------
   // 7. Privacy: Export & Delete All User Data
   // ----------------------------------------------------------------------------
-  static async exportUserData(userId: string = 'local_user'): Promise<string> {
-    const profile = await this.getProfile(userId);
-    const applications = await this.getApplications(userId);
+  private static async exportUserDataUnlocked(userId: string = 'local_user'): Promise<string> {
+    const profile = await this.getProfileUnlocked(userId);
+    const applications = await this.getApplicationsUnlocked(userId);
 
     const local_records: Record<string, string> = {};
     if (typeof localStorage !== 'undefined') {
@@ -609,7 +631,8 @@ export class ProgressRepository {
     return JSON.stringify(exportBundle, null, 2);
   }
 
-  static async clearAllUserData(userId: string = 'local_user'): Promise<void> {
+  private static async clearAllUserDataUnlocked(userId: string = 'local_user'): Promise<void> {
+    if(userId==='local_user'&&typeof localStorage!=='undefined')localStorage.removeItem(studyRestoreJournalKey());
     if(typeof localStorage!=='undefined'){localStorage.removeItem(this.getStorageKey(userId,'completion_journal'));if(userId==='local_user')localStorage.removeItem(workspaceStorageKey('gradient_backup_checkpoint'));}
     if (typeof localStorage !== 'undefined') {
       const keysToRemove: string[] = [];
@@ -623,4 +646,33 @@ export class ProgressRepository {
       if(userId==='local_user'){localStorage.setItem(lessonDraftRevisionKey(),newLessonDraftRevision());clearLessonDrafts();}
     }
   }
+
+  // Public boundaries acquire one account-scoped cross-tab lock. Internal calls
+  // use the unlocked methods to avoid recursive-lock deadlocks.
+  private static runOperation<T>(userId:string, operation:()=>Promise<T>, writing=false):Promise<T>{
+    const profileKey=this.getStorageKey(userId,'profile');
+    const revision=userId==='local_user'?lessonDraftRevision():null;
+    return withStudyLock(profileKey,()=>{
+      if(profileKey!==this.getStorageKey(userId,'profile')||writing&&userId==='local_user'&&(revision===null||revision!==lessonDraftRevision()))throw new Error('Workspace changed before the operation could run.');
+      return operation();
+    });
+  }
+  static getProfile(...args:Parameters<typeof ProgressRepository.getProfileUnlocked>):ReturnType<typeof ProgressRepository.getProfileUnlocked>{return this.runOperation(args[0]??'local_user',()=>this.getProfileUnlocked(...args),false);}
+  static updateProfile(...args:Parameters<typeof ProgressRepository.updateProfileUnlocked>):ReturnType<typeof ProgressRepository.updateProfileUnlocked>{return this.runOperation(args[0]??'local_user',()=>this.updateProfileUnlocked(...args),true);}
+  static setCourseInterest(...args:Parameters<typeof ProgressRepository.setCourseInterestUnlocked>):ReturnType<typeof ProgressRepository.setCourseInterestUnlocked>{return this.runOperation(args[0]??'local_user',()=>this.setCourseInterestUnlocked(...args),true);}
+  static getDayTaskProgresses(...args:Parameters<typeof ProgressRepository.getDayTaskProgressesUnlocked>):ReturnType<typeof ProgressRepository.getDayTaskProgressesUnlocked>{return this.runOperation(args[0]??'local_user',()=>this.getDayTaskProgressesUnlocked(...args),false);}
+  static updateTaskProgress(...args:Parameters<typeof ProgressRepository.updateTaskProgressUnlocked>):ReturnType<typeof ProgressRepository.updateTaskProgressUnlocked>{return this.runOperation(args[0]??'local_user',()=>this.updateTaskProgressUnlocked(...args),true);}
+  static getDayProgress(...args:Parameters<typeof ProgressRepository.getDayProgressUnlocked>):ReturnType<typeof ProgressRepository.getDayProgressUnlocked>{return this.runOperation(args[0]??'local_user',()=>this.getDayProgressUnlocked(...args),false);}
+  static updateDayNotes(...args:Parameters<typeof ProgressRepository.updateDayNotesUnlocked>):ReturnType<typeof ProgressRepository.updateDayNotesUnlocked>{return this.runOperation(args[0]??'local_user',()=>this.updateDayNotesUnlocked(...args),true);}
+  static scheduleReview(...args:Parameters<typeof ProgressRepository.scheduleReviewUnlocked>):ReturnType<typeof ProgressRepository.scheduleReviewUnlocked>{return this.runOperation(args[0]??'local_user',()=>this.scheduleReviewUnlocked(...args),true);}
+  static getDueReviews(...args:Parameters<typeof ProgressRepository.getDueReviewsUnlocked>):ReturnType<typeof ProgressRepository.getDueReviewsUnlocked>{return this.runOperation(args[0]??'local_user',()=>this.getDueReviewsUnlocked(...args),false);}
+  static recordReviewAttempt(...args:Parameters<typeof ProgressRepository.recordReviewAttemptUnlocked>):ReturnType<typeof ProgressRepository.recordReviewAttemptUnlocked>{return this.runOperation(args[0]??'local_user',()=>this.recordReviewAttemptUnlocked(...args),true);}
+  static startNextRecallSession(...args:Parameters<typeof ProgressRepository.startNextRecallSessionUnlocked>):ReturnType<typeof ProgressRepository.startNextRecallSessionUnlocked>{return this.runOperation(args[0]??'local_user',()=>this.startNextRecallSessionUnlocked(...args),true);}
+  static getApplications(...args:Parameters<typeof ProgressRepository.getApplicationsUnlocked>):ReturnType<typeof ProgressRepository.getApplicationsUnlocked>{return this.runOperation(args[0]??'local_user',()=>this.getApplicationsUnlocked(...args),false);}
+  static saveApplication(...args:Parameters<typeof ProgressRepository.saveApplicationUnlocked>):ReturnType<typeof ProgressRepository.saveApplicationUnlocked>{return this.runOperation(args[0]??'local_user',()=>this.saveApplicationUnlocked(...args),true);}
+  static deleteApplication(...args:Parameters<typeof ProgressRepository.deleteApplicationUnlocked>):ReturnType<typeof ProgressRepository.deleteApplicationUnlocked>{return this.runOperation(args[0]??'local_user',()=>this.deleteApplicationUnlocked(...args),true);}
+  static getGateAttempt(...args:Parameters<typeof ProgressRepository.getGateAttemptUnlocked>):ReturnType<typeof ProgressRepository.getGateAttemptUnlocked>{return this.runOperation(args[0]??'local_user',()=>this.getGateAttemptUnlocked(...args),false);}
+  static recordGateAttempt(...args:Parameters<typeof ProgressRepository.recordGateAttemptUnlocked>):ReturnType<typeof ProgressRepository.recordGateAttemptUnlocked>{return this.runOperation(args[0]??'local_user',()=>this.recordGateAttemptUnlocked(...args),true);}
+  static exportUserData(...args:Parameters<typeof ProgressRepository.exportUserDataUnlocked>):ReturnType<typeof ProgressRepository.exportUserDataUnlocked>{return this.runOperation(args[0]??'local_user',()=>this.exportUserDataUnlocked(...args),false);}
+  static clearAllUserData(...args:Parameters<typeof ProgressRepository.clearAllUserDataUnlocked>):ReturnType<typeof ProgressRepository.clearAllUserDataUnlocked>{return this.runOperation(args[0]??'local_user',()=>this.clearAllUserDataUnlocked(...args),true);}
 }

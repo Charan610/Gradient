@@ -1,3 +1,4 @@
+import {readStudyRestoreBefore} from './restore-recovery';
 import {parseStudyBackup} from './study-backup';
 import {workspaceStorageKey} from '@/lib/account/workspace';
 
@@ -11,6 +12,7 @@ export function exportRecoveryBackup(storage:Storage,identity:RecoveryIdentity):
  const scope=identity.id?`gradient_workspace_${identity.id}_`:'';
  const prefix='foundation_career_os_local_user_';
  const local_records:Record<string,string>={};
+ const before=readStudyRestoreBefore(storage,scope);
  for(let i=0;i<storage.length;i++){
   const full=storage.key(i)!;
   if(scope&&!full.startsWith(scope))continue;
@@ -19,8 +21,18 @@ export function exportRecoveryBackup(storage:Storage,identity:RecoveryIdentity):
   const suffix=key.startsWith(prefix)?key.slice(prefix.length):'';
   if(key.startsWith('foundation_proj_')||['profile','reviews','applications'].includes(suffix)||/^(tasks|day)_P\d+-D\d+$/.test(suffix)||/^gate_P\d+$/.test(suffix))local_records[key]=storage.getItem(full)!;
  }
+ // A failed restore may leave only a partial physical set. Export the durable
+ // original image without attempting storage writes, even if quota is still blocked.
+ if(before)for(const [full,value] of Object.entries(before)){
+  const key=full.slice(scope.length);
+  const suffix=key.startsWith(prefix)?key.slice(prefix.length):'';
+  if(key.startsWith('foundation_proj_')||['profile','reviews','applications'].includes(suffix)||/^(tasks|day)_P\d+-D\d+$/.test(suffix)||/^gate_P\d+$/.test(suffix)){
+   if(value===null)delete local_records[key];else local_records[key]=value;
+  }
+ }
  // A pending completion contains the coherent intended state of those records.
- const pending=storage.getItem(`${scope}${prefix}completion_journal`);
+ const completionKey=`${scope}${prefix}completion_journal`;
+ const pending=before&&Object.prototype.hasOwnProperty.call(before,completionKey)?before[completionKey]:storage.getItem(completionKey);
  if(pending){
   const journal=JSON.parse(pending);
   if(journal.version!==1||!/^P\d+-D\d+$/.test(journal.dayId)||!journal.records)throw new Error('This workspace needs save recovery before it can be exported. Retry opening it first.');

@@ -10,3 +10,9 @@ export function portableStorageKey(key:string):string|null{
  return key.startsWith(prefix)?key.slice(prefix.length):null;
 }
 export function projectStorageKey(id:string){return workspaceStorageKey(`foundation_proj_${id}`);}
+
+// A null storage-event key means localStorage.clear(), which affects every
+// workspace. Ordinary writes must belong to this workspace and its study data.
+export function isWorkspaceStorageEventKey(key:string|null):boolean{
+ return key===null||portableStorageKey(key)?.startsWith('foundation_')===true;
+}

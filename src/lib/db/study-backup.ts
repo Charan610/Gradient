@@ -1,3 +1,5 @@
+import {withStudyLock} from './study-lock';
+import {beginStudyRestore,recoverStudyRestore,finishStudyRestore} from './restore-recovery';
 import {lessonDraftRevisionKey,newLessonDraftRevision,clearLessonDrafts} from './lesson-drafts';
 import {workspaceStorageKey,portableStorageKey} from '@/lib/account/workspace';
 import { z } from 'zod';
@@ -77,11 +79,11 @@ export function parseStudyBackup(source: string): Record<string, string> {
     if (suffix.startsWith('gate_') && value.phase_id !== suffix.slice(5)) {
       throw new Error('Backup gate record does not match its phase key.');
     }
-    if (suffix === 'reviews') {
+    if (suffix === 'reviews' || suffix === 'applications') {
       const ids = new Set<string>();
-      for (const item of value as z.infer<typeof review>[]) {
-        if (!item.id.trim() || !item.module_id.trim() || ids.has(item.id)) {
-          throw new Error('Backup review identities must be nonempty and unique.');
+      for (const item of value as { id: string; module_id?: string }[]) {
+        if (!item.id.trim() || (suffix === 'reviews' && !item.module_id?.trim()) || ids.has(item.id)) {
+          throw new Error('Backup record identities must be nonempty and unique.');
         }
         ids.add(item.id);
       }
@@ -96,6 +98,7 @@ export function parseStudyBackup(source: string): Record<string, string> {
 /** Replace study records only; roll back on quota/write failure. */
 export function restoreStudyBackup(source: string, storage: Storage): number {
   const records = Object.fromEntries(Object.entries(parseStudyBackup(source)).map(([key,value])=>[workspaceStorageKey(key),value]));
+  recoverStudyRestore(storage);
   const previous = new Map<string, string>();
   const checkpointKey=workspaceStorageKey('gradient_backup_checkpoint');
   const checkpoint=storage.getItem(checkpointKey);
@@ -111,14 +114,24 @@ export function restoreStudyBackup(source: string, storage: Storage): number {
   if(oldRevision!==null)previous.set(revisionKey,oldRevision);
   records[revisionKey]=newLessonDraftRevision();
   const touched = new Set([...previous.keys(), ...Object.keys(records)]);
+  beginStudyRestore(storage, Object.fromEntries([...touched].map(key => [key, previous.get(key) ?? null])));
   try {
     previous.forEach((_, key) => storage.removeItem(key));
     Object.entries(records).forEach(([key, value]) => storage.setItem(key, value));
+    finishStudyRestore(storage);
   } catch (error) {
-    touched.forEach(key => storage.removeItem(key));
-    previous.forEach((value, key) => storage.setItem(key, value));
+    try { recoverStudyRestore(storage); } catch { /* The persisted journal allows a later read to retry. */ }
     throw error;
   }
   clearLessonDrafts();
   return Object.keys(records).length-1;
+}
+
+/** UI restore boundary: coordinate with every repository reader/writer across tabs. */
+export function restoreStudyBackupSafely(source:string,storage:Storage):Promise<number>{
+ const profileKey=workspaceStorageKey('foundation_career_os_local_user_profile');
+ return withStudyLock(profileKey,()=>{
+  if(profileKey!==workspaceStorageKey('foundation_career_os_local_user_profile'))throw new Error('Workspace changed before restoring.');
+  return restoreStudyBackup(source,storage);
+ },true);
 }

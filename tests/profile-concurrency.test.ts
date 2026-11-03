@@ -15,3 +15,25 @@ it('keeps unrelated profile edits made while a lesson completion validates tasks
  await Promise.all([ProgressRepository.finishLearningDay('local_user',id),ProgressRepository.updateProfile('local_user',{alias:'Still my name'})]);
  expect(await ProgressRepository.getProfile()).toMatchObject({alias:'Still my name',active_day_index:2});
 });
+it('does not overwrite a malformed saved profile with defaults',async()=>{
+ const {workspaceStorageKey}=await import('../src/lib/account/workspace');
+ const key=workspaceStorageKey('foundation_career_os_local_user_profile');
+ localStorage.setItem(key,'{damaged-but-recoverable');
+ await expect(ProgressRepository.getProfile()).rejects.toThrow();
+ expect(localStorage.getItem(key)).toBe('{damaged-but-recoverable');
+});
+it('rejects a pending profile save if the verified workspace changes',async()=>{
+ await ProgressRepository.updateProfile('local_user',{alias:'Account A'});
+ const pending=ProgressRepository.updateProfile('local_user',{alias:'Do not copy to B'});
+ initializeWorkspace('other-account');
+ await expect(pending).rejects.toThrow();
+ expect((await ProgressRepository.getProfile()).alias).not.toBe('Do not copy to B');
+});
+it('rejects a pending preference save invalidated by a restore or reset generation',async()=>{
+ const {lessonDraftRevisionKey}=await import('../src/lib/db/lesson-drafts');
+ await ProgressRepository.updateProfile('local_user',{alias:'Before'});
+ const pending=ProgressRepository.updateProfile('local_user',{alias:'Stale edit'});
+ localStorage.setItem(lessonDraftRevisionKey(),'restored-generation');
+ await expect(pending).rejects.toThrow();
+ expect((await ProgressRepository.getProfile()).alias).toBe('Before');
+});

@@ -15,3 +15,10 @@ it('does not invent a recovery identity or offer another account when this tab h
  expect(readRecoveryIdentity(storage({[RECOVERY_SESSION_KEY]:'not json'}))).toBeNull();
  expect(()=>exportRecoveryBackup(storage({}),{id:'missing',username:'Learner'})).toThrow('No saved study profile');
 });
+it('exports the original workspace from a failed restore journal without storage writes',()=>{
+ const scope='gradient_workspace_a_';const key=scope+'foundation_career_os_local_user_profile';
+ const values:Record<string,string>={[key]:JSON.stringify({...profile,alias:'Partial replacement'}),[scope+'gradient_restore_journal']:JSON.stringify({version:1,before:{[key]:JSON.stringify(profile),[scope+'foundation_career_os_local_user_reviews']:'[]'}}),gradient_workspace_b_foundation_career_os_local_user_profile:JSON.stringify({...profile,alias:'Private B'})};
+ const s=storage(values);s.setItem=()=>{throw Error('Quota')};const original=JSON.stringify(values);
+ const bundle=JSON.parse(exportRecoveryBackup(s,{id:'a',username:'Learner'}));
+ expect(bundle.profile.alias).toBe('Learner');expect(JSON.stringify(bundle)).not.toContain('Partial replacement');expect(JSON.stringify(bundle)).not.toContain('Private B');expect(JSON.stringify(values)).toBe(original);
+});

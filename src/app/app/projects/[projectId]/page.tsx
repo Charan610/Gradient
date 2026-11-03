@@ -1,6 +1,6 @@
 'use client';
 
-import {projectStorageKey} from '@/lib/account/workspace';
+import {readProjectProgress,saveProjectProgress} from '@/lib/db/project-progress';
 import React, { use, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Check, Terminal, ExternalLink, HelpCircle } from 'lucide-react';
@@ -24,34 +24,24 @@ export default function ProjectDetailPage({ params }: PageProps) {
   const [notes, setNotes] = useState('');
 
   useEffect(() => {
-    const key = projectStorageKey(project.id);
-    const stored = localStorage.getItem(key);
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        setCompletedMilestones(parsed.milestones || {});
-        setRepoUrl(parsed.repoUrl || '');
-        setNotes(parsed.notes || '');
-      } catch {
-        // ignore
-      }
-    }
-  }, [project.id]);
+    let active=true;
+    void readProjectProgress(project.id).then(parsed=>{
+      if(!active)return;
+      setCompletedMilestones(parsed.milestones);setRepoUrl(parsed.repoUrl);setNotes(parsed.notes);
+    }).catch(()=>{/* Preserve unreadable records; do not overwrite them with defaults. */});
+    return()=>{active=false};
+  },[project.id]);
 
-  const toggleMilestone = (code: string) => {
-    const updated = { ...completedMilestones, [code]: !completedMilestones[code] };
-    setCompletedMilestones(updated);
-    localStorage.setItem(
-      projectStorageKey(project.id),
-      JSON.stringify({ milestones: updated, repoUrl, notes })
-    );
+  const toggleMilestone = async (code:string) => {
+    try {
+      const saved=await saveProjectProgress(project.id,{milestones:{[code]:!completedMilestones[code]}});
+      setCompletedMilestones(saved.milestones);
+    } catch { console.error('Project progress could not be saved.'); }
   };
 
-  const handleSaveRepo = () => {
-    localStorage.setItem(
-      projectStorageKey(project.id),
-      JSON.stringify({ milestones: completedMilestones, repoUrl, notes })
-    );
+  const handleSaveRepo = async () => {
+    try { await saveProjectProgress(project.id,{repoUrl,notes}); }
+    catch { console.error('Project evidence could not be saved.'); }
   };
 
   return (
