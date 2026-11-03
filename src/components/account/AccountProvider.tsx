@@ -7,6 +7,7 @@ import {ProgressRepository} from '@/lib/db/progress-repository';
 import {AccountForm} from './AccountForm';
 import {RecoveryExport} from './RecoveryExport';
 import {readRecoveryIdentity,RECOVERY_SESSION_KEY,RecoveryIdentity} from '@/lib/db/backup-tools';
+import {BrandLoader} from '@/components/ui/BrandLoader';
 
 type AccountState={loading:boolean;configured:boolean;account:StudyAccount|null;localReady:boolean;error:string};
 const Context=createContext<AccountState>({loading:true,configured:false,account:null,localReady:false,error:''});
@@ -48,7 +49,12 @@ export function AccountProvider({children}:{children:React.ReactNode}){
  const needsSetup=!state.account&&(!state.localReady||state.configured);
 
  return <Context.Provider value={state}>
-  {workspace&&(state.loading||state.error||needsSetup)?<main className="workspaceEntry">{state.loading?<p role="status">Opening your workspace…</p>:state.error?<section className="workspaceEntryCard"><h1>Let’s reconnect.</h1><p role="alert">{state.error}</p><button className="buttonPrimary" onClick={()=>window.location.reload()}>Try again</button>{recovery&&<RecoveryExport identity={recovery}/>}</section>:<AccountForm/>}</main>:children}
-
+  {workspace&&(state.loading||state.error||needsSetup)?(
+    state.loading?<BrandLoader message="Opening your workspace…" fullscreen/>:(
+      <main className="workspaceEntry">
+        {state.error?<section className="workspaceEntryCard"><h1>Let’s reconnect.</h1><p role="alert">{state.error}</p><button className="buttonPrimary" onClick={()=>window.location.reload()}>Try again</button>{recovery&&<RecoveryExport identity={recovery}/>}</section>:<AccountForm/>}
+      </main>
+    )
+  ):children}
  </Context.Provider>;
 }

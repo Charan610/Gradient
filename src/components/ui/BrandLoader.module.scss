@@ -1,0 +1,142 @@
+@use '@/styles/tokens' as *;
+@use '@/styles/mixins' as *;
+
+.loaderContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 32px 16px;
+  animation: loaderFadeIn 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.fullscreen {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  z-index: 100;
+  background-color: var(--canvas);
+}
+
+.iconWrapper {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 56px;
+  padding: 4px 6px;
+}
+
+.bar {
+  display: block;
+  width: 11px;
+  border-radius: 3.5px;
+  background-color: var(--accent);
+  transform-origin: bottom center;
+  will-change: transform, opacity, filter;
+  animation: risingBar 1.2s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+  box-shadow: 0 2px 8px rgba(156, 67, 36, 0.15);
+}
+
+:global([data-theme='dark']) .bar {
+  box-shadow: 0 0 16px rgba(223, 110, 68, 0.25);
+}
+
+.bar1 {
+  height: 18px;
+  opacity: 0.55;
+  animation-delay: 0s;
+}
+
+.bar2 {
+  height: 32px;
+  opacity: 0.78;
+  animation-delay: 0.18s;
+}
+
+.bar3 {
+  height: 48px;
+  opacity: 1;
+  animation-delay: 0.36s;
+}
+
+@keyframes risingBar {
+  0%, 100% {
+    transform: scaleY(0.6);
+    opacity: 0.5;
+    filter: brightness(0.94);
+  }
+  50% {
+    transform: scaleY(1.12);
+    opacity: 1;
+    filter: brightness(1.06);
+  }
+}
+
+.message {
+  display: inline-flex;
+  align-items: baseline;
+  font-size: 13.5px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--muted);
+  margin: 0;
+  user-select: none;
+}
+
+.dots {
+  display: inline-flex;
+  margin-left: 1.5px;
+}
+
+.dot {
+  display: inline-block;
+  animation: pulseDot 1.4s ease-in-out infinite both;
+
+  &:nth-child(1) {
+    animation-delay: 0s;
+  }
+  &:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+  &:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+}
+
+@keyframes pulseDot {
+  0%, 80%, 100% {
+    opacity: 0.2;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-1.5px);
+  }
+}
+
+@keyframes loaderFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loaderContainer {
+    animation: none;
+  }
+  .bar {
+    animation: none;
+    transform: none;
+  }
+  .dot {
+    animation: none;
+    opacity: 1;
+  }
+}
