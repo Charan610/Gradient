@@ -65,3 +65,7 @@ Home offers a gentle backup prompt after meaningful progress, with one-click dow
 The requested Elaya design skills are installed in `.agents/skills`. Use their relevant guidance for future design work while preserving Gradient’s explicit calm identity and honest feature descriptions.
 
 Phase 2 verification and known limits are recorded in `docs/PHASE2_DELIVERY.md`.
+
+## Phase 3 design and public metadata
+
+The UI uses locally served Manrope (license in public/fonts/OFL.txt), a flat surface system and keyboard-accessible navigation/search. Public metadata, favicon/social cards, sitemap, privacy, terms and a branded 404 are included. Private workspace and sign-in routes are marked noindex. Set NEXT_PUBLIC_SITE_URL to the actual production origin when deploying; local fallback is http://localhost:3000. See docs/PHASE3_DELIVERY.md for audit results and remaining validation limits.
