@@ -3,9 +3,10 @@
 import {readProjectProgress,saveProjectProgress} from '@/lib/db/project-progress';
 import React, { use, useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Check, Terminal, ExternalLink, HelpCircle } from 'lucide-react';
+import { ArrowLeft, Check, HelpCircle } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { PROJECT_TEMPLATES } from '@/lib/db/curriculum-data';
+import { milestoneLessons } from '../milestone-lessons';
 
 interface PageProps {
   params: Promise<{
@@ -93,6 +94,7 @@ export default function ProjectDetailPage({ params }: PageProps) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             {project.milestones.map(m => {
               const isDone = !!completedMilestones[m.code];
+              const lessons = milestoneLessons(m.code);
               return (
                 <div
                   key={m.code}
@@ -108,6 +110,7 @@ export default function ProjectDetailPage({ params }: PageProps) {
                       type="button"
                       role="checkbox"
                       aria-checked={isDone}
+                      aria-label={m.title}
                       onClick={() => toggleMilestone(m.code)}
                       style={{
                         width: '20px',
@@ -150,6 +153,16 @@ export default function ProjectDetailPage({ params }: PageProps) {
                       <div style={{ fontSize: '12px', color: 'var(--muted)' }}>
                         <strong>Required Deliverables:</strong> {m.deliverables.join(' · ')}
                       </div>
+                      {lessons.length > 0 && (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 12px', marginTop: '10px', fontSize: '12px' }}>
+                          <strong>Guided lessons:</strong>
+                          {lessons.map(lesson => (
+                            <Link key={lesson.id} href={lesson.href} title={lesson.title} style={{ textDecoration: 'underline' }}>
+                              {lesson.id}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>

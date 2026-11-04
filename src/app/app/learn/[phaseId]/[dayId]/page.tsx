@@ -116,7 +116,7 @@ export default function LearnDayPage({ params }: PageProps) {
 
           {isPreview && <div className={styles.previewNotice} role="note"><strong>You’re previewing a future lesson.</strong><p>You can read ahead. Finish your current lesson before completing this one.</p><Link href="/app/today">Return to your current lesson →</Link></div>}
 
-          {isDayCompleted && <section className={styles.completion} aria-label="Lesson completed"><CheckCircle size={22} /><div><h2>Lesson complete. Nicely done.</h2><p>Your work is saved. {nextDay ? 'Ready for the next small step?' : 'You’ve completed both guided paths. Return to recall whenever it helps.'}</p><Link className="buttonPrimary" href={nextDay ? `/app/learn/${nextDay.phase_id}/${nextDay.id}` : '/app/review'}>{nextDay ? 'Continue to next lesson' : 'Practice recall'} <ChevronRight size={16} /></Link></div></section>}
+          {isDayCompleted && <section className={styles.completion} aria-label="Lesson completed"><CheckCircle size={22} /><div><h2>Lesson complete. Nicely done.</h2><p>Your work is saved. {nextDay ? 'Ready for the next small step?' : 'You’ve completed all six guided courses. Return to recall whenever it helps.'}</p><Link className="buttonPrimary" href={nextDay ? `/app/learn/${nextDay.phase_id}/${nextDay.id}` : '/app/review'}>{nextDay ? 'Continue to next lesson' : 'Practice recall'} <ChevronRight size={16} /></Link></div></section>}
 
           <div style={{ marginTop: '24px' }}>
             <TaskChecklist

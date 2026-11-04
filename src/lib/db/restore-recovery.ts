@@ -1,3 +1,4 @@
+import { LESSON_STORAGE_SUFFIX } from './lesson-identity';
 import { workspaceStorageKey } from '@/lib/account/workspace';
 
 const prefix = 'foundation_career_os_local_user_';
@@ -24,7 +25,7 @@ function allowedKey(key: string, scope: string): boolean {
   if (!portable.startsWith(prefix)) return false;
   const suffix = portable.slice(prefix.length);
   return ['profile', 'reviews', 'applications', 'completion_journal'].includes(suffix)
-    || /^(tasks|day)_P\d+-D\d+$/.test(suffix) || /^gate_P\d+$/.test(suffix);
+    || LESSON_STORAGE_SUFFIX.test(suffix) || /^gate_P\d+$/.test(suffix);
 }
 
 function validateJournal(value: unknown, scope: string): Record<string, string | null> {

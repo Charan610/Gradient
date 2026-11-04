@@ -2,11 +2,12 @@
 
 import React, { use, useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, ShieldCheck, Clock, Check, AlertCircle } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, Clock, Check } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
-import { PHASES, MODULES } from '@/lib/db/curriculum-data';
+import { LEARNING_DAYS, MODULES } from '@/lib/db/curriculum-data';
 import { ProgressRepository } from '@/lib/db/progress-repository';
 import { GateAttempt } from '@/lib/db/types';
+import { lessonHref, phaseDeliverables, roadmapPhases } from '../phase-content';
 import styles from './PhaseDetail.module.scss';
 
 interface PageProps {
@@ -18,8 +19,11 @@ interface PageProps {
 export default function PhaseDetailPage({ params }: PageProps) {
   const resolvedParams = use(params);
   const phaseId = resolvedParams.phaseId.toUpperCase();
-  const phase = PHASES.find(p => p.id === phaseId) || PHASES[0];
+  const phase = roadmapPhases.find(p => p.id === phaseId) || roadmapPhases[0];
   const phaseModules = MODULES.filter(m => m.phase_id === phase.id);
+
+  const lessons = LEARNING_DAYS.filter(lesson => lesson.phase_id === phase.id);
+  const deliverables = phaseDeliverables(phase.id);
 
   const [gateAttempt, setGateAttempt] = useState<GateAttempt | null>(null);
   const [evidenceText, setEvidenceText] = useState('');
@@ -89,37 +93,64 @@ export default function PhaseDetailPage({ params }: PageProps) {
           </span>
         </div>
 
-        <Link href={phase.id === 'P0' ? '/app/subjects/cpp' : '/app/subjects'} className="buttonSecondary" style={{ margin: '12px 0 20px' }}>
-          {phase.id === 'P0' ? 'Browse all 30 foundation lessons' : 'Explore related courses'}
-        </Link>
         <h1 className={styles.title}>{phase.title}</h1>
         <p className={styles.description}>{phase.description}</p>
       </div>
 
       <div className={styles.detailGrid}>
-        <section aria-labelledby="modules-heading">
-          <h2 id="modules-heading" style={{ fontSize: '18px', fontWeight: 600, marginBottom: '16px' }}>
-            Curriculum Modules ({phaseModules.length})
-          </h2>
-          <div className={styles.moduleList}>
-            {phaseModules.map(mod => (
-              <div key={mod.id} className={styles.moduleCard}>
-                <div className={styles.moduleHeader}>
-                  <span className={styles.moduleCode}>{mod.stable_code}</span>
-                  <span style={{ fontSize: '11px', color: 'var(--muted)', fontFamily: 'monospace' }}>
-                    ~{mod.expected_minutes} min
-                  </span>
+        <div>
+          {lessons.length > 0 && (
+            <section className={styles.phaseWork} aria-labelledby="lessons-heading">
+              <h2 id="lessons-heading" className={styles.sectionHeading}>Guided Lessons ({lessons.length})</h2>
+              <ul className={styles.lessonList}>
+                {lessons.map(lesson => (
+                  <li key={lesson.id}>
+                    <Link href={lessonHref(lesson)} prefetch={false} className={styles.workLink}>
+                      <span className={styles.moduleCode}>{lesson.id}</span>
+                      <span>{lesson.title}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+          {deliverables.length > 0 && (
+            <section className={styles.phaseWork} aria-labelledby="deliverables-heading">
+              <h2 id="deliverables-heading" className={styles.sectionHeading}>Applied Deliverables</h2>
+              <ul className={styles.moduleList}>
+                {deliverables.map(item => (
+                  <li key={item.href} className={styles.moduleCard}>
+                    <Link href={item.href} className={styles.workLink}>{item.label}</Link>
+                    <p className={styles.outcomeList}>{item.action}</p>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+          <section aria-labelledby="modules-heading">
+            <h2 id="modules-heading" style={{ fontSize: '18px', fontWeight: 600, marginBottom: '16px' }}>
+              Curriculum Modules ({phaseModules.length})
+            </h2>
+            <div className={styles.moduleList}>
+              {phaseModules.map(mod => (
+                <div key={mod.id} className={styles.moduleCard}>
+                  <div className={styles.moduleHeader}>
+                    <span className={styles.moduleCode}>{mod.stable_code}</span>
+                    <span style={{ fontSize: '11px', color: 'var(--muted)', fontFamily: 'monospace' }}>
+                      ~{mod.expected_minutes} min
+                    </span>
+                  </div>
+                  <h3 className={styles.moduleTitle}>{mod.title}</h3>
+                  <ul className={styles.outcomeList}>
+                    {mod.learning_outcomes.map((out, idx) => (
+                      <li key={idx}>{out}</li>
+                    ))}
+                  </ul>
                 </div>
-                <h3 className={styles.moduleTitle}>{mod.title}</h3>
-                <ul className={styles.outcomeList}>
-                  {mod.learning_outcomes.map((out, idx) => (
-                    <li key={idx}>{out}</li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </section>
+              ))}
+            </div>
+          </section>
+        </div>
 
         <aside className={styles.gatePanel} aria-labelledby="gate-heading">
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>

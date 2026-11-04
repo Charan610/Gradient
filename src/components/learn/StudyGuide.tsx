@@ -1,13 +1,32 @@
+'use client';
+import {useEffect,useState} from 'react';
+import {loadExpandedGuidance} from '@/lib/db/expanded-guidance';
 import { RESOURCES } from '@/lib/db/curriculum-data';
 import { LearningDay } from '@/lib/db/types';
-import { STUDY_GUIDANCE } from '@/lib/db/study-guidance';
+import { STUDY_GUIDANCE, type StudyGuidance } from '@/lib/db/study-guidance';
 import styles from './StudyGuide.module.scss';
 import Link from 'next/link';
 import {FirstProgramDemo} from './FirstProgramDemo';
 
 export function StudyGuide({ day, minutes = 90 }: { day: LearningDay; minutes?: number }) {
-  const guide = STUDY_GUIDANCE[day.sequence_index];
-  if (!guide) return null;
+  const legacy = STUDY_GUIDANCE[day.sequence_index];
+  const [attempt,retry] = useState(0);
+  const [result,setResult] = useState<{id:string; guide?:StudyGuidance}>();
+  useEffect(()=>{
+    if(legacy)return;
+    let current=true;
+    loadExpandedGuidance(day.id).then(
+      guide=>{if(current)setResult({id:day.id,guide})},
+      ()=>{if(current)setResult({id:day.id})}
+    );
+    return ()=>{current=false};
+  },[day.id,legacy,attempt]);
+  const current = result?.id===day.id ? result : undefined;
+  const guide = legacy ?? current?.guide;
+  if (!guide) return <section className={styles.card} aria-busy={!current}>
+    {current ? <><p role="alert">The study guide couldn’t be loaded.</p><button className="buttonSecondary" type="button" onClick={()=>{setResult(undefined);retry(count=>count+1)}}>Try again</button></>
+      : <p role="status">Loading study guide…</p>}
+  </section>;
   const requiredMinutes = day.tasks.filter(t => t.required).reduce((sum, t) => sum + t.estimate_minutes, 0);
   return (
     <section className={styles.card} aria-labelledby={`guide-${day.id}`}>
@@ -39,7 +58,7 @@ export function StudyGuide({ day, minutes = 90 }: { day: LearningDay; minutes?: 
       <details className={styles.help}>
         <summary>Stuck? Follow this recovery plan</summary>
         {guide.hint && <p><strong>Lesson hint:</strong> {guide.hint}</p>}
-        <p>Write the input and expected output for the smallest example. Trace your variables on paper. Read the first compiler error, fix one thing, and rerun. After 15–20 minutes without progress, revisit the relevant explanation or ask for a hint using your code and failing example.</p>
+        <p>Write the input and expected output for the smallest example. Trace your variables on paper. {day.sequence_index <= 50 ? 'Read the first compiler error, fix one thing, and rerun.' : 'Read the first failing check or diagnostic. Change one thing and rerun the smallest case.'} After 15–20 minutes without progress, revisit the relevant explanation or ask for a hint using your code and failing example.</p>
         <p>If you use a worked solution, close it and rebuild from scratch. Save the failing case, your fix, and what you learned in the task evidence. Leave the task incomplete until you can explain it.</p>
       </details>
       <details className={styles.help}>

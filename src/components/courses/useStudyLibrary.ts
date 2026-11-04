@@ -2,18 +2,13 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { usePathname } from 'next/navigation';
 import { isWorkspaceStorageEventKey } from '@/lib/account/workspace';
-import { LEARNING_DAYS } from '@/lib/db/curriculum-data';
 import { ProgressRepository } from '@/lib/db/progress-repository';
 import { createStaleResource } from '@/lib/db/stale-resource';
 
 // Populated only by client effects. Server rendering always uses the empty snapshot.
 const library = createStaleResource({ activeSequence: 1, completedIds: [] as string[] }, async () => {
-  const [profile, records] = await Promise.all([
-    ProgressRepository.getProfile(),
-    Promise.all(LEARNING_DAYS.map(day => ProgressRepository.getDayProgress('local_user', day.id))),
-  ]);
-  return { activeSequence: profile.active_day_index,
-    completedIds: records.filter(record => record?.state === 'completed').map(record => record!.learning_day_id) };
+  const {profile,completedIds}=await ProgressRepository.getStudySnapshot();
+  return {activeSequence:profile.active_day_index,completedIds};
 });
 
 export function useStudyLibrary() {

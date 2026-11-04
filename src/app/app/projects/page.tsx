@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ArrowRight, Terminal, Server, Sparkles, CheckCircle2 } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { AppShell } from '@/components/layout/AppShell';
 import { PROJECT_TEMPLATES } from '@/lib/db/curriculum-data';
 
@@ -14,7 +14,7 @@ export default function ProjectsPage() {
           Engineering Project Portfolio
         </h1>
         <p style={{ fontSize: '15px', color: 'var(--ink-secondary)', maxWidth: '72ch', lineHeight: 1.55 }}>
-          Two flagship backend engineering builds plus one optional differentiator. Tested with automated suites, backed by real databases, and documented for technical interview defense.
+          Build three flagship projects across Phases 3, 4, and 7: a task API, a learning platform backend, and a grounded code search service. Use each milestone to gather tested evidence for interviews.
         </p>
       </div>
 

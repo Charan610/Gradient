@@ -1,3 +1,4 @@
+import { LESSON_ID, LESSON_STORAGE_SUFFIX } from './lesson-identity';
 import {readStudyRestoreBefore,recoverStudyRestore,studyRestoreJournalKey} from './restore-recovery';
 import {parseStudyBackup} from './study-backup';
 import {workspaceStorageKey} from '@/lib/account/workspace';
@@ -55,14 +56,14 @@ export function exportRecoveryBackup(storage:Storage,identity:RecoveryIdentity):
   const key=scope?full.slice(scope.length):full;
   if(key.startsWith('gradient_workspace_'))continue;
   const suffix=key.startsWith(prefix)?key.slice(prefix.length):'';
-  if(key.startsWith('foundation_proj_')||['profile','reviews','applications'].includes(suffix)||/^(tasks|day)_P\d+-D\d+$/.test(suffix)||/^gate_P\d+$/.test(suffix))local_records[key]=storage.getItem(full)!;
+  if(key.startsWith('foundation_proj_')||['profile','reviews','applications'].includes(suffix)||LESSON_STORAGE_SUFFIX.test(suffix)||/^gate_P\d+$/.test(suffix))local_records[key]=storage.getItem(full)!;
  }
  // A failed restore may leave only a partial physical set. Export the durable
  // original image without attempting storage writes, even if quota is still blocked.
  if(before)for(const [full,value] of Object.entries(before)){
   const key=full.slice(scope.length);
   const suffix=key.startsWith(prefix)?key.slice(prefix.length):'';
-  if(key.startsWith('foundation_proj_')||['profile','reviews','applications'].includes(suffix)||/^(tasks|day)_P\d+-D\d+$/.test(suffix)||/^gate_P\d+$/.test(suffix)){
+  if(key.startsWith('foundation_proj_')||['profile','reviews','applications'].includes(suffix)||LESSON_STORAGE_SUFFIX.test(suffix)||/^gate_P\d+$/.test(suffix)){
    if(value===null)delete local_records[key];else local_records[key]=value;
   }
  }
@@ -71,7 +72,7 @@ export function exportRecoveryBackup(storage:Storage,identity:RecoveryIdentity):
  const pending=before&&Object.prototype.hasOwnProperty.call(before,completionKey)?before[completionKey]:storage.getItem(completionKey);
  if(pending){
   const journal=JSON.parse(pending);
-  if(journal.version!==1||!/^P\d+-D\d+$/.test(journal.dayId)||!journal.records)throw new Error('This workspace needs save recovery before it can be exported. Retry opening it first.');
+  if(journal.version!==1||!LESSON_ID.test(journal.dayId)||!journal.records)throw new Error('This workspace needs save recovery before it can be exported. Retry opening it first.');
   const allowed=['profile','reviews',`day_${journal.dayId}`].map(suffix=>`${scope}${prefix}${suffix}`);
   if(Object.keys(journal.records).length!==3||Object.keys(journal.records).some(key=>!allowed.includes(key)))throw new Error('The saved recovery record could not be read.');
   for(const full of allowed)local_records[full.slice(scope.length)]=journal.records[full];

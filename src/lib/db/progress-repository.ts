@@ -1,3 +1,4 @@
+import { LESSON_STORAGE_SUFFIX } from './lesson-identity';
 import {withStudyLock} from './study-lock';
 import {assertNoPendingStudyRestore, studyRestoreJournalKey} from './restore-recovery';
 import {lessonDraftRevision,lessonDraftRevisionKey,newLessonDraftRevision,clearLessonDrafts} from './lesson-drafts';
@@ -16,6 +17,7 @@ import {
   TaskProgressStatus
 } from './types';
 import {COURSE_INDEX} from './course-index';
+import { EXPANDED_RECALL } from './expanded-curriculum';
 import { STUDY_GUIDANCE } from './study-guidance';
 import { LEARNING_DAYS } from './curriculum-data';
 import {workspaceStorageKey,portableStorageKey} from '@/lib/account/workspace';
@@ -36,7 +38,7 @@ export class ProgressRepository {
     if (!key.startsWith(prefix)) return false;
     const suffix = key.slice(prefix.length);
     return ['profile', 'reviews', 'applications'].includes(suffix) ||
-      /^(tasks|day)_P\d+-D\d+$/.test(suffix) || /^gate_P\d+$/.test(suffix);
+      LESSON_STORAGE_SUFFIX.test(suffix) || /^gate_P\d+$/.test(suffix);
   }
 
   /** Finish an interrupted local commit before exposing its profile or completion. */
@@ -328,6 +330,7 @@ export class ProgressRepository {
       }
     }
 
+    const guidance = STUDY_GUIDANCE[day.sequence_index] ?? EXPANDED_RECALL[day.sequence_index];
     if (workspace !== this.getStorageKey(userId, 'profile') || userId==='local_user'&&(revision===null||revision!==lessonDraftRevision())) throw new Error('Workspace changed before completing the lesson.');
     // Preserve preferences/recall edits saved during asynchronous task validation.
     if(typeof localStorage!=='undefined'){
@@ -339,7 +342,6 @@ export class ProgressRepository {
     const nextSeq = Math.max(profile.active_day_index, day.sequence_index + 1);
     const step=recallStep(profile);
     const nextRecallStep=previous?.state==='completed'?Math.max(step,nextSeq):step+1;
-    const guidance = STUDY_GUIDANCE[day.sequence_index];
     const moduleId = day.tasks.find(t => t.module_id)?.module_id;
     const reviewsKey=this.getStorageKey(userId,'reviews');
     const reviews:ConceptReview[]=typeof localStorage!=='undefined'?JSON.parse(localStorage.getItem(reviewsKey)||'[]'):[];
@@ -656,6 +658,27 @@ export class ProgressRepository {
       if(profileKey!==this.getStorageKey(userId,'profile')||writing&&userId==='local_user'&&(revision===null||revision!==lessonDraftRevision()))throw new Error('Workspace changed before the operation could run.');
       if(userId==='local_user'&&typeof localStorage!=='undefined')assertNoPendingStudyRestore(localStorage);
       return operation();
+    });
+  }
+  /** Read the library under one account lock rather than queueing one lock per lesson. */
+  static getStudySnapshot(){
+    const workspace=this.getStorageKey('local_user','profile');
+    return this.runOperation('local_user',async()=>{
+      const profile=await this.getProfileUnlocked();
+      if(workspace!==this.getStorageKey('local_user','profile'))throw new Error('Workspace changed before reading progress.');
+      const completedIds:string[]=[];
+      if(typeof localStorage!=='undefined'){
+        for(const day of LEARNING_DAYS){
+          const raw=localStorage.getItem(this.getStorageKey('local_user',`day_${day.id}`));
+          if(raw){
+            try{
+              const record=JSON.parse(raw);
+              if(record?.state==='completed'&&record.learning_day_id===day.id&&record.user_id==='local_user')completedIds.push(day.id);
+            }catch{/* Malformed records are retained and not counted. */}
+          }
+        }
+      }
+      return {profile,completedIds};
     });
   }
   static getProfile(...args:Parameters<typeof ProgressRepository.getProfileUnlocked>):ReturnType<typeof ProgressRepository.getProfileUnlocked>{return this.runOperation(args[0]??'local_user',()=>this.getProfileUnlocked(...args),false);}

@@ -7,6 +7,7 @@ import {BackupReminder} from '@/components/backup/BackupReminder';
 import { AppShell } from '@/components/layout/AppShell';
 import { WorkspaceSkeleton } from '@/components/ui/WorkspaceSkeleton';
 import { ProgressRepository } from '@/lib/db/progress-repository';
+import {isWorkspaceStorageEventKey} from '@/lib/account/workspace';
 import { LEARNING_DAYS } from '@/lib/db/curriculum-data';
 import { resolveHomeJourney } from '@/lib/db/home-journey';
 import {recallStep} from '@/lib/db/review-schedule';
@@ -22,16 +23,13 @@ export default function TodayPage() {
   const [loading, setLoading] = useState(true);
   const load = useCallback(async () => {
     try {
-      const [profile, records] = await Promise.all([
-        ProgressRepository.getProfile(),
-        Promise.all(LEARNING_DAYS.map(day => ProgressRepository.getDayProgress('local_user', day.id))),
-      ]);
+      const {profile,completedIds}=await ProgressRepository.getStudySnapshot();
       const day = LEARNING_DAYS.find(item => item.sequence_index === profile.active_day_index);
       const [tasks, reviews] = await Promise.all([
         day ? ProgressRepository.getDayTaskProgresses('local_user', day.id) : Promise.resolve({}),
         ProgressRepository.getDueReviews('local_user', Number.MAX_SAFE_INTEGER),
       ]);
-      setData({ profile, tasks, completed: records.filter(record => record?.state === 'completed').map(record => record!.learning_day_id), reviews });
+      setData({ profile, tasks, completed: completedIds, reviews });
       setError(false);
     } catch { setError(true); }
     finally { setLoading(false); }
@@ -41,11 +39,12 @@ export default function TodayPage() {
     const refresh = () => { void load(); };
     window.addEventListener('focus', refresh);
     window.addEventListener('foundation-progress', refresh);
-    window.addEventListener('storage', refresh);
+    const onStorage = (event: StorageEvent) => { if(isWorkspaceStorageEventKey(event.key)) refresh(); };
+    window.addEventListener('storage', onStorage);
     return () => {
       window.removeEventListener('focus', refresh);
       window.removeEventListener('foundation-progress', refresh);
-      window.removeEventListener('storage', refresh);
+      window.removeEventListener('storage', onStorage);
     };
   }, [load]);
 
@@ -68,7 +67,7 @@ export default function TodayPage() {
     {error ? <section className={styles.empty} role="alert"><h2>Your progress couldn’t be loaded</h2><p>Check that browser storage is available, then try again. Your saved work has not been reset.</p><button className="buttonPrimary" onClick={load}>Try again</button></section>
     : loading || !journey || !data ? <WorkspaceSkeleton /> : <>
       {journey.state === 'finished' ? <section className={styles.focusCard}>
-        <span className={styles.tag}><Check size={15} /> {LEARNING_DAYS.length} LESSONS COMPLETED</span><h2>You’ve worked through both guided paths.</h2><p>Revisit a tricky concept, practice another recall set, or explore a self-directed outline. Your saved lessons stay available.</p><Link className="buttonPrimary" href="/app/review">Practice recall <ArrowRight size={16} /></Link>
+        <span className={styles.tag}><Check size={15} /> {LEARNING_DAYS.length} LESSONS COMPLETED</span><h2>You’ve worked through all six guided courses.</h2><p>Revisit a tricky concept, practice another recall set, or build a portfolio project. Your saved lessons stay available.</p><Link className="buttonPrimary" href="/app/review">Practice recall <ArrowRight size={16} /></Link>
       </section> : journey.state === 'maintenance' ? <section className={styles.focusCard}>
         <span className={styles.tag}><Coffee size={15} /> TAKING IT LIGHT</span><h2>A little recall is enough.</h2><p>Your next lesson is safely paused. Revisit something you’ve learned, or change your study mode when you’re ready.</p><Link className="buttonPrimary" href="/app/review">Practice recall <ArrowRight size={16} /></Link><Link className={styles.textLink} href="/app/settings">Change study mode</Link>
       </section> : journey.state === 'unavailable' || !day ? <section className={styles.empty}>

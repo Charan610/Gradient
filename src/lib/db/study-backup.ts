@@ -1,3 +1,4 @@
+import { LESSON_STORAGE_SUFFIX } from './lesson-identity';
 import {withStudyLock} from './study-lock';
 import {beginStudyRestore,recoverStudyRestore,finishStudyRestore} from './restore-recovery';
 import {lessonDraftRevisionKey,newLessonDraftRevision,clearLessonDrafts} from './lesson-drafts';
@@ -56,8 +57,8 @@ export function parseStudyBackup(source: string): Record<string, string> {
       : suffix === 'profile' ? profile
       : suffix === 'reviews' ? z.array(review)
       : suffix === 'applications' ? z.array(application)
-      : /^tasks_P\d+-D\d+$/.test(suffix) ? z.record(task)
-      : /^day_P\d+-D\d+$/.test(suffix) ? day
+      : (suffix.startsWith('tasks_') && LESSON_STORAGE_SUFFIX.test(suffix)) ? z.record(task)
+      : (suffix.startsWith('day_') && LESSON_STORAGE_SUFFIX.test(suffix)) ? day
       : /^gate_P\d+$/.test(suffix) ? gate : null;
     const parsed = schema?.safeParse(JSON.parse(raw));
     if (!parsed?.success) throw new Error('Backup contains an unsupported or invalid study record.');
@@ -107,7 +108,7 @@ export function restoreStudyBackup(source: string, storage: Storage): number {
     const key = storage.key(i)!;
     const portable = portableStorageKey(key); if (!portable) continue;
     const suffix = portable.startsWith(prefix) ? portable.slice(prefix.length) : '';
-    if (portable.startsWith('foundation_proj_') || ['profile', 'reviews', 'applications', 'completion_journal'].includes(suffix) || /^(tasks|day)_P\d+-D\d+$/.test(suffix) || /^gate_P\d+$/.test(suffix)) previous.set(key, storage.getItem(key)!);
+    if (portable.startsWith('foundation_proj_') || ['profile', 'reviews', 'applications', 'completion_journal'].includes(suffix) || LESSON_STORAGE_SUFFIX.test(suffix) || /^gate_P\d+$/.test(suffix)) previous.set(key, storage.getItem(key)!);
   }
   const revisionKey=lessonDraftRevisionKey();
   const oldRevision=storage.getItem(revisionKey);

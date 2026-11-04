@@ -18,12 +18,11 @@ export interface CourseGuide {
   topics: CourseTopic[];
 }
 
-// Course guides: CPP has 30 guided lessons and DSA has 20 introductory lessons.
-// Other courses and the remaining Phase 2 material are study outlines.
+// Course summaries and supplemental practice checkpoints.
 export const COURSE_GUIDES: CourseGuide[] = [
   {
     id: 'CPP', title: 'C++ Foundations', tagline: 'Start here. Build your programming instincts.',
-    description: 'Go from your first executable to functions, arrays, debugging, and a small program you can explain confidently.',
+    description: 'Go from your first executable to functions, debugging, modern resource ownership, and a small program you can explain confidently.',
     prerequisite: 'No programming experience required. Have access to a C++ compiler and a place to save your code.',
     outcome: 'Build an array statistics tool from a blank editor and explain its input validation, loops, and tests.',
     defer: 'Templates, custom allocators, advanced inheritance, and competitive programming tricks.', phase: 'P0 → P1', symbol: '</>',
@@ -37,9 +36,9 @@ export const COURSE_GUIDES: CourseGuide[] = [
   },
   {
     id: 'DSA', title: 'Data Structures & Algorithms', tagline: 'Learn the pattern. Explain the tradeoff.',
-    description: '20 introductory guided lessons in C++, from vectors and complexity to basic trees, graph traversal, and dynamic programming. SQL, Python, and the remaining Phase 2 material stay as study outlines.',
+    description: '45 guided lessons in C++, from vectors and complexity to advanced graphs, dynamic programming, and timed practice.',
     prerequisite: 'Complete C++ Foundations or be comfortable with functions, arrays, and debugging small C++ programs. The first lessons introduce vectors and references.',
-    outcome: 'Build a small reading-log query tool, explain the structures and algorithms you chose, and test their boundaries. This is an introduction, not full DSA or interview preparation.',
+    outcome: 'Build a small reading-log query tool, explain the structures and algorithms you chose, and test their boundaries. Use the advanced sequence to practice explaining tradeoffs under time constraints.',
     defer: 'Advanced segment trees, exotic graph algorithms, and collecting multiple problem sheets at once.', phase: 'P2 · 20 guided DSA lessons', symbol: 'O(n)',
     resources: [{ title: 'USACO Guide — Bronze', url: 'https://usaco.guide/bronze', focus: 'Start with complexity, simulation, complete search, sorting, and sets.' }, { title: 'CSES Problem Set', url: 'https://cses.fi/problemset', focus: 'Pick problems matching the topic you have studied; do not work through every section immediately.' }],
     topics: [

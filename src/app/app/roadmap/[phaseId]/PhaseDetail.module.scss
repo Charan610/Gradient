@@ -44,6 +44,7 @@
 }
 
 .moduleList {
+  list-style: none;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -146,3 +147,38 @@
 }
 
 .title { font-family:var(--font-display); font-weight:400; letter-spacing:-.03em; }
+
+.phaseWork {
+  margin-bottom: 24px;
+}
+
+.sectionHeading {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.lessonList {
+  @include surface-card;
+  padding: 8px 20px;
+  list-style: none;
+
+  li + li {
+    border-top: 1px solid var(--hairline);
+  }
+}
+
+.workLink {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  padding: 8px 0;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

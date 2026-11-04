@@ -2,10 +2,11 @@
 
 import React, { useEffect, useState } from 'react';
 import { AppShell } from '@/components/layout/AppShell';
-import { PhaseRail } from '@/components/roadmap/PhaseRail';
-import { LEARNING_DAYS, PHASES } from '@/lib/db/curriculum-data';
+import { PhaseRail } from './PhaseRail';
+import { LEARNING_DAYS } from '@/lib/db/curriculum-data';
 import { ProgressRepository } from '@/lib/db/progress-repository';
 import { UserProfile } from '@/lib/db/types';
+import { roadmapPhases } from './phase-content';
 import styles from './Roadmap.module.scss';
 
 export default function RoadmapPage() {
@@ -14,7 +15,7 @@ export default function RoadmapPage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
 
   useEffect(() => {
-    Promise.all([ProgressRepository.getProfile(),Promise.all(PHASES.map(p=>ProgressRepository.getGateAttempt('local_user',p.id)))]).then(([p,gates])=>{setProfile(p);setPassed(PHASES.filter((_,i)=>gates[i]?.passed).map(p=>p.id));}).catch(()=>setError(true));
+    Promise.all([ProgressRepository.getProfile(),Promise.all(roadmapPhases.map(p=>ProgressRepository.getGateAttempt('local_user',p.id)))]).then(([p,gates])=>{setProfile(p);setPassed(roadmapPhases.filter((_,i)=>gates[i]?.passed).map(p=>p.id));}).catch(()=>setError(true));
   }, []);
 
   const activeDay = LEARNING_DAYS.find(day => day.sequence_index === profile?.active_day_index);
@@ -24,7 +25,7 @@ export default function RoadmapPage() {
       <div className={styles.headerArea}>
         <h1 className={styles.title}>A path with room to grow.</h1>
         <p className={styles.subtitle}>
-          A nine-phase path from programming foundations to interview preparation. Phase 0 has 30 guided C++ lessons; Phase 2 includes 20 introductory guided DSA lessons. The rest of Phase 2, including SQL and Python, and all other phases remain study outlines with self-assessment rubrics.
+          Follow nine phases from your first C++ program to industry readiness. Open each phase for guided lessons, project milestones, or applied work such as interview practice and spaced recall.
         </p>
       </div>
 
@@ -32,7 +33,7 @@ export default function RoadmapPage() {
       <div className={styles.layoutGrid}>
         <section aria-label="Phase sequence rail">
           <PhaseRail
-            phases={PHASES}
+            phases={roadmapPhases}
             activePhaseId={activeDay?.phase_id}
             passedPhaseIds={passed}
           />
@@ -47,7 +48,7 @@ export default function RoadmapPage() {
             <strong>Take the time you need:</strong> Breaks, college internal exams, and illness do not create &quot;overdue&quot; debt. You resume at the exact learning day sequence you left.
           </p>
           <p className={styles.panelText}>
-            <strong>Build on what you know:</strong> Follow prerequisites before starting advanced topics. The outlines are available to browse; their readiness rubrics are self-assessments, not automated skill verification.
+            <strong>Build on what you know:</strong> Follow prerequisites before starting advanced topics. Use the readiness rubrics to assess what you can demonstrate independently.
           </p>
         </aside>
       </div>

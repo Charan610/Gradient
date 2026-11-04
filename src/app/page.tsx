@@ -9,7 +9,7 @@ import {RevealWords} from '@/components/motion/RevealWords';
 
 const questions = [
   ['Can I start without coding experience?', 'Yes. C++ Foundations begins with your first program. You’ll need a computer and a C++ compiler for the exercises. The first lesson helps you get set up.'],
-  ['What is included in the guided curriculum?', 'There are 30 guided C++ lessons and 20 introductory DSA lessons in C++. They include exercises, self checks, and recall prompts. Other subjects are study outlines, and the introductory DSA course does not cover the entire Phase 2 outline.'],
+  ['What is included in the guided curriculum?', 'There are 136 guided lessons across C++, data structures and algorithms, SQL, computer science, backend engineering, and applied AI. Each includes practice and self checks.'],
   ['Does Gradient run or grade my code?', 'No. Compile and test your code in your own development environment, then compare your work with the lesson criteria. The example on this page is a prediction exercise.'],
   ['How do recall prompts work?', 'Recall prompts return as you advance through learning steps. When you’re ready, choose the next recall set yourself. The aim is to revisit ideas, not race a calendar.'],
   ['Where is my progress saved?', 'Your study progress and notes stay in this browser. Export a JSON backup in Settings to move or restore them. Automatic cloud sync is not available. A username identifies your workspace; optional password sign in depends on account services being available.'],
@@ -30,22 +30,22 @@ export default function HomePage() {
           <p className={styles['body-3']}>Go from your first program to data structures and algorithms. One focused lesson, one exercise, one idea you can explain.</p>
           <Link href="/sign-up" className={styles.primary}>Start learning <span aria-hidden="true">↗</span></Link>
           <p className={styles.heroNote}>Begin with the basics. Move at your pace.</p>
-          <div className={styles.proof} aria-label="Guided curriculum"><div><strong>30</strong><span>guided C++ lessons</span></div><div><strong>20</strong><span>guided DSA lessons</span></div></div>
+          <div className={styles.proof} aria-label="Guided curriculum"><div><strong>136</strong><span>guided lessons</span></div><div><strong>6</strong><span>guided courses</span></div></div>
         </div>
         <div className={styles.heroPreview}>
-          <div className={styles.previewNote}><span className={styles.eyebrow}>A first idea, in practice</span><span>01 / 50</span></div>
+          <div className={styles.previewNote}><span className={styles.eyebrow}>A first idea, in practice</span><span>01 / 136</span></div>
           <FirstProgramDemo/>
           <p className={styles.demoCaption}><span aria-hidden="true">↳</span> Read the code. Predict the output. See why.</p>
         </div>
       </section>
 
       <section id="curriculum" className={styles.section} aria-labelledby="curriculum-heading">
-        <div className={styles.sectionHeading}><div><span className={styles.eyebrow}>The learning path</span><h2 data-scroll-reveal="" id="curriculum-heading" className={styles['heading-2']}>Build from the basics.</h2></div><p>Two guided courses. A clear place to begin.<br/>More subjects to explore when you’re ready.</p></div>
+        <div className={styles.sectionHeading}><div><span className={styles.eyebrow}>The learning path</span><h2 data-scroll-reveal="" id="curriculum-heading" className={styles['heading-2']}>Build from the basics.</h2></div><p>Six guided courses. A clear place to begin.<br/>Start with C++, then follow the roadmap.</p></div>
         <div className={styles.courses}>
-          <Link href="/app/subjects/cpp" className={styles.course}><div className={styles.courseTop}><span className={styles.eyebrow}>01 / Start here</span><span aria-hidden="true">↗</span></div><span className={styles.courseSymbol} aria-hidden="true">C++</span><h3 data-scroll-reveal="" className={styles['heading-4']}>C++ Foundations</h3><p>Start with hello, world. Learn the language through programs you can test and explain.</p><span className={styles.courseMeta}>30 guided lessons <span>View course <span aria-hidden="true">↗</span></span></span></Link>
-          <Link href="/app/subjects/dsa" className={styles.course}><div className={styles.courseTop}><span className={styles.eyebrow}>02 / Keep building</span><span aria-hidden="true">↗</span></div><span className={`${styles.courseSymbol} ${styles.dsaSymbol}`} aria-hidden="true">[ → ]</span><h3 data-scroll-reveal="" className={styles['heading-4']}>Data structures &amp; algorithms</h3><p>Put C++ to work. Explore introductory DSA through exercises and recall.</p><span className={styles.courseMeta}>20 guided lessons <span>View course <span aria-hidden="true">↗</span></span></span></Link>
+          <Link href="/app/subjects/cpp" className={styles.course}><div className={styles.courseTop}><span className={styles.eyebrow}>01 / Start here</span><span aria-hidden="true">↗</span></div><span className={styles.courseSymbol} aria-hidden="true">C++</span><h3 data-scroll-reveal="" className={styles['heading-4']}>C++ Foundations</h3><p>Start with hello, world. Learn the language through programs you can test and explain.</p><span className={styles.courseMeta}>45 guided lessons <span>View course <span aria-hidden="true">↗</span></span></span></Link>
+          <Link href="/app/subjects/dsa" className={styles.course}><div className={styles.courseTop}><span className={styles.eyebrow}>02 / Keep building</span><span aria-hidden="true">↗</span></div><span className={`${styles.courseSymbol} ${styles.dsaSymbol}`} aria-hidden="true">[ → ]</span><h3 data-scroll-reveal="" className={styles['heading-4']}>Data structures &amp; algorithms</h3><p>Put C++ to work. Explore introductory DSA through exercises and recall.</p><span className={styles.courseMeta}>45 guided lessons <span>View course <span aria-hidden="true">↗</span></span></span></Link>
         </div>
-        <div className={styles.roadmap}><p><span>Beyond the guided courses</span> SQL, computer science, backend engineering, and AI study outlines.</p><Link href="/explore">Explore the roadmap <span aria-hidden="true">↗</span></Link></div>
+        <div className={styles.roadmap}><p><span>Four more guided courses</span> SQL, computer science, backend engineering, and applied AI.</p><Link href="/explore">Explore the roadmap <span aria-hidden="true">↗</span></Link></div>
       </section>
 
       <section id="how-it-works" className={styles.section} aria-labelledby="approach-heading">

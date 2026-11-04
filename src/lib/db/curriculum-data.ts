@@ -1,3 +1,4 @@
+import { EXPANDED_DAYS, EXPANDED_MODULES } from './expanded-curriculum';
 import { DSA_DAYS } from './dsa-curriculum';
 import { STUDY_GUIDANCE } from './study-guidance';
 // ==============================================================================
@@ -1535,7 +1536,8 @@ for (const day of LEARNING_DAYS.slice(0, 5)) {
 
 // The guided DSA path is a subset of P2; SQL/Python retain their outlines.
 MODULES.push({id:'P2.07',phase_id:'P2',subject_id:'DSA',stable_code:'P2.07',order_index:7,title:'Guided DSA in C++',expected_minutes:DSA_DAYS.reduce((total,day)=>total+day.estimated_minutes,0),learning_outcomes:['Choose, implement, test, and explain introductory data structures and algorithms in C++.'],prereq_codes:['P0.05']});
-LEARNING_DAYS.push(...DSA_DAYS);
+LEARNING_DAYS.push(...DSA_DAYS, ...EXPANDED_DAYS);
+MODULES.push(...EXPANDED_MODULES);
 
 // ------------------------------------------------------------------------------
 // 6. THREE CANONICAL PROJECT TEMPLATES
@@ -1547,42 +1549,42 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
     name: 'Reliable Task & Issue Management API',
     tagline: 'Multi-tenant, owner-secured REST API with PostgreSQL, SQLAlchemy, and automated pytest suite.',
     description: 'Individuals or small teams can register, securely create tasks, update status, search/filter, and view their own progress with robust authorization and automated regression tests.',
-    tech_stack: ['Python 3.12+', 'FastAPI', 'PostgreSQL', 'SQLAlchemy 2.0', 'pytest', 'Docker Compose'],
+    tech_stack: ['Python 3.12+', 'FastAPI', 'PostgreSQL', 'SQLAlchemy 2.0', 'Alembic', 'pytest', 'Docker Compose'],
     milestones: [
       {
         code: 'A0',
-        title: 'In-Memory REST CRUD Endpoints',
-        description: 'Build GET /tasks, POST /tasks, PATCH /tasks/{id}, DELETE /tasks/{id} with Pydantic validation.',
+        title: 'REST CRUD, Configuration & Health Check',
+        description: 'Build in-memory task CRUD with Pydantic validation in a configurable FastAPI service. Add /healthz, stable cursor pagination with status filters, and an idempotent PATCH that does not repeat side effects.',
         estimated_hours: '6–8 hours',
-        deliverables: ['Working FastAPI router', 'Pydantic request/response schemas', 'Interactive Swagger UI verification']
+        deliverables: ['In-memory CRUD and Pydantic schemas', 'Configurable service and /healthz endpoint', 'Cursor pagination, filtering, and idempotent PATCH', 'Swagger UI verification and local run instructions']
       },
       {
         code: 'A1',
-        title: 'PostgreSQL Relational Schema & Migrations',
-        description: 'Design users and tasks tables with foreign key constraints, unique email, and Alembic migrations.',
+        title: 'Relational Schema & Alembic Migrations',
+        description: 'Model users and tasks with primary keys, foreign keys, and CHECK constraints for valid task status. Apply and roll back the schema with Alembic.',
         estimated_hours: '8–12 hours',
-        deliverables: ['SQLAlchemy declarative models', 'Database migration script', 'Persistent CRUD operations']
+        deliverables: ['SQLAlchemy models with PK, FK, and CHECK constraints', 'Reversible Alembic migration', 'Persistent task CRUD']
       },
       {
         code: 'A2',
-        title: 'Authentication & Strict Owner Authorization',
-        description: 'Implement password hashing (bcrypt/Argon2), JWT token generation, and enforce user data isolation to prevent IDOR vulnerabilities.',
+        title: 'Authentication & Resource Ownership',
+        description: 'Implement password hashing and authenticated task routes. Enforce ownership on every read and write, including requests that guess another user’s task ID.',
         estimated_hours: '10–15 hours',
-        deliverables: ['Signup/login routes', 'Dependency get_current_user', '403 Forbidden on cross-account task modification']
+        deliverables: ['Signup and login routes', 'Shared authentication and ownership checks', 'Tests for cross-account reads and writes']
       },
       {
         code: 'A3',
         title: 'Automated Test Suite with pytest',
-        description: 'Write 20+ automated tests using FastAPI TestClient covering happy paths, validation failures, and authorization boundaries.',
+        description: 'Use FastAPI TestClient and a dedicated test database to verify migrations, successful requests, validation errors, resource ownership, pagination boundaries, and repeated PATCH behavior.',
         estimated_hours: '10–15 hours',
-        deliverables: ['pytest test suite with 20+ test cases', 'Test database fixture', 'Clean error handling middleware']
+        deliverables: ['At least 20 automated pytest cases', 'Isolated test database fixture', 'Error handling middleware exercised by tests']
       },
       {
         code: 'A4',
-        title: 'Docker Compose & GitHub Actions CI',
-        description: 'Package API and PostgreSQL into reproducible docker-compose.yaml and configure automated CI running tests on push.',
+        title: 'Docker Compose & Continuous Integration',
+        description: 'Package the service and PostgreSQL with Docker Compose. Run the isolated pytest integration suite in GitHub Actions on pushes.',
         estimated_hours: '8–12 hours',
-        deliverables: ['docker-compose.yaml', '.github/workflows/test.yml', 'Comprehensive README and sample requests']
+        deliverables: ['Docker Compose configuration', 'GitHub Actions test workflow', 'README with test commands and sample requests']
       }
     ],
     interview_questions: [
@@ -1597,36 +1599,36 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
     phase_id: 'P4',
     name: 'CourseCairn Production Learning Platform Backend',
     tagline: 'High-performance curriculum, notes, and checkpoint engine with indexing and transaction guarantees.',
-    description: 'Students follow backend, DSA, and system design learning paths, track progress, save notes, and work on practice checkpoints with sub-50ms query response times.',
-    tech_stack: ['FastAPI', 'PostgreSQL', 'SQLAlchemy Core/ORM', 'Redis Caching', 'Docker Compose'],
+    description: 'Students follow backend, DSA, and system design learning paths, track progress, save notes, and work on practice checkpoints. Measure dashboard latency and explain how the design behaves under load.',
+    tech_stack: ['FastAPI', 'PostgreSQL', 'SQLAlchemy Core/ORM', 'Redis Caching', 'pytest', 'Docker Compose'],
     milestones: [
       {
         code: 'B0',
-        title: 'Curriculum & Progress Schema Modeling',
-        description: 'Model courses, modules, learning days, user progress, and review queues with appropriate foreign keys.',
+        title: 'Curriculum & Prerequisite DAG Schema',
+        description: 'Model courses, phases, modules, lessons, user progress, review queues, and prerequisite edges in PostgreSQL. Reject cycles and invalid prerequisite references.',
         estimated_hours: '10–12 hours',
-        deliverables: ['Normalized schema diagram (3NF)', 'Alembic migration scripts']
+        deliverables: ['Normalized schema diagram with prerequisite edges', 'Alembic migrations', 'Tests for invalid prerequisite graphs']
       },
       {
         code: 'B1',
-        title: 'Owner-Secured Progress Endpoints & Atomic Transactions',
-        description: 'Build idempotent progress update endpoints wrapped in atomic database transactions.',
+        title: 'Transactional Lesson Completion & Rollups',
+        description: 'In an owner-authorized transaction, complete lessons, update progress rollups, and schedule spaced reviews. Handle retries and concurrent requests without counting a lesson twice or scheduling duplicate reviews.',
         estimated_hours: '12–16 hours',
-        deliverables: ['Atomic finishLearningDay transaction endpoint', 'Spaced review calculation scheduler']
+        deliverables: ['Owner-secured atomic completion endpoint', 'Course and phase progress rollups', 'Spaced review scheduler', 'Retry and concurrency tests']
       },
       {
         code: 'B2',
-        title: 'Query Optimization & EXPLAIN Analysis',
-        description: 'Benchmark dashboard queries under simulated 10,000 progress records; add composite indexes and eliminate N+1 queries.',
+        title: 'Indexing, Query Plans & Cache-Aside',
+        description: 'Benchmark a dashboard seeded with 10,000 progress records using EXPLAIN ANALYZE and eliminate N+1 queries. Add B-tree indexes where the query plans justify them, and use Redis cache-aside with invalidation after committed updates.',
         estimated_hours: '10–14 hours',
-        deliverables: ['EXPLAIN ANALYZE benchmarks before/after indexing', 'Sub-50ms query latency report']
+        deliverables: ['Before and after query plans', 'Index choices and measured query latency', 'Redis cache-aside with invalidation tests']
       },
       {
         code: 'B3',
-        title: 'Deployment & Telemetry Documentation',
-        description: 'Deploy API with structured JSON logging, health checks, and architectural documentation.',
+        title: 'Rate Limits, Observability & Reproducible Tests',
+        description: 'Add rate limits, structured request logs, and health checks. Document production deployment and how to reproduce the integration suite locally with Docker Compose.',
         estimated_hours: '10–12 hours',
-        deliverables: ['Production deployment guide', 'Health check endpoints', 'Live demo and video walkthrough']
+        deliverables: ['Rate-limit behavior and tests', 'Structured logs with request IDs and latency', 'Health check endpoints and production deployment guide', 'Reproducible pytest suite', 'Live demo and video walkthrough']
       }
     ],
     interview_questions: [
@@ -1638,31 +1640,38 @@ export const PROJECT_TEMPLATES: ProjectTemplate[] = [
   {
     id: 'PROJ-C',
     phase_id: 'P7',
-    name: 'AI Codebase Intelligence Assistant (Elective)',
-    tagline: 'RAG-assisted repository documentation search with verified citations and hallucination controls.',
-    description: 'Select a public repository, ingest source files respecting .gitignore, ask questions about architecture or mechanics, and receive answers strictly grounded in specific file paths and line ranges.',
-    tech_stack: ['Python', 'FastAPI', 'Tree-Sitter / AST Parser', 'ChromaDB / pgvector', 'pytest'],
+    name: 'Grounded RAG Codebase & Documentation Search Service',
+    tagline: 'Hybrid search and grounded answers with citations, abstention, and measurable retrieval quality.',
+    description: 'Index a public repository and its documentation, compare lexical, dense, and hybrid retrieval, and return answers grounded in specific source chunks.',
+    tech_stack: ['Python 3.12+', 'FastAPI', 'PostgreSQL + pgvector or local NumPy/BM25', 'Pydantic v2', 'pytest'],
     milestones: [
       {
         code: 'C0',
-        title: 'Repository Parser & AST Chunking',
-        description: 'Parse repository files respecting .gitignore, extract functions and classes with file path and line numbers.',
+        title: 'Structure-Aware Chunking & BM25 Baseline',
+        description: 'Respect .gitignore when ingesting files, then chunk Markdown by section and source code by structure. Retain chunk IDs and source locations, then expose deterministic BM25 retrieval at /v1/search/lexical.',
         estimated_hours: '8–12 hours',
-        deliverables: ['AST-aware chunker', 'Metadata schema (file, start_line, end_line, language)']
+        deliverables: ['Markdown and code chunker', 'Stable chunk IDs and file/line metadata', 'BM25 lexical search endpoint']
       },
       {
         code: 'C1',
-        title: 'Hybrid Lexical & Vector Retrieval',
-        description: 'Combine BM25 keyword matching with dense embeddings for reliable symbol and concept lookup.',
+        title: 'Dense Embeddings & Hybrid Search',
+        description: 'Index dense embeddings, rank by cosine similarity, and fuse the dense and BM25 rankings using Reciprocal Rank Fusion (RRF).',
         estimated_hours: '12–16 hours',
-        deliverables: ['Search pipeline returning top-K relevant code snippets with citations']
+        deliverables: ['Dense embedding index', 'Hybrid search with configurable RRF', 'Top results with chunk IDs and source locations']
       },
       {
         code: 'C2',
-        title: 'Grounding Evaluation & Hallucination Defense',
-        description: 'Build evaluation test suite of 20 known questions; assert responses explicitly cite lines or state "insufficient context".',
+        title: 'Grounded Answers, Evaluation & Prompt-Injection Defense',
+        description: 'Build /v1/ask with a Pydantic response schema, inline [chunk_id] citations from retrieved sources, and an explicit abstention below a documented confidence threshold. Evaluate citation accuracy and refusal rates on 20 known questions and audit the endpoint for prompt injection.',
         estimated_hours: '10–14 hours',
-        deliverables: ['Evaluation harness measuring citation accuracy and refusal rates', 'Security review preventing prompt injection']
+        deliverables: ['Grounded ask endpoint with schema validation', '20-question evaluation of citation accuracy and refusal rates', 'Prompt-injection security review']
+      },
+      {
+        code: 'C3',
+        title: 'Golden Evaluation & Retrieval Guards',
+        description: 'Run an automated 25-query golden set against lexical, dense, and hybrid retrieval. Report Recall@5, MRR@5, and Citation Faithfulness; show where hybrid beats a single retriever and explain any regressions. Add prompt-injection and rate-limit guards.',
+        estimated_hours: '10–14 hours',
+        deliverables: ['25-query golden evaluation harness', 'Baseline comparison report with Recall@5, MRR@5, and Citation Faithfulness', 'Prompt-injection and rate-limit regression tests']
       }
     ],
     interview_questions: [

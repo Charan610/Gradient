@@ -25,6 +25,8 @@ const day = (id: string) => ({ user_id: 'local_user', learning_day_id: id, state
 const review = { id: 'legacy-review-id', user_id: 'local_user', module_id: 'P0.01', concept_prompt: 'Explain?', concept_answer: 'Answer', last_day_index: 1, next_due_day_index: 2, interval_step: 1, latest_confidence: 'stable' };
 
 for (const [name, records] of Object.entries({
+  'cross-course day identity': { 'day_DB-D01': day('CS-D01') },
+  'cross-course task lesson identity': { 'tasks_BE-D01': { 'AI-D01-T01': task('AI-D01-T01') } },
   'day identity': { 'day_P0-D01': day('P0-D02') },
   'task map identity': { 'tasks_P0-D01': { 'P0-D01-T1': task('P0-D01-T2') } },
   'task lesson identity': { 'tasks_P0-D01': { 'P0-D02-T1': task('P0-D02-T1') } },
@@ -65,6 +67,7 @@ it('preserves version 1 legacy task and review IDs, unknown historical lessons, 
 it('rolls back identity-validated records after a partial write failure', async () => {
   const source = await backup({ 'day_P0-D01': day('P0-D01'), reviews: [review] });
   storage.setItem(prefix + 'day_P0-D02', JSON.stringify(day('P0-D02')));
+  storage.setItem(prefix + 'day_DB-D01', JSON.stringify(day('DB-D01')));
   const previous = new Map(values);
   const set = storage.setItem;
   let writes = 0;

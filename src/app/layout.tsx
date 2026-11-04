@@ -9,8 +9,8 @@ const siteUrl = new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:30
 
 export const metadata: Metadata = {
   metadataBase: siteUrl,
-  title: { default: 'Gradient — 50 guided C++ and DSA lessons', template: '%s | Gradient' },
-  description: 'Learn C++ and data structures through 50 guided lessons, small practice tasks, and spaced recall. Study at your pace with browser-local notes and JSON backups.',
+  title: { default: 'Gradient — 136 guided engineering lessons', template: '%s | Gradient' },
+  description: 'Learn C++, algorithms, SQL, systems, backend engineering, and applied AI through 136 guided lessons, small practice tasks, and spaced recall. Study at your pace with browser-local notes and JSON backups.',
   applicationName: 'Gradient',
   alternates: { canonical: './' },
   keywords: ['C++ lessons', 'data structures and algorithms', 'guided practice', 'spaced recall'],
@@ -18,12 +18,12 @@ export const metadata: Metadata = {
   icons: { icon: [{ url: '/favicon.ico', sizes: '32x32' }, { url: '/icon.svg', type: 'image/svg+xml' }], apple: '/apple-icon.png' },
   openGraph: {
     type: 'website', siteName: 'Gradient', locale: 'en_US',
-    title: 'Gradient — 50 guided C++ and DSA lessons',
+    title: 'Gradient — 136 guided engineering lessons',
     description: 'A calm place to learn C++, practise data structures, and return to what you learned.',
-    images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Gradient — 50 guided C++ and DSA lessons' }]
+    images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Gradient — 136 guided engineering lessons' }]
   },
   twitter: {
-    card: 'summary_large_image', title: 'Gradient — 50 guided C++ and DSA lessons',
+    card: 'summary_large_image', title: 'Gradient — 136 guided engineering lessons',
     description: 'Small practice tasks, spaced recall, and notes that stay in your browser.',
     images: ['/twitter-image']
   }

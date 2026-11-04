@@ -1,0 +1,616 @@
+{
+  "P1": [
+    {
+      "title": "References vs. Pointers & const Correctness",
+      "goal": "Express required read-only access and optional mutation in a function signature.",
+      "minutes": 60,
+      "prompt": "Why does const std::string& s = \"abc\"; compile while std::string& s = \"abc\"; does not?",
+      "answer": "The literal is a character array. It can initialize a temporary std::string via conversion, and the local const reference binds to that temporary and extends its lifetime to the lifetime of the reference. A non-const lvalue reference cannot bind to the resulting temporary."
+    },
+    {
+      "title": "Stack vs. Heap Lifetime & Sanitizers (ASan/UBSan)",
+      "goal": "Diagnose an invalid memory access by finding where the object was created and where its lifetime ended.",
+      "minutes": 60,
+      "prompt": "Why might a stale pointer appear usable at -O0 and fail at -O2?",
+      "answer": "The bytes may still happen to contain the old value, but the object is gone. Optimized code can reuse storage and transform the program under the assumption that defined programs obey lifetime rules. Neither optimization level promises a particular result from undefined behavior."
+    },
+    {
+      "title": "Classes, Encapsulation & Member Initializer Lists",
+      "goal": "Build a counter whose public operations preserve 0 <= value <= limit.",
+      "minutes": 60,
+      "prompt": "If value_ is declared before limit_, does putting limit_ first in the initializer list make it safe to read limit_ while initializing value_?",
+      "answer": "No. The declarations determine which member is initialized first. Declare limit_ first if value_ depends on it, and write the initializer list in that same order."
+    },
+    {
+      "title": "RAII & The Rule of Three",
+      "goal": "Give an owning buffer predictable cleanup and independent value copies.",
+      "minutes": 75,
+      "prompt": "Why build the replacement before releasing the old array in copy assignment?",
+      "answer": "Allocation can throw. Constructing the replacement first leaves the target unchanged if it fails; after a successful swap the temporary owns and destroys the old allocation."
+    },
+    {
+      "title": "Lvalues, Rvalues, Move Semantics & Rule of Five",
+      "goal": "Transfer an IntBuffer allocation without copying its elements.",
+      "minutes": 75,
+      "prompt": "Does vector require noexcept in order to move an element during reallocation?",
+      "answer": "No. A nonthrowing move lets relocation preserve the usual rollback guarantee. If moving may throw and copying is available, implementations commonly copy so the original elements stay intact until relocation succeeds. A move-only type can still be moved; if its move throws during a single end insertion that reallocates, the effects may be unspecified."
+    },
+    {
+      "title": "Smart Pointers: unique_ptr, shared_ptr & weak_ptr",
+      "goal": "Represent ownership in a tree and explain why reference counting cannot collect a strong cycle.",
+      "minutes": 65,
+      "prompt": "Why prefer make_unique and make_shared when creating new owned objects?",
+      "answer": "They express the ownership policy at construction and hand back an owning handle directly. make_shared also typically combines object and control block storage in a single allocation. Use an explicit smart pointer constructor when you need a custom deleter."
+    },
+    {
+      "title": "Operator Overloading & Custom Comparators",
+      "goal": "Make a task sortable under two clearly defined ordering policies.",
+      "minutes": 60,
+      "prompt": "What breaks when a comparator uses <= on the final comparison key?",
+      "answer": "It can report comp(a, a) as true, violating irreflexivity. The sort contract is then broken and behavior is undefined. A tie should fall through to a further strict comparison or return false."
+    },
+    {
+      "title": "Inheritance, Access Control & Object Slicing",
+      "goal": "Preserve a derived object when storing or passing it through a base interface.",
+      "minutes": 60,
+      "prompt": "What is the complete ordering for a simple Derived with one direct Base and its own members?",
+      "answer": "The base subobject is constructed first, then Derived’s members in declaration order, then the Derived constructor body. On destruction the Derived destructor body runs first, then its members are destroyed in reverse declaration order, then the Base subobject is destroyed."
+    },
+    {
+      "title": "Runtime Polymorphism, virtual & vtable Layout",
+      "goal": "Use one storage interface with two backends and distinguish dispatch rules from ABI details.",
+      "minutes": 75,
+      "prompt": "How many bytes does the first virtual function add on a 64-bit system?",
+      "answer": "There is no portable number. An ABI may add a pointer-sized field, but alignment, padding, existing polymorphic bases and ABI rules determine the actual size difference. Multiple inheritance can involve more than one polymorphic subobject."
+    },
+    {
+      "title": "Virtual Destructors, override, final & dynamic_cast",
+      "goal": "Design a safe polymorphic deletion path and perform checked downcasts.",
+      "minutes": 60,
+      "prompt": "Must every polymorphic base have a public virtual destructor?",
+      "answer": "No. A public virtual destructor supports ordinary deletion through a base pointer. If the interface is only borrowed and base-pointer deletion is forbidden, a protected nonvirtual destructor can make that misuse fail at compile time."
+    },
+    {
+      "title": "Templates, Generic Programming & constexpr",
+      "goal": "Implement a bounded FIFO whose element type and capacity are supplied at compile time.",
+      "minutes": 65,
+      "prompt": "Why are template definitions often kept in headers?",
+      "answer": "A translation unit implicitly instantiating a specialization generally needs its template definition reachable. A declaration alone does not give the compiler the implementation for a new type. With a fixed list of supported types, explicit instantiation can let you put definitions in a source file."
+    },
+    {
+      "title": "STL Container Internals & Iterator Invalidation",
+      "goal": "Choose containers using access costs and keep only handles their operations preserve.",
+      "minutes": 70,
+      "prompt": "Why can you keep a reference after deque end insertion but lose one after vector growth?",
+      "answer": "The deque contract preserves references at the ends; segmented storage is a common way to meet that contract. A vector must maintain one contiguous element range, and growth past capacity requires relocation, which invalidates all old references."
+    },
+    {
+      "title": "Lambdas, Closures & <algorithm> Mastery",
+      "goal": "Filter, group and query log records while keeping capture lifetimes and algorithm preconditions explicit.",
+      "minutes": 60,
+      "prompt": "What happens if you return a lambda that captures a local cutoff by reference?",
+      "answer": "The returned closure outlives the local cutoff, so using that captured reference accesses an object whose lifetime has ended. Capturing the cutoff by value puts a copy in the closure."
+    },
+    {
+      "title": "Exception Safety, std::optional & Error Boundaries",
+      "goal": "Separate routine parse rejection from exceptional failure and publish changes only after preparation succeeds.",
+      "minutes": 60,
+      "prompt": "When is optional a better fit than throwing?",
+      "answer": "Use optional when absence is an ordinary branch and the caller does not need a reason, such as a simple parse-or-skip operation. Use an error-bearing result when callers need rejection details; exceptions can propagate failures the current operation cannot resolve, such as failed allocation."
+    },
+    {
+      "title": "Phase 1 Exit Gate: Modern C++ CLI & Git Verification",
+      "goal": "Ship a small C++20 task indexer whose behavior can be reproduced from its build and tests.",
+      "minutes": 90,
+      "prompt": "What evidence shows you are ready to move on?",
+      "answer": "A reproducible warning-free C++20 build, passing core and CLI fixtures under sanitizers, deterministic output, deliberate ownership choices and a reviewed Git history. Explain how one malformed command fails without partially mutating the index."
+    }
+  ],
+  "P3": [
+    {
+      "title": "Binary Search on Answer Space",
+      "goal": "Find the first or last feasible integer and prove the test is monotone.",
+      "minutes": 65,
+      "prompt": "Why does last-feasible search use the upper midpoint when it keeps lo = mid?",
+      "answer": "When hi = lo + 1, the lower midpoint equals lo; on success nothing changes. The upper midpoint equals hi, so either branch shrinks the interval."
+    },
+    {
+      "title": "Bit Manipulation and XOR Invariants",
+      "goal": "Use unsigned masks to cancel pairs, split two survivors, and enumerate subsets.",
+      "minutes": 55,
+      "prompt": "Is 1 << 31 necessarily undefined on a 32-bit signed int in C++17? Why use 1ULL for a wide mask?",
+      "answer": "No. For 32-bit int, 2^31 fits the corresponding unsigned type, so this shift is not undefined under the C++17 shift rule; it does not give a positive signed int. The left operand determines the shift width: 1ULL supports shifts up to 63 on a 64-bit unsigned long long, while shifting a 32-bit int by 32 or more is undefined."
+    },
+    {
+      "title": "Linked List Pointer Invariants: Fast/Slow and Reversal",
+      "goal": "Track node identity and preserve links while detecting cycles, reversing groups, and updating an LRU cache.",
+      "minutes": 60,
+      "prompt": "Why does resetting one pointer to the head find the cycle entry?",
+      "answer": "If the entry is μ steps from the head, the meeting offset is (t - μ) mod λ after t slow steps in a cycle of length λ. The fast pointer traveled t extra steps, so t ≡ 0 mod λ. After μ more steps the meeting pointer is at offset t mod λ = 0, and the head pointer reaches the entry for the first time."
+    },
+    {
+      "title": "Monotonic Stack and Monotonic Deque",
+      "goal": "Discard candidates only when a newer index dominates them or a boundary is settled.",
+      "minutes": 65,
+      "prompt": "Why does an inner while loop not make the scan quadratic?",
+      "answer": "Charge each successful pop to its earlier push. At most n pops occur in the whole run, and each outer iteration does at most one final unsuccessful loop test."
+    },
+    {
+      "title": "Binary Tree Depth, Diameter, Balance, and LCA",
+      "goal": "Combine child summaries in postorder and distinguish an LCA candidate from proof both nodes exist.",
+      "minutes": 65,
+      "prompt": "What does the common LCA recursion that returns immediately at a target do if only one target exists?",
+      "answer": "It can return that target as if it were an LCA. Require both presence bits at the root; when p == q, one matching node sets both bits."
+    },
+    {
+      "title": "Binary Tree Views, Maximum Path Sum, and Serialization",
+      "goal": "Choose traversal order based on the information each tree problem needs.",
+      "minutes": 70,
+      "prompt": "Why can the global maximum use both children but the value returned upward use only one?",
+      "answer": "A path turning at this node can enter through one child and leave through the other. Extending it to the parent too would give this node three incident path edges, which is a branch, not a simple path."
+    },
+    {
+      "title": "Binary Search Trees: Validation, Kth Smallest, and Deletion",
+      "goal": "Preserve strict ancestor bounds and the sorted inorder sequence.",
+      "minutes": 65,
+      "prompt": "Why is checking only immediate children insufficient?",
+      "answer": "A descendant can satisfy its parent while violating an older ancestor. For example, 9 is greater than its parent 3 but cannot appear in the left subtree of 8."
+    },
+    {
+      "title": "Heaps and std::priority_queue: Top K and Streaming Median",
+      "goal": "Keep only the frontier needed to answer each query.",
+      "minutes": 65,
+      "prompt": "Why retain a min-heap for the largest k values?",
+      "answer": "The root is the weakest retained candidate and thus the one to remove whenever a better candidate displaces it. It also answers the kth-largest query directly."
+    },
+    {
+      "title": "Greedy Intervals, Deadlines, and Exchange Arguments",
+      "goal": "Match the sort key to selection, merging, or resource reuse.",
+      "minutes": 60,
+      "prompt": "Why does earliest start fail for maximum count?",
+      "answer": "It can select a long interval that blocks many short ones. Earliest finish can replace the first selection of an optimum without making any later interval incompatible."
+    },
+    {
+      "title": "Backtracking with Pruning: Permutations, Combinations, and Grids",
+      "goal": "Define choices at each recursion depth and restore shared state on return.",
+      "minutes": 70,
+      "prompt": "How do you prevent revisiting a cell on one path without copying the visited grid?",
+      "answer": "Mark on entry and unmark on exit. All frames share one grid, but when a frame returns it leaves exactly the marks belonging to its ancestors."
+    },
+    {
+      "title": "Prefix Trees and Bitwise XOR Tries",
+      "goal": "Choose trie metadata and traverse the branch that best serves the query.",
+      "minutes": 65,
+      "prompt": "Why can a child reference into a vector arena break during insertion?",
+      "answer": "Growing the vector may relocate all nodes. The old reference can dangle, but indices still refer to the same logical positions as long as nodes are only appended."
+    },
+    {
+      "title": "Graph Cycle Detection and Bipartite Two-Coloring",
+      "goal": "Use active ancestry for directed cycles and opposite colors for bipartite graphs.",
+      "minutes": 65,
+      "prompt": "Why does a visited-neighbor test from undirected DFS misclassify a directed diamond?",
+      "answer": "After visiting D via B, D can be finished when C reaches it. D is not an ancestor of C, so C→D does not provide a route back to C."
+    },
+    {
+      "title": "Topological Sorting: Kahn’s Queue and DFS Postorder",
+      "goal": "Order dependencies, detect cycles, and derive safe states on a reversed graph.",
+      "minutes": 65,
+      "prompt": "Why can ['abc', 'ab'] be rejected without any graph search?",
+      "answer": "There is no mismatching letter to reorder. Under lexicographic comparison a proper prefix always comes first, regardless of the alphabet."
+    },
+    {
+      "title": "Shortest Paths: Multi-Source BFS and 0–1 BFS",
+      "goal": "Choose FIFO or deque ordering from the permitted edge weights.",
+      "minutes": 65,
+      "prompt": "Why mark on enqueue for ordinary BFS, and why not use that rule for 0–1 BFS?",
+      "answer": "Ordinary BFS discovers each vertex at its shortest distance, so later discoveries are redundant. A 0–1 vertex can first be reached by a costlier edge and must remain eligible for improvement."
+    },
+    {
+      "title": "Dijkstra and Priority-Queue Relaxation",
+      "goal": "Finalize nonnegative shortest-path labels and reuse the invariant for a minimax path.",
+      "minutes": 70,
+      "prompt": "Why do negative edges break the proof, and what does the stale-entry guard protect?",
+      "answer": "Edges s→a (2), s→b (5), b→a (-4) give true distance 1 to a even though a is popped at 2. Finalization or early exit is therefore unsafe. With nonnegative weights the guard prevents re-scanning outgoing edges for obsolete labels and preserves the stated time bound."
+    },
+    {
+      "title": "Bellman–Ford, Bounded Flights, and Floyd–Warshall",
+      "goal": "Choose between negative-edge, bounded-edge, and all-pairs shortest-path methods.",
+      "minutes": 65,
+      "prompt": "Why can in-place relaxation violate the stop budget?",
+      "answer": "With edges listed s→a then a→b, one in-place round can reach b using a value written earlier that same round. Reading the previous array limits every new path to exactly one more edge than was allowed before."
+    },
+    {
+      "title": "Disjoint Set Union and Minimum Spanning Trees",
+      "goal": "Maintain component representatives and use them to select a cheapest spanning tree.",
+      "minutes": 70,
+      "prompt": "What changes if you omit union by size or rank?",
+      "answer": "Arbitrary linking can create a linear parent chain, so an individual find (or unite that calls it) can take Θ(V) before compression. Compression alone gives a logarithmic amortized upper bound over a sequence; pairing it with size or rank gives the stronger O(α(V)) amortized bound. Size alone caps depth at O(log V) because each depth increase at least doubles the component."
+    },
+    {
+      "title": "One-Dimensional DP: States, Transitions, and Space",
+      "goal": "Derive prefix states and keep only values that future transitions still read.",
+      "minutes": 65,
+      "prompt": "Why do the two circular robber runs cover every valid solution?",
+      "answer": "The first and last houses are adjacent, so no valid selection uses both. Every selection lies in at least one of the two ranges, and every linear selection in either range is valid in the circle."
+    },
+    {
+      "title": "Grid DP and Rolling Rows",
+      "goal": "Overwrite each slot only after its old row value has served its last purpose.",
+      "minutes": 65,
+      "prompt": "How can you determine the scan direction for an in-place DP row?",
+      "answer": "Label each dependency with its row. Read required current-row cells after they are written and previous-row cells before they are overwritten. For top/left dependencies this means left to right; a recurrence requiring the old left neighbor could instead need right to left."
+    },
+    {
+      "title": "Knapsack: 0/1, Unbounded, and Subset Sum",
+      "goal": "Use iteration order to enforce item multiplicity and count unordered combinations.",
+      "minutes": 70,
+      "prompt": "Why do forward capacity updates allow reuse, and why are coins outside the amount loop?",
+      "answer": "An earlier update for the same item can feed a later capacity, using it again. A coin-outer loop introduces one denomination at a time; each combination is counted when its largest processed denomination is added, without allowing orderings such as 1+2 and 2+1 to count separately."
+    },
+    {
+      "title": "String DP: LCS, Edit Distance, and Palindromic Subsequences",
+      "goal": "Align prefixes, model edit operations, and reconstruct an optimal subsequence.",
+      "minutes": 70,
+      "prompt": "How do you recover an LCS in O(n + m) steps after filling the table?",
+      "answer": "Walk backward from (n, m). On equal final characters append that character and move diagonally. Otherwise move to a neighboring prefix with the same optimum. Each step decreases i or j, so reverse the collected characters at the end."
+    },
+    {
+      "title": "Longest Increasing Subsequence: Quadratic DP and Binary Search",
+      "goal": "Track the cheapest tail for each length and identify when a reduction preserves strict order.",
+      "minutes": 65,
+      "prompt": "Why must equal-width heights be sorted descending?",
+      "answer": "An increasing height subsequence cannot select two entries from a nonincreasing equal-width group. Ascending heights could let the LIS choose two envelopes whose widths are equal."
+    },
+    {
+      "title": "Interval DP and DP on Trees",
+      "goal": "Choose a split that fixes boundary conditions and pass conditional summaries from tree children.",
+      "minutes": 70,
+      "prompt": "Why does choosing the last burst create independent subproblems?",
+      "answer": "While k remains, it separates the two sides and serves as their fixed boundary. Choosing the first burst removes that separator immediately, so later scores can depend on balloons from both sides."
+    },
+    {
+      "title": "Range Queries: Fenwick Tree and Segment Tree",
+      "goal": "Support point updates and range queries without rebuilding a prefix array.",
+      "minutes": 75,
+      "prompt": "Does a flat segment tree need exactly 4n slots?",
+      "answer": "No. For n >= 1, a midpoint-split tree with heap indices fits within the complete padded tree with m = next power of two >= n. That padded tree has 2m - 1 nodes, or 2m slots including unused index 0; 4n is a convenient safe allocation. A compact layout can store the actual 2n - 1 nodes."
+    },
+    {
+      "title": "Phase 3–4 DSA Exit Gate: Timed Assessment",
+      "goal": "Choose an algorithm from the constraints, implement it under time pressure, and defend its correctness.",
+      "minutes": 100,
+      "prompt": "What evidence demonstrates readiness beyond passing the samples?",
+      "answer": "Explain why shortest labels for the two coupon states are sufficient and why nonnegative transitions permit Dijkstra. For B, prove the recurrence from the two possible last moves. Show that costs and memory fit the largest cases, and present results for disconnected, blocked, singleton, and large-value tests."
+    }
+  ],
+  "DB": [
+    {
+      "title": "DB-D01 — Relational modeling, primary keys, and foreign key actions",
+      "goal": "Model enrollment as a relationship and enforce identity and deletion rules in PostgreSQL.",
+      "minutes": 55,
+      "prompt": "When would you add a surrogate enrollment ID, and what constraint would you keep?",
+      "answer": "The composite key is sufficient for a link identified by its two parents. A generated ID can simplify references from other tables or give an enrollment a stable identity if its attributes change. Keep UNIQUE (student_id, course_id) and make both columns NOT NULL if the one-enrollment rule still holds. If repeat enrollment is valid, model the occurrence, such as a section or term, in the business key instead."
+    },
+    {
+      "title": "DB-D02 — Data types, nullability, uniqueness, and CHECK constraints",
+      "goal": "Encode required values, valid ranges, and exact decimal amounts at the database boundary.",
+      "minutes": 50,
+      "prompt": "Why choose NUMERIC or integer minor units over REAL or DOUBLE PRECISION for accounting amounts?",
+      "answer": "Binary floating point approximates many decimal fractions, so equality, totals, and rounding boundaries can surprise you. Exact decimal or integer arithmetic lets you specify and enforce a rounding policy; the currency and its minor unit still need to be modeled."
+    },
+    {
+      "title": "DB-D03 — Functional dependencies and normalization through BCNF",
+      "goal": "Decompose a flat enrollment sheet and show why joining its projections reconstructs the original facts.",
+      "minutes": 60,
+      "prompt": "When could storing comment_count on a post be justified, and how would you keep it correct?",
+      "answer": "For a measured read hotspot, a cached count can avoid repeated aggregation. Update it in the same transaction as each successful comment insert or delete, using an atomic increment or decrement, and make retries idempotent. Reconcile periodically against the comment table to detect drift."
+    },
+    {
+      "title": "DB-D04 — Inner, outer, and self joins with NULL logic",
+      "goal": "Predict which rows survive a join and distinguish missing matches from stored NULLs.",
+      "minutes": 60,
+      "prompt": "Does moving every right-side filter from ON to WHERE make a LEFT JOIN behave like an INNER JOIN?",
+      "answer": "No. A predicate that rejects the NULL-extended row, such as o.status = paid with paid written as a string literal, has that effect. WHERE o.id IS NULL retains unmatched rows if o.id is nonnullable in stored orders."
+    },
+    {
+      "title": "DB-D05 — Grouping, HAVING, and counting empty outer joins",
+      "goal": "Build a report that includes courses with zero enrollments and filter it at the right stage.",
+      "minutes": 55,
+      "prompt": "Why does COUNT(*) report one for an empty course, and why use ON e.course_id = c.id here?",
+      "answer": "The left join contributes one placeholder row, which COUNT(*) counts. Counting e.student_id skips its NULL. USING (course_id) requires that name on both sides; the course key is named id here, so use the explicit ON condition."
+    },
+    {
+      "title": "DB-D06 — Anti-queries, NULL in NOT IN, and recursive CTEs",
+      "goal": "Find missing relationships safely and traverse a prerequisite graph with a stopping rule.",
+      "minutes": 65,
+      "prompt": "Why can x NOT IN (1, 2, NULL) never be true?",
+      "answer": "Read it as x <> 1 AND x <> 2 AND x <> NULL. A known match makes one conjunct false, which forces the result false. Otherwise the comparison with NULL is unknown and the result stays unknown, including for a NULL x."
+    },
+    {
+      "title": "DB-D07 — Ranking, offsets, and moving averages with windows",
+      "goal": "Compute rankings and day-over-day changes while keeping individual rows.",
+      "minutes": 65,
+      "prompt": "Which ranking function should you use for the top three distinct scores including every tie?",
+      "answer": "Use DENSE_RANK with score alone in the window ordering, then filter the rank in an outer query. An ID tiebreaker in that window would split peers; add it only to the final output ordering if needed."
+    },
+    {
+      "title": "DB-D08 — Heap pages and multicolumn B-tree indexes",
+      "goal": "Choose a B-tree key order that matches a tenant-scoped query and explain the storage cost.",
+      "minutes": 65,
+      "prompt": "For (a,b,c) and WHERE a = 1 AND b > 5 AND c = 10, is c useless to the index?",
+      "answer": "No. The c values are ordered within each distinct (a,b), so c = 10 does not define one contiguous interval across the whole b range. It can still be checked in the index to avoid heap visits, and supported versions can sometimes skip groups by making multiple probes."
+    },
+    {
+      "title": "DB-D09 — Reading EXPLAIN ANALYZE and join algorithms",
+      "goal": "Compare estimated and actual work for PostgreSQL scans and joins using a reproducible workload.",
+      "minutes": 65,
+      "prompt": "Why might PostgreSQL choose a sequential scan for 50 rows or a query matching 40% of a large table?",
+      "answer": "Reading a small table directly has little overhead. For many matches, using an index can incur substantial traversal and heap access costs compared with scanning pages sequentially. The crossover depends on estimates, data layout, visibility, caching, and costs; 40% is an example, not a threshold."
+    },
+    {
+      "title": "DB-D10 — ACID transactions, WAL, and rollback",
+      "goal": "Make a seat transfer atomic and explain how PostgreSQL recovers a committed change.",
+      "minutes": 60,
+      "prompt": "How can a durable commit survive a power loss before its data pages reach disk?",
+      "answer": "The durable WAL already describes the changes and records the commit. On restart PostgreSQL replays the required records to restore data pages. This assumes durable settings and storage that honors flush requests; asynchronous commit can acknowledge before the commit record is durable."
+    },
+    {
+      "title": "DB-D11 — MVCC, isolation anomalies, and row locks",
+      "goal": "Reproduce a lost update and protect seat reservations against concurrent requests.",
+      "minutes": 65,
+      "prompt": "Why is an atomic guarded UPDATE safer than a separate SELECT followed by a literal UPDATE?",
+      "answer": "At Read Committed, if a concurrent updater commits first, PostgreSQL rechecks the UPDATE predicate on the new row version and evaluates the decrement against that row if it still qualifies. A literal computed from a prior SELECT carries no such relationship to the current value."
+    },
+    {
+      "title": "DB-D12 — CourseCairn capstone: schema, indexes, and migration",
+      "goal": "Deliver a reproducible PostgreSQL design with constraints, analytics, a safe seat operation, and migration evidence.",
+      "minutes": 75,
+      "prompt": "How do you add the completion-time rule when legacy data already violates it?",
+      "answer": "Add the CHECK as NOT VALID so new inserts and updates are checked without first scanning old rows. Find and repair existing violations using a documented policy, then run VALIDATE CONSTRAINT. Rehearse on a legacy fixture, verify the repaired rows, and account for locks during deployment."
+    }
+  ],
+  "CS": [
+    {
+      "title": "Programs, processes, system calls, and context switches",
+      "goal": "Follow a Unix process from creation to exit and predict which resources survive exec.",
+      "minutes": 60,
+      "prompt": "Why split fork and exec, and what happens to open descriptors across each?",
+      "answer": "The child can prepare the execution environment between the calls, for example by redirecting stdout into a pipeline. Fork copies descriptor entries that refer to the same open file descriptions, so inherited entries can share file offsets. Exec closes descriptors marked FD_CLOEXEC and ordinarily preserves the others."
+    },
+    {
+      "title": "CPU scheduling: turnaround, response time, and MLFQ",
+      "goal": "Compute scheduling metrics from a timeline and explain the tradeoff between early service and early completion.",
+      "minutes": 55,
+      "prompt": "Why can a tiny quantum reduce throughput, and how does MLFQ limit starvation and early-yield gaming?",
+      "answer": "Switching consumes time and can disrupt cache locality, so a tiny slice leaves less useful work per dispatch. Periodic boosts bring long-waiting jobs back to the top queue. Charging total CPU time at a level across yields prevents jobs from resetting their allotment by yielding just before a slice ends."
+    },
+    {
+      "title": "Virtual address spaces and hardware translation",
+      "goal": "Locate common objects in a process map and explain how mappings enforce isolation.",
+      "minutes": 60,
+      "prompt": "What keeps a process from reading another process’s physical memory by guessing its pointer value?",
+      "answer": "The CPU interprets that value through the caller’s own mappings and enforces their permissions. Without an authorized mapping to the other frame, the access either reaches a different frame or faults. The OS can intentionally map the same frame into multiple processes for shared memory."
+    },
+    {
+      "title": "Paging, multilevel page tables, TLBs, and copy-on-write",
+      "goal": "Split a virtual address and relate page table size, traversal order, and fork cost to page-level behavior.",
+      "minutes": 65,
+      "prompt": "How can fork avoid copying the contents of a large private address space, and what work remains?",
+      "answer": "Parent and child initially map the same private frames with writes restricted. A write fault lets the kernel establish a writable private mapping, copying the page if it is still shared. Creating process state and duplicating or setting up page tables still costs time. A 2 GiB address space alone says little about fork latency, and there is no microsecond guarantee."
+    },
+    {
+      "title": "Demand paging, page faults, replacement, and thrashing",
+      "goal": "Distinguish fault causes and predict misses under FIFO and LRU.",
+      "minutes": 60,
+      "prompt": "What is Belady’s anomaly, and why is it impossible with exact LRU?",
+      "answer": "The anomaly occurs when extra frames increase faults for the same reference trace. After every prefix, exact LRU holds the most recent distinct pages up to capacity. The smaller resident set is contained in the larger one, so each hit at the smaller capacity must also hit at the larger capacity."
+    },
+    {
+      "title": "Threads, shared memory, and data races",
+      "goal": "Separate per-thread execution state from process resources and diagnose a lost update.",
+      "minutes": 60,
+      "prompt": "Why does each thread need its own stack if all threads share a heap?",
+      "answer": "Each thread can suspend at a different call depth, with its own return addresses, saved registers, and locals. Its stack pointer must lead to its own call frames so another thread’s calls cannot overwrite them as part of ordinary execution."
+    },
+    {
+      "title": "Mutexes, spinlocks, condition variables, and semaphores",
+      "goal": "Build a bounded queue whose producers and consumers sleep until they can make progress.",
+      "minutes": 65,
+      "prompt": "Why is if insufficient before a condition variable wait?",
+      "answer": "A wait can return without a matching notification. Even after a real notification, another thread can consume the available item or slot before the woken thread reacquires the mutex. A while loop, or the predicate overload, rechecks the actual state under the lock before proceeding."
+    },
+    {
+      "title": "Deadlocks, lock ordering, and dining philosophers",
+      "goal": "Draw a wait-for cycle and remove it with a consistent acquisition rule.",
+      "minutes": 60,
+      "prompt": "Which Coffman condition does strictly increasing lock acquisition break, and why?",
+      "answer": "It breaks circular wait. Along a cycle, each thread would be waiting for a lock with a higher ID than the lock it already holds on that cycle. Following those inequalities back to the start would require an ID to be greater than itself."
+    },
+    {
+      "title": "File descriptors, persistence, and event-driven I/O",
+      "goal": "Distinguish readiness from completion and a successful write from a durable update.",
+      "minutes": 60,
+      "prompt": "Does success from write guarantee the new bytes survive power loss?",
+      "answer": "For ordinary buffered file I/O, no. The bytes can still be dirty in memory, or writeback might already have happened. Check the byte count, handle errors, and check fsync for the durability boundary. Sync the directory as well when the new name must survive a crash."
+    },
+    {
+      "title": "IP routing, CIDR, NAT, and DNS resolution",
+      "goal": "Choose the next hop for an IPv4 destination and trace how a name resolves to addresses.",
+      "minutes": 60,
+      "prompt": "Why do many traditional DNS queries start on UDP port 53, and when is TCP used?",
+      "answer": "A small request and reply can use UDP without connection setup. A truncated reply (TC set) is a common reason to retry over TCP. TCP port 53 is also valid as the initial transport and is used for zone transfers such as AXFR; modern general-purpose DNS implementations must support both UDP and TCP."
+    },
+    {
+      "title": "TCP and UDP: handshakes, retransmission, and windows",
+      "goal": "Read a TCP packet trace and distinguish receiver limits from network congestion limits.",
+      "minutes": 65,
+      "prompt": "Why does a normal active closer stay in TIME-WAIT for twice the maximum segment lifetime?",
+      "answer": "It can acknowledge a retransmitted peer FIN if the final ACK was lost. The waiting interval also lets delayed duplicates from the old connection expire before the same endpoint pair is reused. Simultaneous close can put both sides in TIME-WAIT."
+    },
+    {
+      "title": "From URL to response: TLS, HTTP versions, and failure diagnosis",
+      "goal": "Trace a secure web request and isolate the earliest layer that failed.",
+      "minutes": 65,
+      "prompt": "How does head-of-line blocking differ across HTTP/1.1, HTTP/2, and HTTP/3?",
+      "answer": "On one pipelined HTTP/1.1 connection responses must arrive in request order, so a slow first response can hold back later ones. HTTP/2 multiplexes streams but uses a single ordered TCP byte stream, so a missing TCP segment can delay delivery for several HTTP streams. HTTP/3 uses QUIC over UDP; QUIC supplies reliability and ordering per stream, so missing stream bytes do not force unrelated streams to wait for those bytes. Congestion control and some protocol dependencies can still affect multiple streams."
+    }
+  ],
+  "BE": [
+    {
+      "title": "HTTP Contracts, REST Resource Design & Idempotency",
+      "goal": "Define a task API whose clients can distinguish failures and retry creation safely.",
+      "minutes": 55,
+      "prompt": "Why can a client usually retry PUT after a timeout, and what extra contract makes POST creation safe to retry?",
+      "answer": "PUT sets the same representation at the same URI, so repeating it has the same intended effect. POST can create a new resource each time. A server can recognize a repeated logical operation using a stable client key or another explicit deduplication mechanism and enforce it under concurrency."
+    },
+    {
+      "title": "Request Validation, Pydantic v2 Models & Standardized Error Envelopes",
+      "goal": "Validate writes at the boundary and expose only fields that belong to the public contract.",
+      "minutes": 55,
+      "prompt": "What can go wrong if the response schema is inferred from the raw ORM object?",
+      "answer": "Database fields can become public by accident, including columns added later. An explicit response model sets an intentional contract and detects invalid output. Return through FastAPI’s response model path so the allowlist is actually applied."
+    },
+    {
+      "title": "Dependency Injection (Depends) & Clean Layered Architecture",
+      "goal": "Test a task rule without starting FastAPI or opening a database.",
+      "minutes": 60,
+      "prompt": "What does yield do in a FastAPI dependency, and why should a commit that can fail happen before sending success?",
+      "answer": "The dependency yields the resource to consumers, then FastAPI unwinds it at the chosen scope so its cleanup runs, including when request handling raises. If a commit fails after the response goes out, the client may already have received a success that cannot be withdrawn."
+    },
+    {
+      "title": "SQLAlchemy 2.0 Async Persistence, Transactions & Solving N+1 Queries",
+      "goal": "Persist related data atomically and load task collections with a measured query budget.",
+      "minutes": 65,
+      "prompt": "When would you use selectinload instead of joinedload for task tags?",
+      "answer": "Prefer selectinload when a page contains many tasks or tags and repeating task columns would inflate the result. joinedload may suit small collections when reducing round trips matters. Compare returned row volume and latency as well as query count."
+    },
+    {
+      "title": "Pagination at Scale: Offset, Keyset Cursors, Filtering & Sorting",
+      "goal": "Page through one owner’s tasks in a stable order and compare query plans.",
+      "minutes": 60,
+      "prompt": "Why is created_at alone insufficient as the cursor?",
+      "answer": "If a page ends among tasks sharing a timestamp, a strict timestamp comparison skips the rest of the tie and an inclusive comparison can repeat rows. A unique ID breaks the tie and locates the exact boundary."
+    },
+    {
+      "title": "Authentication: Password Hashing, Sessions & JWTs",
+      "goal": "Verify credentials without storing plaintext and explain how each session design handles revocation.",
+      "minutes": 65,
+      "prompt": "An account is disabled at hour one but its token expires at hour 24. How can the API block it immediately?",
+      "answer": "Consult live state, such as an account status lookup, a token version, or a denylist shared across instances. An offline verifier has no signal that a particular account was disabled. Short-lived access tokens plus revocable refresh grants bound the delay but do not make it zero."
+    },
+    {
+      "title": "Authorization & Resource Ownership Boundaries (Preventing IDOR / BOLA)",
+      "goal": "Enforce ownership on reads, updates, and deletes even when a caller knows the task ID.",
+      "minutes": 60,
+      "prompt": "When should a caller who lacks access receive 404 rather than 403?",
+      "answer": "Use 404 when revealing that the object exists would expose private information. Use 403 when existence is already public or visible to that caller, such as a shared document they may read but cannot edit."
+    },
+    {
+      "title": "Redis Caching (Cache-Aside, Stampedes) & API Rate Limiting",
+      "goal": "Reduce database reads for popular roadmaps and enforce a shared request budget.",
+      "minutes": 65,
+      "prompt": "What is a stampede, and what different problems do single flight and TTL jitter solve?",
+      "answer": "A stampede is many requests independently rebuilding the same missing value. Single flight lets one rebuild and lets the others reuse it. TTL jitter spreads expirations of different keys so they are less likely to overload the database together."
+    },
+    {
+      "title": "Background Jobs, Outbox Pattern, Retries & Exponential Backoff",
+      "goal": "Record background work durably and retry transient failures without synchronized bursts.",
+      "minutes": 60,
+      "prompt": "Why does adding jitter matter when 1,000 workers hit the same outage?",
+      "answer": "Without randomness, workers that fail together can retry together at every backoff interval, overwhelming a recovering service. Full jitter spreads their next attempts over a time window; the cap limits how long a scheduled retry can wait."
+    },
+    {
+      "title": "Automated Testing Pyramid: pytest Fixtures & Isolated DB Rollbacks",
+      "goal": "Use the cheapest test that exercises each contract, including real database concurrency where needed.",
+      "minutes": 65,
+      "prompt": "Why use an outer rollback for most integration tests, and when does that fixture hide the behavior you need to test?",
+      "answer": "It reuses the migrated schema and reverts writes as a unit. A single shared connection does not model transactions that commit and become visible to other connections. Use an isolated database with real commits and explicit cleanup for those cases."
+    },
+    {
+      "title": "Observability, Timeouts, Circuit Breakers & Graceful Shutdown",
+      "goal": "Trace one request and keep a dependency outage from taking down healthy application processes.",
+      "minutes": 60,
+      "prompt": "Why keep a database check out of the liveness probe?",
+      "answer": "A liveness failure can restart the container. Restarting otherwise healthy processes during a shared database outage adds load and erases warm state. Readiness can temporarily remove affected instances from traffic without restarting them."
+    },
+    {
+      "title": "Reproducible Delivery: Docker Compose, Alembic & CI Verification Gate",
+      "goal": "Prove a clean checkout can migrate, start, and pass verification against disposable infrastructure.",
+      "minutes": 70,
+      "prompt": "What evidence makes the backend ready for handoff, and why run migrations as a separate service?",
+      "answer": "A second engineer can follow the README on a clean machine and reproduce a successful migration, readiness check, smoke test, and passing suite. A single migration service gives startup an explicit schema gate and avoids having multiple API replicas race to apply revisions."
+    }
+  ],
+  "AI": [
+    {
+      "title": "LLM inference: tokens, context, latency, and cost",
+      "goal": "Budget a streaming request and measure where its time and cost go.",
+      "minutes": 50,
+      "prompt": "Why can generating 500 tokens take much longer than processing 500 prompt tokens?",
+      "answer": "Prompt positions can be processed in parallel during prefill. Each sampled token depends on the preceding output, so decode needs serial steps for that request even when the server batches several requests. The actual ratio depends on model, hardware, serving load, and cache behavior."
+    },
+    {
+      "title": "Structured outputs, schema validation, and tool calling",
+      "goal": "Turn model output into a validated finding and decide separately whether it may trigger a tool.",
+      "minutes": 55,
+      "prompt": "How should you respond to malformed JSON versus a valid tool argument naming a forbidden resource?",
+      "answer": "You can retry malformed output within a small budget or surface a parsing failure. Deny the forbidden operation at the authorization boundary. A different response format or a retry cannot grant access."
+    },
+    {
+      "title": "Build a search baseline with inverted indexes and BM25",
+      "goal": "Build a reproducible lexical retriever that preserves source-code identifiers.",
+      "minutes": 60,
+      "prompt": "Why might lexical search beat dense retrieval on an exact compiler error code?",
+      "answer": "The exact code can be a rare token with a high lexical weight, while dense vectors may place several related errors close together. The advantage depends on preserving the code in the analyzer and actually having it in the corpus."
+    },
+    {
+      "title": "Document ingestion and structure-aware chunking",
+      "goal": "Produce searchable chunks that preserve code, section context, and source locations.",
+      "minutes": 55,
+      "prompt": "How would you decide whether a 100-token target is better than 2,000 tokens?",
+      "answer": "Smaller chunks can isolate a symbol but omit definitions or usage context. Larger ones retain context but may combine unrelated topics and spend more prompt tokens per hit. Compare relevance and answer support under the same total context budget; neither size wins universally."
+    },
+    {
+      "title": "Semantic retrieval with embeddings, cosine, and vector indexes",
+      "goal": "Build exact cosine search and use it to judge approximate search.",
+      "minutes": 60,
+      "prompt": "When can you replace cosine similarity with a raw dot product, and what does an HNSW graph cost?",
+      "answer": "The scores coincide when both vectors have unit L2 norm. A common positive factor can preserve ranking without preserving scores. HNSW stores neighbor links in addition to the vectors, and exploring more candidates generally improves neighbor recall at the cost of query work."
+    },
+    {
+      "title": "Hybrid retrieval with reciprocal rank fusion",
+      "goal": "Fuse lexical and semantic rankings and measure where fusion helps or hurts.",
+      "minutes": 60,
+      "prompt": "Why might RRF demote the only exact match even when BM25 gives it a huge lead?",
+      "answer": "RRF discards score gaps. An exact match can earn one first-place contribution while a merely related result earns two lower-rank contributions whose sum is larger. Check candidate depth and exact-match results before choosing a fusion policy."
+    },
+    {
+      "title": "Grounded RAG: check citations and abstain without evidence",
+      "goal": "Build an answer pipeline that distinguishes valid source IDs from actual support.",
+      "minutes": 60,
+      "prompt": "What can go wrong when you add 25 noisy chunks around the five useful ones?",
+      "answer": "Useful evidence can be harder to find amid distractors or when placed in the middle. Position effects vary across models and tasks; compare support and answer quality under the actual token budget before increasing context."
+    },
+    {
+      "title": "Evaluate retrieval and generation separately",
+      "goal": "Build a labeled benchmark and trace a failure through retrieval, context assembly, and generation.",
+      "minutes": 65,
+      "prompt": "Does low faithfulness tell you immediately to rewrite the prompt?",
+      "answer": "No. Verify that relevant chunks contain sufficient evidence and that this evidence survived filtering and truncation. If it was present but ignored or misread, investigate generation. If it was missing, inspect ingestion, retrieval, and context assembly. An oracle-context rerun can help separate these possibilities."
+    },
+    {
+      "title": "Defend against prompt injection and audit generated code",
+      "goal": "Contain untrusted model inputs and review generated code for correctness, authorization, and cost.",
+      "minutes": 60,
+      "prompt": "Why are separators around retrieved text insufficient to stop indirect prompt injection?",
+      "answer": "They help identify where data begins and ends, but the model can still follow instructions in that data. An independent permission check limits what a mistaken model can do; limiting document access also keeps unauthorized data out of its context."
+    },
+    {
+      "title": "Project C capstone: grounded codebase and docs search API",
+      "goal": "Ship a reproducible FastAPI demo with hybrid retrieval, traceable answers, and an evaluation report.",
+      "minutes": 90,
+      "prompt": "Your hybrid system raises Recall@5 but produces more unsupported claims. What would you inspect before choosing a default?",
+      "answer": "Compare the evidence actually sent after filtering and truncation, then verify claims against cited excerpts. Check whether ranking introduced distractions or whether the generator missed available evidence. Keep the safer configuration until the held-out evaluation supports the change in answer quality as well as retrieval."
+    }
+  ]
+}

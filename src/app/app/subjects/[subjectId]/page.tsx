@@ -1,9 +1,10 @@
 'use client';
-import { use } from 'react';
+import { use, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, ArrowRight, ArrowUpRight, Search, Check, Play, BookOpen } from 'lucide-react';
 import { StudyGuide } from '@/components/learn/StudyGuide';
 import { AppShell } from '@/components/layout/AppShell';
+import { catalogHref } from '@/lib/db/catalog-navigation';
 import { COURSE_GUIDES } from '@/lib/db/course-guides';
 import { SUBJECTS } from '@/lib/db/curriculum-data';
 import { filterLessons, getLessonState, LessonFilter } from '@/lib/db/learning-library';
@@ -19,23 +20,29 @@ export default function SubjectDetailPage({ params }: { params: Promise<{ subjec
   const course = COURSE_GUIDES.find(item => item.id === subject?.id);
   const { loading, error, completedIds, activeSequence } = useStudyLibrary();
   const { query, setQuery, filter, setFilter } = useLibraryFilters(LESSON_FILTERS);
-  if (!course) return <AppShell><div className={styles.empty}><h1>Course not found</h1><p>This course is not in your learning library.</p><Link className="buttonSecondary" href="/app/subjects">Browse courses</Link></div></AppShell>;
-  const guided = GUIDED_COURSES.some(item => item.id === course.id);
+  const [backHref,setBackHref]=useState('/app/subjects');
+  useEffect(()=>{
+    const sync=()=>setBackHref(catalogHref(window.location.search));
+    sync();
+    window.addEventListener('popstate',sync);
+    return ()=>window.removeEventListener('popstate',sync);
+  },[subjectId]);
+  const track=GUIDED_COURSES.find(item=>item.id===course?.id);
+  if (!course || !track) return <AppShell><div className={styles.empty}><h1>Course not found</h1><p>This course is not in your learning library.</p><Link className="buttonSecondary" href="/app/subjects">Browse courses</Link></div></AppShell>;
   const courseDays = courseLessons(course.id);
   const courseCompletedIds = courseDays.filter(day => completedIds.includes(day.id)).map(day => day.id);
   const lessons = filterLessons(courseDays, query, filter, activeSequence, courseCompletedIds);
   const active = !loading && !error ? courseDays.find(day => day.sequence_index === activeSequence && guidedCourseFor(day)?.id === course.id) : undefined;
   const firstLesson = courseDays[0];
   return <AppShell><div className={styles.page}>
-    <Link href="/app/subjects" className={styles.back}><ArrowLeft size={14} aria-hidden="true" />All courses</Link>
+    <Link href={backHref} className={styles.back}><ArrowLeft size={14} aria-hidden="true" />All courses</Link>
     <header className={styles.heading}>
-      <div><span className={styles.eyebrow}>{guided ? GUIDED_COURSES.find(item => item.id === course.id)?.phaseId : course.phase} · {guided?'GUIDED COURSE':'STUDY OUTLINE'}</span><h1>{course.title}</h1><p>{course.description}</p></div>
-      {guided && (active || firstLesson) && <Link href={active ? `/app/learn/${active.phase_id}/${active.id}` : `/app/learn/${firstLesson.phase_id}/${firstLesson.id}`} className="buttonPrimary">{active ? `Continue lesson ${lessonPosition(active)}` : 'Explore the first lesson'} <ArrowRight size={16} aria-hidden="true" /></Link>}
+      <div><span className={styles.eyebrow}>{track.phaseId} · GUIDED COURSE</span><h1>{course.title}</h1><p>{course.description}</p></div>
+      {(active || firstLesson) && <Link href={active ? `/app/learn/${active.phase_id}/${active.id}` : `/app/learn/${firstLesson.phase_id}/${firstLesson.id}`} className="buttonPrimary">{active ? `Continue lesson ${lessonPosition(active)}` : 'Explore the first lesson'} <ArrowRight size={16} aria-hidden="true" /></Link>}
     </header>
-    {guided && active && !loading && !error && <details className={styles.guidePreview}><summary>Your current lesson · Lesson {lessonPosition(active)} of {courseDays.length}<span>Open study guide +</span></summary><StudyGuide day={active} /></details>}
+    {active && !loading && !error && <details className={styles.guidePreview}><summary>Your current lesson · Lesson {lessonPosition(active)} of {courseDays.length}<span>Open study guide +</span></summary><StudyGuide day={active} /></details>}
     <div className={styles.detailLayout}>
       <section>
-        {guided ? <>
           <div className={styles.sectionHeading}><h2>Your lesson path</h2><span>{loading?'Loading progress…':error?'Progress unavailable':`${courseCompletedIds.length} of ${courseDays.length} complete`}</span></div>
           <div className={styles.toolbar}>
             <div className={styles.filters} aria-label="Filter lessons">{(['all','remaining','completed'] as LessonFilter[]).map(value=><button key={value} aria-pressed={filter===value} onClick={()=>setFilter(value)}>{value==='all'?'All lessons':value==='remaining'?'Remaining':'Completed'}</button>)}</div>
@@ -51,20 +58,13 @@ export default function SubjectDetailPage({ params }: { params: Promise<{ subjec
             </Link>;
           })}</div>
           {lessons.length===0&&<div className={styles.empty}><h2>No lessons in this view</h2><p>Try a different topic or show all lessons.</p><button className="buttonSecondary" onClick={()=>{setQuery('');setFilter('all');}}>Show all lessons</button></div>}
-        </>:<>
-          <div className={styles.sectionHeading}><h2>A practical study outline</h2><span>{course.topics.length} checkpoints</span></div>
-          <p className={styles.note}>This outline offers topics and practice checkpoints. Guided lessons are not available for this course yet, and these checkpoints do not count toward guided lesson progress.</p>
-          <CourseInterest key={course.id} courseId={course.id} />
-          {course.topics.map((topic,index)=><details key={topic.title} className={styles.topic} open={index===0}>
-            <summary><span>{String(index+1).padStart(2,'0')}</span>{topic.title}</summary>
-            <div className={styles.topicBody}>
-              <div><h3>Understand</h3><p>{topic.learn}</p></div>
-              <div><h3>Build or practice</h3><p>{topic.practice}</p></div>
-              <div><h3>Evidence to check</h3><p>{topic.proof}</p></div>
-            </div>
-          </details>)}
-          <div className={styles.panel}><span className={styles.panelLabel}>BEFORE YOU MOVE ON</span><p>Explain your solution without looking at notes, reproduce the result, and write down one failure you diagnosed. Revisit a checkpoint when you cannot yet do that independently.</p></div>
-        </>}
+        <details className={styles.topic}>
+          <summary>Practice checkpoints</summary>
+          <div className={styles.topicBody}>{course.topics.map(topic=><div key={topic.title}>
+            <h3>{topic.title}</h3><p>{topic.learn}</p><p>{topic.practice}</p><p>{topic.proof}</p>
+          </div>)}</div>
+        </details>
+        <CourseInterest key={course.id} courseId={course.id} />
       </section>
       <aside aria-label="Course guidance">
         <section className={styles.panel}><span className={styles.panelLabel}>THE OUTCOME</span><h2>What you’ll be able to demonstrate</h2><p>{course.outcome}</p></section>
