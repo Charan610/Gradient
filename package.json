@@ -10,19 +10,21 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "seed": "node scripts/seed.mjs"
+    "seed": "node scripts/seed.mjs",
+    "content:validate": "vitest run tests/content-manifest.test.ts",
+    "content:fixtures": "bash tests/fixtures/content/check-fixtures.sh"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.49.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.16.0",
-    "next": "^15.3.9",
+    "next": "15.5.29",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "sass": "^1.85.1",
     "three": "^0.187.0",
-    "zod": "^3.24.2"
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.3",
@@ -36,5 +38,11 @@
     "typescript": "^5.7.3",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.0.7"
+  },
+  "overrides": {
+    "next": {
+      "postcss": "8.5.32",
+      "sharp": "0.35.5"
+    }
   }
 }

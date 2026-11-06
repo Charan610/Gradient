@@ -23,7 +23,7 @@ import {
 import { BrandMark } from '@/components/ui/BrandMark';
 import { useTheme } from '@/components/context/ThemeContext';
 import { CommandPalette } from '@/components/ui/CommandPalette';
-import { workspaceGroup } from './workspace-navigation';
+import { WORKSPACE_NAV, workspaceGroup } from './workspace-navigation';
 import styles from './TopHeader.module.scss';
 
 interface TopHeaderProps {
@@ -33,12 +33,8 @@ interface TopHeaderProps {
   semester?: string;
 }
 
-const PRIMARY_TABS = [
-  { label: 'Home', href: '/app/today', group: 'home', icon: Compass },
-  { label: 'Learn', href: '/app/subjects', group: 'learn', icon: BookOpen },
-  { label: 'Progress', href: '/app/insights', group: 'progress', icon: BarChart2 },
-  { label: 'Career', href: '/app/career', group: 'career', icon: Briefcase },
-] as const;
+const TAB_ICONS = { home: Compass, learn: BookOpen, practice: RotateCcw, build: FolderGit2, career: Briefcase };
+const PRIMARY_TABS = WORKSPACE_NAV.map(tab => ({ ...tab, icon: TAB_ICONS[tab.group] }));
 
 export function TopHeader({
   currentPhaseCode = 'P0',
@@ -109,6 +105,7 @@ export function TopHeader({
           <button
             onClick={() => setPaletteOpen(true)}
             className={styles.searchButton}
+            aria-label="Search your library"
             title="Search your library"
             aria-keyshortcuts="Control+K Meta+K"
           >
@@ -195,18 +192,14 @@ export function TopHeader({
 
               <div className={styles.menuDivider} aria-hidden="true" />
 
-              <div className={styles.dropdownSectionLabel}>Curriculum & Projects</div>
+              <div className={styles.dropdownSectionLabel}>Explore and track</div>
               <Link href="/app/roadmap" onClick={() => setMenuOpen(false)} role="menuitem" className={styles.dropdownItem}>
                 <Map size={15} />
                 <span>Roadmap</span>
               </Link>
-              <Link href="/app/review" onClick={() => setMenuOpen(false)} role="menuitem" className={styles.dropdownItem}>
-                <RotateCcw size={15} />
-                <span>Practice Recall</span>
-              </Link>
-              <Link href="/app/projects" onClick={() => setMenuOpen(false)} role="menuitem" className={styles.dropdownItem}>
-                <FolderGit2 size={15} />
-                <span>Projects</span>
+              <Link href="/app/insights" onClick={() => setMenuOpen(false)} role="menuitem" aria-current={currentGroup === 'progress' ? 'page' : undefined} className={clsx(styles.dropdownItem, currentGroup === 'progress' && styles.activeDropdownItem)}>
+                <BarChart2 size={15} />
+                <span>Progress overview</span>
               </Link>
               <Link href="/app/resources" onClick={() => setMenuOpen(false)} role="menuitem" className={styles.dropdownItem}>
                 <Library size={15} />

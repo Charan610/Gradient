@@ -8,14 +8,15 @@ import { AppShell } from '@/components/layout/AppShell';
 import { WorkspaceSkeleton } from '@/components/ui/WorkspaceSkeleton';
 import { ProgressRepository } from '@/lib/db/progress-repository';
 import {isWorkspaceStorageEventKey} from '@/lib/account/workspace';
-import { LEARNING_DAYS } from '@/lib/db/curriculum-data';
+import { LEARNING_DAYS, PROJECT_TEMPLATES } from '@/lib/db/curriculum-data';
+import { readProjectProgress } from '@/lib/db/project-progress';
 import { resolveHomeJourney } from '@/lib/db/home-journey';
 import {recallStep} from '@/lib/db/review-schedule';
 import {guidedCourseFor,courseLessons,lessonPosition} from '@/lib/db/guided-courses';
 import { UserProfile, UserTaskProgress, ConceptReview } from '@/lib/db/types';
 import styles from './Today.module.scss';
 
-type HomeData = { profile: UserProfile; completed: string[]; tasks: Record<string, UserTaskProgress>; reviews: ConceptReview[] };
+type HomeData = { profile: UserProfile; completed: string[]; tasks: Record<string, UserTaskProgress>; reviews: ConceptReview[]; project: { id: string; milestone: string } | null };
 
 export default function TodayPage() {
   const [data, setData] = useState<HomeData | null>(null);
@@ -25,11 +26,19 @@ export default function TodayPage() {
     try {
       const {profile,completedIds}=await ProgressRepository.getStudySnapshot();
       const day = LEARNING_DAYS.find(item => item.sequence_index === profile.active_day_index);
-      const [tasks, reviews] = await Promise.all([
+      const [tasks, reviews, projects] = await Promise.all([
         day ? ProgressRepository.getDayTaskProgresses('local_user', day.id) : Promise.resolve({}),
         ProgressRepository.getDueReviews('local_user', Number.MAX_SAFE_INTEGER),
+        Promise.all(PROJECT_TEMPLATES.map(async template => {
+          try {
+            const saved = await readProjectProgress(template.id);
+            if (!saved.repoUrl && !saved.notes && !Object.values(saved.milestones).some(Boolean)) return null;
+            const next = template.milestones.find(item => !saved.milestones[item.code]);
+            return next ? { id: template.id, milestone: next.title } : null;
+          } catch { return null; }
+        })),
       ]);
-      setData({ profile, tasks, completed: completedIds, reviews });
+      setData({ profile, tasks, completed: completedIds, reviews, project: projects.find(project => project !== null) ?? null });
       setError(false);
     } catch { setError(true); }
     finally { setLoading(false); }
@@ -84,6 +93,11 @@ export default function TodayPage() {
       </section>}
       <div className={styles.progressLine}><div><strong>{journey.completedLessons} of {LEARNING_DAYS.length} lessons completed</strong><span>Every completed lesson stays with you.</span></div><progress value={journey.completedLessons} max={LEARNING_DAYS.length} aria-label="All guided lessons completed" /><Link href="/app/insights">Your progress <ChevronRight size={15} /></Link></div>
       <section className={styles.recallPreview} aria-labelledby="revisit-title"><div><span className={styles.eyebrow}>A LITTLE RETRIEVAL</span><h2 id="revisit-title">{ready.length?'What you can revisit now':'For another visit'}</h2><p>{revisit.length?'Try answering before you open the explanation. No calendar deadlines.':'Earlier concepts return in small recall sets after you finish a lesson.'}</p></div>{revisit.length>0&&<ul>{revisit.map(review=><li key={review.id}>{review.concept_prompt}</li>)}</ul>}<Link href="/app/review">{ready.length?'Open this recall set':'Explore recall'} <ArrowRight size={15}/></Link></section>
+      {data.project && <section className={styles.sideNote} aria-labelledby="project-next">
+        <span className={styles.eyebrow}>CONTINUE BUILDING</span>
+        <h2 id="project-next">{data.project.milestone}</h2>
+        <Link href={`/app/projects/${data.project.id}`}>Open project <ArrowRight size={15} aria-hidden="true" /></Link>
+      </section>}
       <div className={styles.below}>
         <section className={styles.upNext}><div className={styles.sectionTitle}><h2>{first ? 'A simple learning rhythm' : 'Coming up next'}</h2><span>{first ? 'AT YOUR OWN PACE' : 'A PREVIEW, NOT A DEADLINE'}</span></div>
           {first ? <ol className={styles.rhythm}>{[['01','Learn one idea','Read a short explanation and work through an example.'],['02','Try it yourself','Write a little code and check what happens.'],['03','Make it stick','Explain what you learned, then take your next step.']].map(([n,title,description]) => <li key={n}><span>{n}</span><div><h3>{title}</h3><p>{description}</p></div></li>)}</ol>

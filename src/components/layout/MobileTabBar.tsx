@@ -3,16 +3,18 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Compass, BookOpen, BarChart2, Briefcase, User } from 'lucide-react';
+import { Compass, BookOpen, RotateCcw, FolderGit2, User } from 'lucide-react';
 import styles from './MobileTabBar.module.scss';
 import clsx from 'clsx';
 import { WORKSPACE_NAV, workspaceGroup } from './workspace-navigation';
+
+const ICONS = { home: Compass, learn: BookOpen, practice: RotateCcw, build: FolderGit2 };
 
 export function MobileTabBar() {
   const pathname = usePathname();
 
   const tabs = [
-    ...WORKSPACE_NAV.map((item, index) => ({ ...item, icon: [Compass, BookOpen, BarChart2, Briefcase][index] })),
+    ...WORKSPACE_NAV.flatMap(item => item.group === 'career' ? [] : [{ ...item, icon: ICONS[item.group] }]),
     { label: 'You', href: '/app/settings', group: 'profile', icon: User }
   ];
 

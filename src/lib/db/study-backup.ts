@@ -1,3 +1,4 @@
+import {practiceEvidenceSchema} from './practice-evidence';
 import { LESSON_STORAGE_SUFFIX } from './lesson-identity';
 import {withStudyLock} from './study-lock';
 import {beginStudyRestore,recoverStudyRestore,finishStudyRestore} from './restore-recovery';
@@ -15,6 +16,7 @@ const profile = z.object({
   preferred_mode: z.enum(['light', 'normal', 'deep', 'maintenance']),
   theme: z.enum(['light', 'dark', 'system']), onboarding_status: z.enum(['pending', 'completed']),
   active_day_index: z.number().int().positive(),
+  practice_evidence:practiceEvidenceSchema.optional(),
   recall_step:z.number().int().positive().optional(),
   saved_course_ids:z.array(z.string()).optional(),
 }).passthrough();
@@ -36,10 +38,10 @@ const application = z.object({ id: text, user_id: user, company: text, role: tex
   status: z.enum(['saved', 'applied', 'oa', 'interview', 'offer', 'rejected', 'withdrawn']),
   created_at: text, updated_at: text, url: text.optional(), notes: text.optional(), eligibility_note: text.optional(),
 }).passthrough();
-const gate = z.object({ id: text, user_id: user, phase_id: text, score_json: z.record(z.union([z.number(), z.boolean(), text])),
+const gate = z.object({ id: text, user_id: user, phase_id: text, score_json: z.record(z.string(), z.union([z.number(), z.boolean(), text])),
   passed: z.boolean(), evidence: text, created_at: text,
 }).passthrough();
-const project = z.object({ milestones: z.record(z.boolean()), repoUrl: text, notes: text });
+const project = z.object({ milestones: z.record(z.string(), z.boolean()), repoUrl: text, notes: text });
 const prefix = 'foundation_career_os_local_user_';
 export const MAX_BACKUP_BYTES = 5 * 1024 * 1024;
 
@@ -47,7 +49,7 @@ export const MAX_BACKUP_BYTES = 5 * 1024 * 1024;
 export function parseStudyBackup(source: string): Record<string, string> {
   if (new TextEncoder().encode(source).length > MAX_BACKUP_BYTES) throw new Error('Backup must be smaller than 5 MB.');
   const bundle = z.object({ format_version: z.literal(1), storage_mode: z.literal('local'),
-    local_records: z.record(text), profile,
+    local_records: z.record(z.string(), text), profile,
   }).safeParse(JSON.parse(source));
   if (!bundle.success) throw new Error('Choose a version 1 study backup exported by this app.');
   const records: Record<string, string> = {};
@@ -57,7 +59,7 @@ export function parseStudyBackup(source: string): Record<string, string> {
       : suffix === 'profile' ? profile
       : suffix === 'reviews' ? z.array(review)
       : suffix === 'applications' ? z.array(application)
-      : (suffix.startsWith('tasks_') && LESSON_STORAGE_SUFFIX.test(suffix)) ? z.record(task)
+      : (suffix.startsWith('tasks_') && LESSON_STORAGE_SUFFIX.test(suffix)) ? z.record(z.string(), task)
       : (suffix.startsWith('day_') && LESSON_STORAGE_SUFFIX.test(suffix)) ? day
       : /^gate_P\d+$/.test(suffix) ? gate : null;
     const parsed = schema?.safeParse(JSON.parse(raw));

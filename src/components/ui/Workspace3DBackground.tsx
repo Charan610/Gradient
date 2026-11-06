@@ -524,15 +524,17 @@ export function Workspace3DBackground() {
     });
 
     // 9. High-Fidelity 60 FPS Animation Loop
-    const clock = new THREE.Clock();
+    let lastTime = 0;
+    let elapsed = 0;
     const animate = (_now: number, reduced: boolean) => {
       if (reduced) {
         renderer?.render(scene, camera);
         return;
       }
 
-      const delta = Math.min(clock.getDelta(), 0.05); // capped physics step
-      const elapsed = clock.getElapsedTime();
+      const delta = lastTime === 0 ? 0.016 : Math.min((_now - lastTime) / 1000, 0.05);
+      lastTime = _now;
+      elapsed += delta;
 
       // Smooth exponential mouse parallax damping
       const lerpFactor = 1 - Math.exp(-delta * 2.5);
@@ -576,7 +578,7 @@ export function Workspace3DBackground() {
 
     const onContextRestored = () => {
       applyThemeColors(getTheme());
-      clock.getDelta();
+      lastTime = performance.now();
       motion.setAvailable(true);
     };
 

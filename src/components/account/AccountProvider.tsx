@@ -64,7 +64,7 @@ export function AccountProvider({children}:{children:React.ReactNode}){
   }
  },[state.loading,state.error,state.account,state.localReady,state.configured]);
 
- const workspace=pathname.startsWith('/app/');
+ const workspace=pathname==='/app'||pathname.startsWith('/app/');
  const needsSetup=!state.account&&(!state.localReady||state.configured);
  const retry=async()=>{
   try{
@@ -74,13 +74,14 @@ export function AccountProvider({children}:{children:React.ReactNode}){
  };
 
  return <Context.Provider value={state}>
-  {workspace&&(state.error||needsSetup)&&!loaderVisible?(
+  {workspace&&!state.loading&&(state.error||needsSetup)?(
    <main className="workspaceEntry">
     {state.error?<section className="workspaceEntryCard"><h1>Let’s reconnect.</h1><p role="alert">{state.error}</p><button className="buttonPrimary" onClick={()=>{void retry()}}>Try again</button>{recovery&&<RecoveryExport identity={recovery} onRecoveryReady={setRecoveryJournal}/>}</section>:<AccountForm/>}
    </main>
   ):(
    <>
-    {(!workspace||!state.loading||isExiting)&&children}
+    {workspace&&state.loading&&<h1 className="sr-only">Opening your workspace</h1>}
+    {(!workspace||!state.loading)&&children}
     {workspace&&loaderVisible&&(
      <BrandLoader
       message="Opening your workspace…"

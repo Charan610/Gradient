@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
+import { PracticePilot } from '@/components/practice/PracticePilot';
 import { AppShell } from '@/components/layout/AppShell';
 import { HelpCircle, Check, RotateCcw } from 'lucide-react';
 import { ProgressRepository } from '@/lib/db/progress-repository';
@@ -166,6 +167,7 @@ export default function ReviewPage() {
           })}
         </div>
       )}
+      <PracticePilot />
     </AppShell>
   );
 }

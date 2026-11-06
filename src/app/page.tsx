@@ -63,6 +63,6 @@ export default function HomePage() {
 
       <section className={styles.closing} aria-labelledby="closing-heading"><span className={styles.eyebrow}>Your first learning step</span><h2 data-scroll-reveal="" id="closing-heading" className={styles['heading-2']}>Start with one program.<br/>Give yourself room to grow.</h2><Link href="/sign-up" className={styles.primary}>Start learning <span aria-hidden="true">↗</span></Link></section>
     </main>
-    <footer className={styles.footer}><Link href="/" className={styles.brand}><BrandMark/>Gradient</Link><p>One idea. Then the next.</p><nav aria-label="Footer navigation"><Link href="/explore">Roadmap</Link><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><Link href="/sign-in">Sign in</Link></nav></footer>
+    <footer className={styles.footer}><Link href="/" className={styles.brand}><BrandMark/>Gradient</Link><p>One idea. Then the next.</p><nav aria-label="Footer navigation"><Link href="/explore">Roadmap</Link><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link><Link href="/contact">Contact</Link><Link href="/sign-in">Sign in</Link></nav></footer>
   </div>;
 }

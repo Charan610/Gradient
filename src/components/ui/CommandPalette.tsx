@@ -44,10 +44,15 @@ export function CommandPalette({ isOpen, onClose }: { isOpen: boolean; onClose: 
       onPointerCancel={() => { dragStart.current = null; setDrag(0); dialogRef.current?.style.setProperty('--sheet-drag', '0px'); }}><span /></div>
     <div className={styles.inputWrapper}>
       <Search size={18} aria-hidden="true" />
-      <input ref={inputRef} autoFocus type="search" aria-describedby={hintId} aria-controls={resultsId} className={styles.input} aria-label="Search lessons, courses, and resources" placeholder="Find a lesson, course, or resource…" value={query}
+      <input ref={inputRef} type="search" aria-describedby={hintId} aria-controls={resultsId} className={styles.input} aria-label="Search lessons, courses, and resources" placeholder="Find a lesson, course, or resource…" value={query}
         onChange={event=>{setQuery(event.target.value);setSelected(0);}}
         onKeyDown={event=>{
           if (event.nativeEvent.isComposing) return;
+          if (event.key === 'Escape') {
+            event.preventDefault();
+            onClose();
+            return;
+          }
           const links = dialogRef.current?.querySelectorAll<HTMLAnchorElement>('a[data-selected]');
           if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
             event.preventDefault();

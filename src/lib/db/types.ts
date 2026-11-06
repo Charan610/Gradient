@@ -1,3 +1,4 @@
+import type { PracticeEvidence } from './practice-evidence';
 // ==============================================================================
 // FOUNDATION DATABASE & DOMAIN TYPES
 // ==============================================================================
@@ -135,6 +136,7 @@ export interface UserProfile {
   theme: 'light' | 'dark' | 'system';
   onboarding_status: 'pending' | 'completed';
   active_day_index: number; // Defaults to 1
+  practice_evidence?: PracticeEvidence;
   recall_step?: number; // Optional practice cursor; old profiles use active_day_index.
   saved_course_ids?: string[]; // Local interests, not a notification subscription.
   created_at?: string;

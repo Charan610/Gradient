@@ -66,7 +66,7 @@ export default function LearnDayPage({ params }: PageProps) {
     return (
       <AppShell>
         <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--muted)' }}>
-          Loading study session...
+          <h1>Loading study session…</h1>
         </div>
       </AppShell>
     );
@@ -112,13 +112,18 @@ export default function LearnDayPage({ params }: PageProps) {
           </div>
 
           {hasWork&&!isDayCompleted&&<section className={styles.resume}><h2>Pick up where you left off</h2><p>Your saved notes and checked activities are here.</p><a href={resumeTask?`#task-row-${resumeTask.id}`:'#finish-day-button'}>{resumeTask?`Resume: ${resumeTask.title}`:'Finish this lesson'} →</a></section>}
+          <nav className={styles.lessonJumps} aria-label="On this lesson">
+            <a href="#lesson-guide">Study guide</a>
+            <a href="#lesson-activities">Activities</a>
+            <a href="#lesson-notes">Notes</a>
+          </nav>
           <StudyGuide day={day} minutes={minutes} />
 
           {isPreview && <div className={styles.previewNotice} role="note"><strong>You’re previewing a future lesson.</strong><p>You can read ahead. Finish your current lesson before completing this one.</p><Link href="/app/today">Return to your current lesson →</Link></div>}
 
           {isDayCompleted && <section className={styles.completion} aria-label="Lesson completed"><CheckCircle size={22} /><div><h2>Lesson complete. Nicely done.</h2><p>Your work is saved. {nextDay ? 'Ready for the next small step?' : 'You’ve completed all six guided courses. Return to recall whenever it helps.'}</p><Link className="buttonPrimary" href={nextDay ? `/app/learn/${nextDay.phase_id}/${nextDay.id}` : '/app/review'}>{nextDay ? 'Continue to next lesson' : 'Practice recall'} <ChevronRight size={16} /></Link></div></section>}
 
-          <div style={{ marginTop: '24px' }}>
+          <div id="lesson-activities" className={styles.jumpTarget} style={{ marginTop: '24px' }}>
             <TaskChecklist
               key={day.id}
               day={day}
@@ -130,7 +135,7 @@ export default function LearnDayPage({ params }: PageProps) {
         </div>
 
         <div className={styles.sideColumn}>
-          <LessonNotes key={day.id} dayId={day.id} initialNotes={notes}/>
+          <div id="lesson-notes" className={styles.jumpTarget}><LessonNotes key={day.id} dayId={day.id} initialNotes={notes}/></div>
           <div className={styles.sideCard}>
             <div className={styles.sideHeading}>Make this fit your day</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', marginBottom: '12px' }}>
@@ -165,7 +170,7 @@ export default function LearnDayPage({ params }: PageProps) {
                 <Link
                   href={`/app/learn/${prevDay.phase_id}/${prevDay.id}`}
                   className="buttonSecondary"
-                  style={{ minHeight: '38px', fontSize: '12px', flex: 1 }}
+                  style={{ minHeight: '44px', fontSize: '12px', flex: 1 }}
                 >
                   <ChevronLeft size={13} />
                   <span>{guidedCourseFor(prevDay).title} · {lessonPosition(prevDay)}</span>
@@ -178,7 +183,7 @@ export default function LearnDayPage({ params }: PageProps) {
                 <Link
                   href={`/app/learn/${nextDay.phase_id}/${nextDay.id}`}
                   className="buttonSecondary"
-                  style={{ minHeight: '38px', fontSize: '12px', flex: 1 }}
+                  style={{ minHeight: '44px', fontSize: '12px', flex: 1 }}
                 >
                   <span>{isDayCompleted ? "Next" : "Preview"}: {guidedCourseFor(nextDay).title} · {lessonPosition(nextDay)}</span>
                   <ChevronRight size={13} />

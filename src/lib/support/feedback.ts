@@ -6,7 +6,7 @@ const ISSUE_REVIEW_URL = 'https://github.com/Charan610/Gradient/issues/new';
 
 // Never echo arbitrary path segments: they may contain aliases or other private data.
 const STATIC_ROUTES = new Set([
-  '/', '/explore', '/setup/cpp', '/sign-in', '/sign-up', '/privacy', '/terms',
+  '/', '/contact', '/explore', '/setup/cpp', '/sign-in', '/sign-up', '/privacy', '/terms',
   '/app/today', '/app/review', '/app/subjects', '/app/resources', '/app/projects',
   '/app/roadmap', '/app/career', '/app/career/applications',
   '/app/career/internships', '/app/career/placements', '/app/settings', '/app/insights',

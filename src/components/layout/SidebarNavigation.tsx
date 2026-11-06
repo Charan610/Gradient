@@ -7,7 +7,7 @@ import {
   Compass,
   BookOpen,
   Briefcase,
-  BarChart2,
+  RotateCcw, FolderGit2,
   Settings,
   Sun,
   Moon
@@ -30,7 +30,7 @@ export function SidebarNavigation({
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
 
-  const primaryNav = WORKSPACE_NAV.map((item, index) => ({ ...item, icon: [Compass, BookOpen, BarChart2, Briefcase][index] }));
+  const primaryNav = WORKSPACE_NAV.map((item, index) => ({ ...item, icon: [Compass, BookOpen, RotateCcw, FolderGit2, Briefcase][index] }));
 
   return (
     <aside className={styles.sidebar} aria-label="Desktop Navigation">

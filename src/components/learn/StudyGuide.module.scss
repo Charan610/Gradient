@@ -35,3 +35,6 @@
 .card { background:var(--surface); box-shadow:none; }
 
 .setup { padding:24px; border:1px solid var(--hairline); border-radius:12px; background:var(--sage-soft); margin:24px 0; font-size:14px; line-height:24px; p { margin:8px 0; color:var(--ink-secondary); } a { display:inline-flex; align-items:center; min-height:44px; color:var(--accent); font-weight:550; } }
+
+.card { scroll-margin-top: 84px; }
+.reference + .reference { margin-top: 12px; }

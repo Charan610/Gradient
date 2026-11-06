@@ -1,3 +1,4 @@
+import {applyPracticeAction,emptyEvidence,practiceEvidenceSchema,type PracticeAction} from './practice-evidence';
 import { LESSON_STORAGE_SUFFIX } from './lesson-identity';
 import {withStudyLock} from './study-lock';
 import {assertNoPendingStudyRestore, studyRestoreJournalKey} from './restore-recovery';
@@ -680,6 +681,21 @@ export class ProgressRepository {
       }
       return {profile,completedIds};
     });
+  }
+  /** Keep evidence in the existing scoped profile so export, restore, and reset cover it. */
+  static savePracticeAction(action: PracticeAction) {
+    return this.runOperation('local_user', async () => {
+      const key = this.getStorageKey('local_user', 'profile');
+      const revision = lessonDraftRevision();
+      const profile = await this.getProfileUnlocked();
+      if (key !== this.getStorageKey('local_user', 'profile') || revision === null || revision !== lessonDraftRevision()) {
+        throw new Error('Workspace changed before saving practice.');
+      }
+      const current = profile.practice_evidence === undefined ? emptyEvidence : practiceEvidenceSchema.parse(profile.practice_evidence);
+      const next = applyPracticeAction(current, action, Date.now());
+      if (next !== current) await this.updateProfileUnlocked('local_user', { practice_evidence: practiceEvidenceSchema.parse(next) });
+      return next;
+    }, true);
   }
   static getProfile(...args:Parameters<typeof ProgressRepository.getProfileUnlocked>):ReturnType<typeof ProgressRepository.getProfileUnlocked>{return this.runOperation(args[0]??'local_user',()=>this.getProfileUnlocked(...args),false);}
   static updateProfile(...args:Parameters<typeof ProgressRepository.updateProfileUnlocked>):ReturnType<typeof ProgressRepository.updateProfileUnlocked>{return this.runOperation(args[0]??'local_user',()=>this.updateProfileUnlocked(...args),true);}
